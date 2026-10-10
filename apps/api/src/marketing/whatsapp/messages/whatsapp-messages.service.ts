@@ -37,7 +37,7 @@ export class WhatsAppMessagesService {
     private readonly configService: WhatsAppConfigService,
     private readonly realtimeGateway: WhatsAppRealtimeGateway,
     private readonly flowEngine: WhatsAppFlowEngineService,
-  ) { }
+  ) {}
 
   /**
    * Get messages for a conversation thread.
@@ -264,7 +264,10 @@ export class WhatsAppMessagesService {
       if (templateRecord) {
         templateId = templateRecord.id;
         let renderedBody = templateRecord.bodyText;
-        if (Array.isArray(dto.templateParams) && dto.templateParams.length > 0) {
+        if (
+          Array.isArray(dto.templateParams) &&
+          dto.templateParams.length > 0
+        ) {
           dto.templateParams.forEach((param, idx) => {
             renderedBody = renderedBody.replace(
               new RegExp(`\\{\\{${idx + 1}\\}\\}`, 'g'),
@@ -309,7 +312,7 @@ export class WhatsAppMessagesService {
         type: messageType,
         status: 'SENT',
         senderType: 'agent',
-        contentType: dto.type === 'media' ? (dto.mediaKind || 'image') : dto.type,
+        contentType: dto.type === 'media' ? dto.mediaKind || 'image' : dto.type,
         senderName: senderUser?.name || 'Agent',
         body: resolvedBody,
         caption: dto.caption || null,
@@ -317,9 +320,7 @@ export class WhatsAppMessagesService {
         mediaType: dto.mediaKind || null,
         fileName: dto.filename || null,
         templateId,
-        templateValues: dto.templateParams
-          ? (dto.templateParams as any)
-          : undefined,
+        templateValues: dto.templateParams ? dto.templateParams : undefined,
         interactivePayload: dto.interactivePayload
           ? dto.interactivePayload
           : undefined,

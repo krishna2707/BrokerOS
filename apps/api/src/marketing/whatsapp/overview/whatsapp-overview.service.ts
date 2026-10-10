@@ -11,7 +11,7 @@ export class WhatsAppOverviewService {
   private readonly logger = new Logger(WhatsAppOverviewService.name);
   private readonly prisma = prismaClient;
 
-  constructor(private readonly configService: WhatsAppConfigService) { }
+  constructor(private readonly configService: WhatsAppConfigService) {}
 
   /**
    * Fetches real live WhatsApp & CRM metrics:
@@ -25,7 +25,9 @@ export class WhatsAppOverviewService {
     const account = await this.configService.getDecryptedAccount(accountId);
     const accId = account?.id;
     const accountFilter = accId ? { accountId: accId } : {};
-    const messageAccountFilter = accId ? { conversation: { accountId: accId } } : {};
+    const messageAccountFilter = accId
+      ? { conversation: { accountId: accId } }
+      : {};
 
     // 1. Core Counts
     const [
@@ -50,66 +52,72 @@ export class WhatsAppOverviewService {
       }),
       accId
         ? this.prisma.whatsAppAiConfig.findUnique({
-          where: { accountId: accId },
-        })
+            where: { accountId: accId },
+          })
         : null,
     ]);
 
     const totalUnread = unreadAgg._sum.unreadCount || 0;
 
     // 2. Deliverability Metrics from actual messages
-    const [
-      totalSent,
-      totalDelivered,
-      totalRead,
-      totalReplies,
-      totalFailed,
-    ] = await Promise.all([
-      this.prisma.whatsAppMessage.count({
-        where: {
-          ...messageAccountFilter,
-          direction: 'OUTBOUND',
-        },
-      }),
-      this.prisma.whatsAppMessage.count({
-        where: {
-          ...messageAccountFilter,
-          direction: 'OUTBOUND',
-          status: { in: ['DELIVERED', 'READ'] },
-        },
-      }),
-      this.prisma.whatsAppMessage.count({
-        where: {
-          ...messageAccountFilter,
-          direction: 'OUTBOUND',
-          status: 'READ',
-        },
-      }),
-      this.prisma.whatsAppMessage.count({
-        where: {
-          ...messageAccountFilter,
-          direction: 'INBOUND',
-        },
-      }),
-      this.prisma.whatsAppMessage.count({
-        where: {
-          ...messageAccountFilter,
-          direction: 'OUTBOUND',
-          status: 'FAILED',
-        },
-      }),
-    ]);
+    const [totalSent, totalDelivered, totalRead, totalReplies, totalFailed] =
+      await Promise.all([
+        this.prisma.whatsAppMessage.count({
+          where: {
+            ...messageAccountFilter,
+            direction: 'OUTBOUND',
+          },
+        }),
+        this.prisma.whatsAppMessage.count({
+          where: {
+            ...messageAccountFilter,
+            direction: 'OUTBOUND',
+            status: { in: ['DELIVERED', 'READ'] },
+          },
+        }),
+        this.prisma.whatsAppMessage.count({
+          where: {
+            ...messageAccountFilter,
+            direction: 'OUTBOUND',
+            status: 'READ',
+          },
+        }),
+        this.prisma.whatsAppMessage.count({
+          where: {
+            ...messageAccountFilter,
+            direction: 'INBOUND',
+          },
+        }),
+        this.prisma.whatsAppMessage.count({
+          where: {
+            ...messageAccountFilter,
+            direction: 'OUTBOUND',
+            status: 'FAILED',
+          },
+        }),
+      ]);
 
     // Calculate actual rates
-    const deliveredPct = totalSent > 0 ? Math.round((totalDelivered / totalSent) * 100) : 0;
-    const readPct = totalDelivered > 0 ? Math.round((totalRead / totalDelivered) * 100) : 0;
-    const repliedPct = totalDelivered > 0 ? Math.round((totalReplies / totalDelivered) * 100) : 0;
-    const reliability = totalSent > 0
-      ? Number((((totalSent - totalFailed) / totalSent) * 100).toFixed(1))
-      : 100.0;
+    const deliveredPct =
+      totalSent > 0 ? Math.round((totalDelivered / totalSent) * 100) : 0;
+    const readPct =
+      totalDelivered > 0 ? Math.round((totalRead / totalDelivered) * 100) : 0;
+    const repliedPct =
+      totalDelivered > 0
+        ? Math.round((totalReplies / totalDelivered) * 100)
+        : 0;
+    const reliability =
+      totalSent > 0
+        ? Number((((totalSent - totalFailed) / totalSent) * 100).toFixed(1))
+        : 100.0;
 
     // 3. Real 7-Day Traffic Timeline
-    const trafficDays: Array<{ dateStr: string; day: string; outbound: number; inbound: number }> = [];
+    const trafficDays: Array<{
+      dateStr: string;
+      day: string;
+      outbound: number;
+      inbound: number;
+    }> = [];
     const now = new Date();
 
     for (let i = 6; i >= 0; i--) {
