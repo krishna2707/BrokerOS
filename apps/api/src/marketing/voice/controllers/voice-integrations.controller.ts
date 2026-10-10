@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+} from '@nestjs/common';
 import { VoiceIntegrationsService } from '../services/voice-integrations.service.js';
 import {
   ConnectVoiceTelephonyDto,
@@ -7,7 +15,7 @@ import {
 
 @Controller('api/marketing/voice/integrations')
 export class VoiceIntegrationsController {
-  constructor(private readonly integrationsService: VoiceIntegrationsService) { }
+  constructor(private readonly integrationsService: VoiceIntegrationsService) {}
 
   @Get()
   async getAllIntegrations() {
@@ -88,7 +96,11 @@ export class VoiceIntegrationsController {
     @Param('assistantId') assistantId: string,
     @Body() config: any,
   ) {
-    return this.integrationsService.updateRemoteAssistant(id, assistantId, config);
+    return this.integrationsService.updateRemoteAssistant(
+      id,
+      assistantId,
+      config,
+    );
   }
 
   @Delete('agents/:id/assistants/:assistantId')

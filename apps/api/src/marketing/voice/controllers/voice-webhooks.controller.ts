@@ -20,7 +20,7 @@ import type { VoiceAgentPlatform } from '@brokeros/types';
 @Public()
 @Controller('api/marketing/voice/webhooks')
 export class VoiceWebhooksController {
-  constructor(private readonly trackingService: VoiceTrackingService) { }
+  constructor(private readonly trackingService: VoiceTrackingService) {}
 
   @Get('vobiz-answer')
   @Post('vobiz-answer')
@@ -37,7 +37,9 @@ export class VoiceWebhooksController {
       res.type('text/xml');
     }
 
-    const greeting = firstMessage || 'Hello! Thank you for connecting with us from BrokerOS. Your voice session is active.';
+    const greeting =
+      firstMessage ||
+      'Hello! Thank you for connecting with us from BrokerOS. Your voice session is active.';
 
     // Vobiz XML Response
     return `<?xml version="1.0" encoding="UTF-8"?>
@@ -61,7 +63,9 @@ export class VoiceWebhooksController {
       res.type('text/xml');
     }
 
-    const greeting = firstMessage || 'Hello! Thank you for connecting with us from BrokerOS. Your voice session is active.';
+    const greeting =
+      firstMessage ||
+      'Hello! Thank you for connecting with us from BrokerOS. Your voice session is active.';
 
     // Twilio TwiML Response
     return `<?xml version="1.0" encoding="UTF-8"?>
