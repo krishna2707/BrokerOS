@@ -304,7 +304,9 @@ export class MetaAdsService {
       });
       targetLeadIds = logs.map((l) => l.leadId!).filter(Boolean);
     } else {
-      throw new BadRequestException('Must provide either leadIds or campaignId');
+      throw new BadRequestException(
+        'Must provide either leadIds or campaignId',
+      );
     }
 
     if (targetLeadIds.length === 0) {
@@ -333,4 +335,3 @@ export class MetaAdsService {
     };
   }
 }
-

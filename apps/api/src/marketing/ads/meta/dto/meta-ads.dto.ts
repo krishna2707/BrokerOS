@@ -63,4 +63,3 @@ export class BulkAssignMetaLeadsDto {
   @IsOptional()
   campaignId?: string;
 }
-
