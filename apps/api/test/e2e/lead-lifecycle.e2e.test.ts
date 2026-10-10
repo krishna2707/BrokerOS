@@ -70,17 +70,31 @@ describe('API E2E: Lead Lifecycle State Machine', () => {
       role: {
         findFirst: vi.fn(),
       },
-      $transaction: vi.fn(async (callback: (tx: any) => Promise<any>) => callback(mockPrisma)),
+      $transaction: vi.fn(async (callback: (tx: any) => Promise<any>) =>
+        callback(mockPrisma),
+      ),
     };
 
-    leadsManagementService = new LeadsManagementService(mockPrisma, mockNotifications);
+    leadsManagementService = new LeadsManagementService(
+      mockPrisma,
+      mockNotifications,
+    );
     siteVisitsService = new SiteVisitsService(mockPrisma, mockNotifications);
-    bookingCreationService = new BookingCreationService(mockPrisma, mockNotifications);
-    bookingStatusService = new BookingStatusService(mockPrisma, mockNotifications);
+    bookingCreationService = new BookingCreationService(
+      mockPrisma,
+      mockNotifications,
+    );
+    bookingStatusService = new BookingStatusService(
+      mockPrisma,
+      mockNotifications,
+    );
   });
 
   it('Step 1: Creates new lead with status NEW', async () => {
-    mockPrisma.leadSource.findFirst.mockResolvedValue({ id: 'src-web', name: 'Website' });
+    mockPrisma.leadSource.findFirst.mockResolvedValue({
+      id: 'src-web',
+      name: 'Website',
+    });
     mockPrisma.lead.create.mockResolvedValue({
       id: 'lead-100',
       firstName: 'Aarav',
@@ -191,7 +205,7 @@ describe('API E2E: Lead Lifecycle State Machine', () => {
 
   it('Step 4: Arrives at site visit with GPS coordinates verification', async () => {
     const siteVisitId = 'sv-500';
-    const mockCoordinates = { latitude: 19.0760, longitude: 72.8777 };
+    const mockCoordinates = { latitude: 19.076, longitude: 72.8777 };
 
     mockPrisma.siteVisit.update.mockResolvedValue({
       id: siteVisitId,
@@ -201,14 +215,17 @@ describe('API E2E: Lead Lifecycle State Machine', () => {
       arriveLongitude: mockCoordinates.longitude,
     });
 
-    const arrived = await siteVisitsService.arriveAtSiteVisit(siteVisitId, mockCoordinates);
+    const arrived = await siteVisitsService.arriveAtSiteVisit(
+      siteVisitId,
+      mockCoordinates,
+    );
 
-    expect(arrived.arriveLatitude).toBe(19.0760);
+    expect(arrived.arriveLatitude).toBe(19.076);
     expect(arrived.arriveLongitude).toBe(72.8777);
     expect(mockPrisma.siteVisit.update).toHaveBeenCalledWith({
       where: { id: siteVisitId },
       data: expect.objectContaining({
-        arriveLatitude: 19.0760,
+        arriveLatitude: 19.076,
         arriveLongitude: 72.8777,
       }),
     });
@@ -314,7 +331,8 @@ describe('API E2E: Lead Lifecycle State Machine', () => {
       subStatus: 'DONE',
     });
 
-    const confirmedBooking = await bookingStatusService.markBookingDone(bookingId);
+    const confirmedBooking =
+      await bookingStatusService.markBookingDone(bookingId);
 
     expect(confirmedBooking.status).toBe('CONFIRMED');
     expect(mockPrisma.lead.update).toHaveBeenCalledWith({

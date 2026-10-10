@@ -50,7 +50,10 @@ describe('API E2E: RBAC & Business Line Partitioning (isCpProject)', () => {
       },
     };
 
-    inventoryService = new InventoryProjectsService(mockPrisma, mockNotifications);
+    inventoryService = new InventoryProjectsService(
+      mockPrisma,
+      mockNotifications,
+    );
     commissionsService = new BrokerCommissionsService(mockPrisma);
   });
 
@@ -159,7 +162,11 @@ describe('API E2E: RBAC & Business Line Partitioning (isCpProject)', () => {
       mockPrisma.brokerageRecord.findMany.mockResolvedValue([
         {
           id: 'rec-1',
-          broker: { id: 'broker-1', name: 'Elite Realty', phone: '+919876543210' },
+          broker: {
+            id: 'broker-1',
+            name: 'Elite Realty',
+            phone: '+919876543210',
+          },
           netPayable: 150000,
           status: 'UNPAID',
         },
@@ -197,7 +204,10 @@ describe('API E2E: RBAC & Business Line Partitioning (isCpProject)', () => {
         approvedById: approverId,
       });
 
-      const updated = await commissionsService.completeCommission(recordId, approverId);
+      const updated = await commissionsService.completeCommission(
+        recordId,
+        approverId,
+      );
 
       expect(mockPrisma.brokerageRecord.update).toHaveBeenCalledWith(
         expect.objectContaining({
