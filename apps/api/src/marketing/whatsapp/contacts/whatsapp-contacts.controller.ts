@@ -25,7 +25,7 @@ import {
 
 @Controller('api/marketing/whatsapp')
 export class WhatsAppContactsController {
-  constructor(private readonly contactsService: WhatsAppContactsService) { }
+  constructor(private readonly contactsService: WhatsAppContactsService) {}
 
   // ─────────────────────────────────────────────
   // Contacts
@@ -160,7 +160,13 @@ export class WhatsAppContactsController {
 
   @Post('custom-fields')
   async createCustomField(
-    @Body() dto: { name: string; type?: string; options?: any; accountId?: string },
+    @Body()
+    dto: {
+      name: string;
+      type?: string;
+      options?: any;
+      accountId?: string;
+    },
   ) {
     return this.contactsService.createCustomField(dto);
   }
@@ -179,7 +185,8 @@ export class WhatsAppContactsController {
 
   @Post('contacts/bulk-import')
   async bulkImportContacts(
-    @Body('contacts') contacts: Array<{
+    @Body('contacts')
+    contacts: Array<{
       phone: string;
       name?: string;
       email?: string;
