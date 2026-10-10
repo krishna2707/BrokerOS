@@ -2,7 +2,13 @@
 // BrokerOS — WhatsApp Broadcast DTOs
 // ============================================================================
 
-import { IsString, IsNotEmpty, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export interface CsvWhatsAppRecipientRow {
