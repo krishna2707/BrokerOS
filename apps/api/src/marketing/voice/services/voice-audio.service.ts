@@ -121,7 +121,12 @@ export class VoiceAudioService {
     }
     if (isEleven && elevenKey) {
       try {
-        const audio = await synthesizeElevenLabs(dto.text, cleanVoiceId, elevenKey, isMale);
+        const audio = await synthesizeElevenLabs(
+          dto.text,
+          cleanVoiceId,
+          elevenKey,
+          isMale,
+        );
         if (audio) return audio;
       } catch (err: any) {
         this.logger.warn(`ElevenLabs TTS failed: ${err?.message}`);
@@ -132,7 +137,11 @@ export class VoiceAudioService {
     const deepgramKey = process.env.DEEPGRAM_API_KEY;
     if (isDeepgram && deepgramKey) {
       try {
-        const audio = await synthesizeDeepgram(dto.text, cleanVoiceId, deepgramKey);
+        const audio = await synthesizeDeepgram(
+          dto.text,
+          cleanVoiceId,
+          deepgramKey,
+        );
         if (audio) return audio;
       } catch (err: any) {
         this.logger.warn(`Deepgram TTS failed: ${err?.message}`);
@@ -143,7 +152,12 @@ export class VoiceAudioService {
     const cartesiaKey = process.env.CARTESIA_API_KEY;
     if (isCartesia && cartesiaKey) {
       try {
-        const audio = await synthesizeCartesia(dto.text, cleanVoiceId, cartesiaKey, isMale);
+        const audio = await synthesizeCartesia(
+          dto.text,
+          cleanVoiceId,
+          cartesiaKey,
+          isMale,
+        );
         if (audio) return audio;
       } catch (err: any) {
         this.logger.warn(`Cartesia TTS failed: ${err?.message}`);
@@ -168,7 +182,12 @@ export class VoiceAudioService {
       rawVoiceId.toLowerCase().startsWith('minimax');
     if (isMinimax && minimaxKey) {
       try {
-        const audio = await synthesizeMiniMax(dto.text, cleanVoiceId, minimaxKey, isMale);
+        const audio = await synthesizeMiniMax(
+          dto.text,
+          cleanVoiceId,
+          minimaxKey,
+          isMale,
+        );
         if (audio) return audio;
       } catch (err: any) {
         this.logger.warn(`MiniMax TTS failed: ${err?.message}`);
@@ -182,7 +201,11 @@ export class VoiceAudioService {
       rawVoiceId.toLowerCase().startsWith('fishaudio');
     if (isFishAudio && fishKey) {
       try {
-        const audio = await synthesizeFishAudio(dto.text, cleanVoiceId, fishKey);
+        const audio = await synthesizeFishAudio(
+          dto.text,
+          cleanVoiceId,
+          fishKey,
+        );
         if (audio) return audio;
       } catch (err: any) {
         this.logger.warn(`Fish Audio TTS failed: ${err?.message}`);
@@ -195,7 +218,12 @@ export class VoiceAudioService {
         const cartesiaFallback = isMale
           ? 'a0e99841-438c-4a64-b679-ae501e7d6091' // Barbershop Man / Sonic
           : '79a125e8-cd45-4c13-8a67-188112f4dd22'; // British Lady / Sonic
-        const audio = await synthesizeCartesia(dto.text, cartesiaFallback, cartesiaKey, isMale);
+        const audio = await synthesizeCartesia(
+          dto.text,
+          cartesiaFallback,
+          cartesiaKey,
+          isMale,
+        );
         if (audio) return audio;
       } catch {
         // Fallback gracefully
@@ -205,7 +233,11 @@ export class VoiceAudioService {
     if (deepgramKey) {
       try {
         const auraVoice = isMale ? 'aura-orion-en' : 'aura-asteria-en';
-        const audio = await synthesizeDeepgram(dto.text, auraVoice, deepgramKey);
+        const audio = await synthesizeDeepgram(
+          dto.text,
+          auraVoice,
+          deepgramKey,
+        );
         if (audio) return audio;
       } catch {
         // Fallback gracefully
@@ -214,8 +246,15 @@ export class VoiceAudioService {
 
     if (elevenKey) {
       try {
-        const elevenFallback = isMale ? 'pNInz6obpgDQGcFmaJgB' : '21m00Tcm4TlvDq8ikWAM';
-        const audio = await synthesizeElevenLabs(dto.text, elevenFallback, elevenKey, isMale);
+        const elevenFallback = isMale
+          ? 'pNInz6obpgDQGcFmaJgB'
+          : '21m00Tcm4TlvDq8ikWAM';
+        const audio = await synthesizeElevenLabs(
+          dto.text,
+          elevenFallback,
+          elevenKey,
+          isMale,
+        );
         if (audio) return audio;
       } catch {
         // Fallback gracefully
@@ -238,7 +277,9 @@ export class VoiceAudioService {
         contentType: 'audio/mpeg',
       };
     } catch (err: any) {
-      this.logger.warn(`TTS audio synthesis fallback triggered: ${err?.message}`);
+      this.logger.warn(
+        `TTS audio synthesis fallback triggered: ${err?.message}`,
+      );
       return {
         audioBuffer: Buffer.alloc(0),
         contentType: 'audio/mpeg',

@@ -203,7 +203,10 @@ export class VoiceIntegrationsService {
     });
     const latencyMs = Date.now() - startTime;
 
-    const catalog = await this.getPlatformCatalog(integration.platform, integration.id);
+    const catalog = await this.getPlatformCatalog(
+      integration.platform,
+      integration.id,
+    );
 
     return {
       id: integration.id,
@@ -295,7 +298,9 @@ export class VoiceIntegrationsService {
       where: { id: integrationId },
     });
     if (!integration) {
-      throw new NotFoundException(`Voice Agent Integration ${integrationId} not found`);
+      throw new NotFoundException(
+        `Voice Agent Integration ${integrationId} not found`,
+      );
     }
 
     const credentials = {
@@ -304,19 +309,27 @@ export class VoiceIntegrationsService {
       serverUrl: integration.serverUrl || undefined,
     };
 
-    const provider = getVoiceAgentProvider(integration.platform, credentials) as any;
+    const provider = getVoiceAgentProvider(
+      integration.platform,
+      credentials,
+    ) as any;
     if (provider.getAccountAssistants) {
       return provider.getAccountAssistants(credentials);
     }
     return [];
   }
 
-  async createRemoteAssistant(integrationId: string, payload: { name: string; config?: any }) {
+  async createRemoteAssistant(
+    integrationId: string,
+    payload: { name: string; config?: any },
+  ) {
     const integration = await this.prisma.voiceAgentIntegration.findUnique({
       where: { id: integrationId },
     });
     if (!integration) {
-      throw new NotFoundException(`Voice Agent Integration ${integrationId} not found`);
+      throw new NotFoundException(
+        `Voice Agent Integration ${integrationId} not found`,
+      );
     }
 
     const credentials = {
@@ -325,7 +338,10 @@ export class VoiceIntegrationsService {
       serverUrl: integration.serverUrl || undefined,
     };
 
-    const provider = getVoiceAgentProvider(integration.platform, credentials) as any;
+    const provider = getVoiceAgentProvider(
+      integration.platform,
+      credentials,
+    ) as any;
     if (!provider.createRemoteAssistant) {
       throw new BadRequestException(
         `Provider ${integration.platform} does not support remote assistant creation via API`,
@@ -348,7 +364,9 @@ export class VoiceIntegrationsService {
       where: { id: integrationId },
     });
     if (!integration) {
-      throw new NotFoundException(`Voice Agent Integration ${integrationId} not found`);
+      throw new NotFoundException(
+        `Voice Agent Integration ${integrationId} not found`,
+      );
     }
 
     const credentials = {
@@ -357,7 +375,10 @@ export class VoiceIntegrationsService {
       serverUrl: integration.serverUrl || undefined,
     };
 
-    const provider = getVoiceAgentProvider(integration.platform, credentials) as any;
+    const provider = getVoiceAgentProvider(
+      integration.platform,
+      credentials,
+    ) as any;
     if (!provider.updateRemoteAssistant) {
       throw new BadRequestException(
         `Provider ${integration.platform} does not support remote assistant updates via API`,
@@ -372,7 +393,9 @@ export class VoiceIntegrationsService {
       where: { id: integrationId },
     });
     if (!integration) {
-      throw new NotFoundException(`Voice Agent Integration ${integrationId} not found`);
+      throw new NotFoundException(
+        `Voice Agent Integration ${integrationId} not found`,
+      );
     }
 
     const credentials = {
@@ -381,14 +404,20 @@ export class VoiceIntegrationsService {
       serverUrl: integration.serverUrl || undefined,
     };
 
-    const provider = getVoiceAgentProvider(integration.platform, credentials) as any;
+    const provider = getVoiceAgentProvider(
+      integration.platform,
+      credentials,
+    ) as any;
     if (!provider.deleteRemoteAssistant) {
       throw new BadRequestException(
         `Provider ${integration.platform} does not support remote assistant deletion via API`,
       );
     }
 
-    const success = await provider.deleteRemoteAssistant(assistantId, credentials);
+    const success = await provider.deleteRemoteAssistant(
+      assistantId,
+      credentials,
+    );
     return { success };
   }
 
@@ -403,7 +432,9 @@ export class VoiceIntegrationsService {
       where: { id: integrationId },
     });
     if (!integration) {
-      throw new NotFoundException(`Voice AI Integration ${integrationId} not found`);
+      throw new NotFoundException(
+        `Voice AI Integration ${integrationId} not found`,
+      );
     }
 
     const platform = (integration.platform || '').toUpperCase();
@@ -416,7 +447,9 @@ export class VoiceIntegrationsService {
         });
         if (!res.ok) {
           const text = await res.text().catch(() => '');
-          this.logger.error(`Retell phone-number list failed (${res.status}): ${text}`);
+          this.logger.error(
+            `Retell phone-number list failed (${res.status}): ${text}`,
+          );
           return [];
         }
         const numbers = (await res.json()) as any[];
@@ -429,7 +462,9 @@ export class VoiceIntegrationsService {
           provider: 'retell',
         }));
       } catch (err: any) {
-        this.logger.error(`Failed to fetch Retell phone numbers: ${err.message}`);
+        this.logger.error(
+          `Failed to fetch Retell phone numbers: ${err.message}`,
+        );
         return [];
       }
     }
@@ -437,12 +472,17 @@ export class VoiceIntegrationsService {
     // 2. ELEVENLABS Phone Numbers
     if (platform === 'ELEVENLABS') {
       try {
-        const res = await fetch('https://api.elevenlabs.io/v1/convai/phone-numbers', {
-          headers: { 'xi-api-key': integration.apiKey },
-        });
+        const res = await fetch(
+          'https://api.elevenlabs.io/v1/convai/phone-numbers',
+          {
+            headers: { 'xi-api-key': integration.apiKey },
+          },
+        );
         if (!res.ok) {
           const text = await res.text().catch(() => '');
-          this.logger.error(`ElevenLabs phone-number list failed (${res.status}): ${text}`);
+          this.logger.error(
+            `ElevenLabs phone-number list failed (${res.status}): ${text}`,
+          );
           return [];
         }
         const numbers = (await res.json()) as any[];
@@ -455,7 +495,9 @@ export class VoiceIntegrationsService {
           provider: 'elevenlabs',
         }));
       } catch (err: any) {
-        this.logger.error(`Failed to fetch ElevenLabs phone numbers: ${err.message}`);
+        this.logger.error(
+          `Failed to fetch ElevenLabs phone numbers: ${err.message}`,
+        );
         return [];
       }
     }
@@ -468,7 +510,9 @@ export class VoiceIntegrationsService {
 
       if (!res.ok) {
         const text = await res.text().catch(() => '');
-        this.logger.error(`Vapi phone-number list failed (${res.status}): ${text}`);
+        this.logger.error(
+          `Vapi phone-number list failed (${res.status}): ${text}`,
+        );
         return [];
       }
 
@@ -478,7 +522,13 @@ export class VoiceIntegrationsService {
       return numbers.map((n: any) => ({
         id: n.id,
         number: n.number || n.phoneNumber || n.e164Number || n.id,
-        provider: n.provider || (n.twilioPhoneNumber ? 'twilio' : (n.vonagePhoneNumber ? 'vonage' : 'vapi')),
+        provider:
+          n.provider ||
+          (n.twilioPhoneNumber
+            ? 'twilio'
+            : n.vonagePhoneNumber
+              ? 'vonage'
+              : 'vapi'),
         name: n.name || n.number || n.id,
       }));
     } catch (err: any) {
@@ -487,4 +537,3 @@ export class VoiceIntegrationsService {
     }
   }
 }
-

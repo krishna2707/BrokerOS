@@ -16,17 +16,14 @@ export async function synthesizeDeepgram(
       ? voiceIdLower
       : `aura-${voiceIdLower}-en`);
 
-  const res = await fetch(
-    `https://api.deepgram.com/v1/speak?model=${model}`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Token ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ text }),
+  const res = await fetch(`https://api.deepgram.com/v1/speak?model=${model}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Token ${apiKey}`,
+      'Content-Type': 'application/json',
     },
-  );
+    body: JSON.stringify({ text }),
+  });
 
   if (res.ok) {
     const arrayBuf = await res.arrayBuffer();

@@ -34,7 +34,8 @@ export class VoiceTrackingService {
         const extractedJson =
           event.extractedData || (recipient.extractedData as any) || undefined;
         const finalSentiment = event.sentiment || recipient.sentiment;
-        const mappedTemperature = mapVoiceSentimentToTemperature(finalSentiment);
+        const mappedTemperature =
+          mapVoiceSentimentToTemperature(finalSentiment);
         const recording = event.recordingUrl || recipient.recordingUrl;
         const transcript = event.transcript || recipient.transcript;
         const summary = event.summary || recipient.summary;
@@ -120,11 +121,8 @@ export class VoiceTrackingService {
 
             // Map disposition to CallStatus enum
             let callStatus:
-              | 'CONNECTED'
-              | 'NOT_ANSWERED'
-              | 'BUSY'
-              | 'FAILED'
-              | 'VOICEMAIL' = 'CONNECTED';
+              'CONNECTED' | 'NOT_ANSWERED' | 'BUSY' | 'FAILED' | 'VOICEMAIL' =
+              'CONNECTED';
             if (event.disposition === 'BUSY') callStatus = 'BUSY';
             else if (event.disposition === 'NO_ANSWER')
               callStatus = 'NOT_ANSWERED';
