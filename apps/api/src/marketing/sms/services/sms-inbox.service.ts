@@ -127,7 +127,9 @@ export class SmsInboxService {
       where: { id: conversationId },
     });
     if (!conv) {
-      throw new NotFoundException(`SMS conversation #${conversationId} not found`);
+      throw new NotFoundException(
+        `SMS conversation #${conversationId} not found`,
+      );
     }
 
     const messages = await this.prisma.smsMessage.findMany({
@@ -161,7 +163,7 @@ export class SmsInboxService {
       (lead ? `${lead.firstName || ''} ${lead.lastName || ''}`.trim() : '') ||
       contactPhone;
 
-    let existing = await this.prisma.smsConversation.findFirst({
+    const existing = await this.prisma.smsConversation.findFirst({
       where: {
         contactPhone,
         isActive: true,
@@ -190,17 +192,28 @@ export class SmsInboxService {
     if (!senderPhone || !provider) {
       const activeIntegration = await this.prisma.smsIntegration.findFirst({
         where: { isActive: true },
-        include: { senderNumbers: { where: { isVerified: true }, orderBy: { createdAt: 'asc' } } },
+        include: {
+          senderNumbers: {
+            where: { isVerified: true },
+            orderBy: { createdAt: 'asc' },
+          },
+        },
         orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
       });
       if (activeIntegration) {
         provider = provider || activeIntegration.provider;
-        senderPhone = senderPhone || activeIntegration.senderNumbers[0]?.phoneNumber || activeIntegration.senderNumbers[0]?.senderId || activeIntegration.fromSender;
+        senderPhone =
+          senderPhone ||
+          activeIntegration.senderNumbers[0]?.phoneNumber ||
+          activeIntegration.senderNumbers[0]?.senderId ||
+          activeIntegration.fromSender;
       }
     }
 
     if (!provider || !senderPhone) {
-      throw new BadRequestException('No active SMS integration with verified sender number found. Please configure an SMS gateway in Settings.');
+      throw new BadRequestException(
+        'No active SMS integration with verified sender number found. Please configure an SMS gateway in Settings.',
+      );
     }
 
     const created = await this.prisma.smsConversation.create({
@@ -213,7 +226,8 @@ export class SmsInboxService {
         assignedSenderPhone: senderPhone,
         status: 'open',
         unreadCount: 0,
-        lastMessageText: dto.initialMessage?.slice(0, 150) || 'Conversation started',
+        lastMessageText:
+          dto.initialMessage?.slice(0, 150) || 'Conversation started',
         lastMessageAt: new Date(),
       },
       include: {
@@ -248,12 +262,16 @@ export class SmsInboxService {
     });
 
     if (!conv) {
-      throw new NotFoundException(`SMS Conversation #${conversationId} not found`);
+      throw new NotFoundException(
+        `SMS Conversation #${conversationId} not found`,
+      );
     }
 
     let textContent = dto.text?.trim() || '';
     if (dto.mediaUrl && !textContent.includes(dto.mediaUrl)) {
-      textContent = textContent ? `${textContent}\n${dto.mediaUrl}` : dto.mediaUrl;
+      textContent = textContent
+        ? `${textContent}\n${dto.mediaUrl}`
+        : dto.mediaUrl;
     }
     if (!textContent) {
       throw new BadRequestException('Message text or media cannot be empty');
@@ -264,8 +282,16 @@ export class SmsInboxService {
 
     if (!fromPhone) {
       const activeIntegration = await this.prisma.smsIntegration.findFirst({
-        where: { ...(provider ? { provider: provider as any } : {}), isActive: true },
-        include: { senderNumbers: { where: { isVerified: true }, orderBy: { createdAt: 'asc' } } },
+        where: {
+          ...(provider ? { provider: provider as any } : {}),
+          isActive: true,
+        },
+        include: {
+          senderNumbers: {
+            where: { isVerified: true },
+            orderBy: { createdAt: 'asc' },
+          },
+        },
         orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
       });
       fromPhone =
@@ -276,7 +302,9 @@ export class SmsInboxService {
     }
 
     if (!fromPhone || !provider) {
-      throw new BadRequestException(`No active verified sender phone found for SMS gateway ${provider || 'UNKNOWN'}.`);
+      throw new BadRequestException(
+        `No active verified sender phone found for SMS gateway ${provider || 'UNKNOWN'}.`,
+      );
     }
     const fromName = senderUser?.name || 'Sales Team';
 
@@ -311,7 +339,9 @@ export class SmsInboxService {
       const sendRes = await adapter.sendBatch(
         {
           from: fromPhone,
-          to: [{ phone: conv.contactPhone, name: conv.contactName || undefined }],
+          to: [
+            { phone: conv.contactPhone, name: conv.contactName || undefined },
+          ],
           message: textContent,
         },
         credentials,
@@ -322,7 +352,9 @@ export class SmsInboxService {
         `Inbox Outbound SMS dispatched via ${provider}: to=${conv.contactPhone} msgId=${providerMsgId}`,
       );
     } catch (err: any) {
-      this.logger.error(`Failed to dispatch SMS via ${provider}: ${err.message}`);
+      this.logger.error(
+        `Failed to dispatch SMS via ${provider}: ${err.message}`,
+      );
       if (process.env.NODE_ENV === 'production') {
         throw new BadRequestException(`SMS delivery failed: ${err.message}`);
       }
@@ -405,7 +437,9 @@ export class SmsInboxService {
     });
 
     if (!conv) {
-      throw new NotFoundException(`SMS Conversation #${conversationId} not found`);
+      throw new NotFoundException(
+        `SMS Conversation #${conversationId} not found`,
+      );
     }
 
     const recentMessages = await this.prisma.smsMessage.findMany({
@@ -419,7 +453,9 @@ export class SmsInboxService {
     const leadName =
       dto?.leadName ||
       conv.contactName ||
-      (conv.lead ? `${conv.lead.firstName || ''} ${conv.lead.lastName || ''}`.trim() : '') ||
+      (conv.lead
+        ? `${conv.lead.firstName || ''} ${conv.lead.lastName || ''}`.trim()
+        : '') ||
       'Prospect';
 
     const advisorName =
@@ -428,7 +464,10 @@ export class SmsInboxService {
       conv.lead?.assignedUser?.name ||
       'Property Advisory Consultant';
 
-    const campaignTitle = conv.campaign?.title || conv.lead?.interestedProject?.name || 'Luxury Residences';
+    const campaignTitle =
+      conv.campaign?.title ||
+      conv.lead?.interestedProject?.name ||
+      'Luxury Residences';
 
     const aiRes = await this.aiService.generateAutoreply({
       leadName,
@@ -455,4 +494,3 @@ export class SmsInboxService {
     };
   }
 }
-

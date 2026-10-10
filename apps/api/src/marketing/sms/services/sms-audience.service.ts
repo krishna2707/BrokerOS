@@ -170,7 +170,9 @@ export class SmsAudienceService {
     const lastName = nameParts.slice(1).join(' ') || undefined;
 
     const merge = (recipient.mergeData as any) || {};
-    const source = await this.getOrCreateDynamicLeadSource(recipient.campaign.title);
+    const source = await this.getOrCreateDynamicLeadSource(
+      recipient.campaign.title,
+    );
 
     const newLead = await this.prisma.lead.create({
       data: {
@@ -311,7 +313,9 @@ export class SmsAudienceService {
     } else if (dto.campaignIds && dto.campaignIds.length > 0) {
       where.campaignId = { in: dto.campaignIds };
     } else {
-      throw new BadRequestException('At least one campaignId or recipientId is required');
+      throw new BadRequestException(
+        'At least one campaignId or recipientId is required',
+      );
     }
 
     const recipients = await this.prisma.smsRecipient.findMany({
