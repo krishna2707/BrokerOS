@@ -70,10 +70,7 @@ export async function processBookingApprovalMilestones(
   // Notification #19: Booking Count Milestone Achievement
   const bookingMilestones = [10, 25, 50, 100, 150, 200, 250];
 
-  const checkBookingMilestone = async (
-    userId: string,
-    roleCode: string,
-  ) => {
+  const checkBookingMilestone = async (userId: string, roleCode: string) => {
     let count = 0;
     if (roleCode === 'SALES_EXECUTIVE') {
       count = await prisma.booking.count({
@@ -97,8 +94,7 @@ export async function processBookingApprovalMilestones(
       const alreadySent = existingNotifs.some((n) => {
         const meta = n.metadata as any;
         return (
-          meta?.achievementType === 'BOOKINGS' &&
-          meta?.milestone === count
+          meta?.achievementType === 'BOOKINGS' && meta?.milestone === count
         );
       });
 
@@ -161,8 +157,7 @@ export async function processBookingApprovalMilestones(
         const alreadySent = recentNotifs.some((n) => {
           const meta = n.metadata as any;
           return (
-            meta?.projectId === projectId &&
-            meta?.milestone === soldUnitsCount
+            meta?.projectId === projectId && meta?.milestone === soldUnitsCount
           );
         });
 
