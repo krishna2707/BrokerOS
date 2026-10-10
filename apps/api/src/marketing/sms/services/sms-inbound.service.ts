@@ -32,7 +32,9 @@ export class SmsInboundService {
     const provider = dto.provider || 'UNIVERSAL';
     const providerMsgId = dto.messageId;
 
-    this.logger.log(`Received Inbound SMS via ${provider}: from=${fromPhone} to=${toPhone}`);
+    this.logger.log(
+      `Received Inbound SMS via ${provider}: from=${fromPhone} to=${toPhone}`,
+    );
 
     // 1. Resolve past recipient by phone
     let matchedRecipient = await this.prisma.smsRecipient.findFirst({
@@ -94,17 +96,28 @@ export class SmsInboundService {
           : null) ||
         fromPhone;
 
-      let resolvedSenderPhone = toPhone || matchedRecipient?.assignedSenderPhone;
+      let resolvedSenderPhone =
+        toPhone || matchedRecipient?.assignedSenderPhone;
       let resolvedProvider = matchedRecipient?.assignedProvider || provider;
 
       if (!resolvedSenderPhone) {
         const activeIntegration = await this.prisma.smsIntegration.findFirst({
           where: { isActive: true },
-          include: { senderNumbers: { where: { isVerified: true }, orderBy: { createdAt: 'asc' } } },
+          include: {
+            senderNumbers: {
+              where: { isVerified: true },
+              orderBy: { createdAt: 'asc' },
+            },
+          },
           orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
         });
-        resolvedProvider = resolvedProvider || activeIntegration?.provider || 'TWILIO';
-        resolvedSenderPhone = activeIntegration?.senderNumbers[0]?.phoneNumber || activeIntegration?.senderNumbers[0]?.senderId || activeIntegration?.fromSender || '';
+        resolvedProvider =
+          resolvedProvider || activeIntegration?.provider || 'TWILIO';
+        resolvedSenderPhone =
+          activeIntegration?.senderNumbers[0]?.phoneNumber ||
+          activeIntegration?.senderNumbers[0]?.senderId ||
+          activeIntegration?.fromSender ||
+          '';
       }
 
       if (!conversation) {
@@ -131,8 +144,12 @@ export class SmsInboundService {
             lastMessageText: body.slice(0, 160) || 'New inbound reply',
             lastMessageAt: new Date(),
             status: 'open',
-            ...(matchedRecipient?.leadId && !conversation.leadId ? { leadId: matchedRecipient.leadId } : {}),
-            ...(matchedRecipient?.assignedProvider ? { assignedProvider: matchedRecipient.assignedProvider } : {}),
+            ...(matchedRecipient?.leadId && !conversation.leadId
+              ? { leadId: matchedRecipient.leadId }
+              : {}),
+            ...(matchedRecipient?.assignedProvider
+              ? { assignedProvider: matchedRecipient.assignedProvider }
+              : {}),
             ...(toPhone ? { assignedSenderPhone: toPhone } : {}),
           },
         });
@@ -157,7 +174,9 @@ export class SmsInboundService {
         },
       });
     } catch (inboxErr: any) {
-      this.logger.error(`Failed to sync inbound SMS to team inbox: ${inboxErr.message}`);
+      this.logger.error(
+        `Failed to sync inbound SMS to team inbox: ${inboxErr.message}`,
+      );
     }
 
     // 4. Trigger Automation Engine & Visual Flows
@@ -191,10 +210,19 @@ export class SmsInboundService {
     if (!senderPhone) {
       const activeIntegration = await this.prisma.smsIntegration.findFirst({
         where: { isActive: true },
-        include: { senderNumbers: { where: { isVerified: true }, orderBy: { createdAt: 'asc' } } },
+        include: {
+          senderNumbers: {
+            where: { isVerified: true },
+            orderBy: { createdAt: 'asc' },
+          },
+        },
         orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
       });
-      senderPhone = activeIntegration?.senderNumbers[0]?.phoneNumber || activeIntegration?.senderNumbers[0]?.senderId || activeIntegration?.fromSender || '';
+      senderPhone =
+        activeIntegration?.senderNumbers[0]?.phoneNumber ||
+        activeIntegration?.senderNumbers[0]?.senderId ||
+        activeIntegration?.fromSender ||
+        '';
     }
 
     const matchedRecipient = await this.prisma.smsRecipient.findFirst({

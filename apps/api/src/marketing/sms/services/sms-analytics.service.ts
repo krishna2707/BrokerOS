@@ -105,14 +105,18 @@ export class SmsAnalyticsService {
         const pDelivered = Math.max(pool.deliveredCount, poolDelivered);
         const pFailed = Math.max(pool.failedCount, poolFailed);
         const pDeliveryRate = pSent > 0 ? (pDelivered / pSent) * 100 : 0;
-        const pClickRate = pDelivered > 0 ? (poolClicked / pDelivered) * 100 : 0;
+        const pClickRate =
+          pDelivered > 0 ? (poolClicked / pDelivered) * 100 : 0;
         const pFailRate = pSent > 0 ? (pFailed / pSent) * 100 : 0;
 
         return {
           senderPoolId: pool.id,
-          phoneNumber: pool.phoneNumber || pool.senderNumber?.phoneNumber || undefined,
+          phoneNumber:
+            pool.phoneNumber || pool.senderNumber?.phoneNumber || undefined,
           senderId: pool.senderId || pool.senderNumber?.senderId || undefined,
-          provider: (pool.provider || pool.senderNumber?.provider || campaign.providerType) as any,
+          provider: (pool.provider ||
+            pool.senderNumber?.provider ||
+            campaign.providerType) as any,
           allocatedRecipients: pool.allocatedRecipients,
           sentCount: pSent,
           deliveredCount: pDelivered,
@@ -163,33 +167,43 @@ export class SmsAnalyticsService {
 
     const repliedMessages = await this.prisma.smsInboundMessage.findMany({
       where: {
-        OR: [{ matchedCampaignId: campaignId }, { matchedRecipientId: { not: null } }],
+        OR: [
+          { matchedCampaignId: campaignId },
+          { matchedRecipientId: { not: null } },
+        ],
       },
       select: { matchedRecipientId: true },
     });
     const repliedRecipientIds = new Set(
-      repliedMessages.map((m) => m.matchedRecipientId).filter(Boolean) as string[],
+      repliedMessages
+        .map((m) => m.matchedRecipientId)
+        .filter(Boolean) as string[],
     );
 
-    const [totalCount, deliveredCount, clickedCount, failedCount, crmLeadsCount] =
-      await Promise.all([
-        this.prisma.smsRecipient.count({ where: { campaignId } }),
-        this.prisma.smsRecipient.count({
-          where: { campaignId, status: 'DELIVERED' },
-        }),
-        this.prisma.smsRecipient.count({
-          where: {
-            campaignId,
-            OR: [{ clickCount: { gt: 0 } }, { status: 'CLICKED' }],
-          },
-        }),
-        this.prisma.smsRecipient.count({
-          where: { campaignId, status: 'FAILED' },
-        }),
-        this.prisma.smsRecipient.count({
-          where: { campaignId, leadId: { not: null } },
-        }),
-      ]);
+    const [
+      totalCount,
+      deliveredCount,
+      clickedCount,
+      failedCount,
+      crmLeadsCount,
+    ] = await Promise.all([
+      this.prisma.smsRecipient.count({ where: { campaignId } }),
+      this.prisma.smsRecipient.count({
+        where: { campaignId, status: 'DELIVERED' },
+      }),
+      this.prisma.smsRecipient.count({
+        where: {
+          campaignId,
+          OR: [{ clickCount: { gt: 0 } }, { status: 'CLICKED' }],
+        },
+      }),
+      this.prisma.smsRecipient.count({
+        where: { campaignId, status: 'FAILED' },
+      }),
+      this.prisma.smsRecipient.count({
+        where: { campaignId, leadId: { not: null } },
+      }),
+    ]);
 
     const repliedCount = repliedRecipientIds.size;
 
