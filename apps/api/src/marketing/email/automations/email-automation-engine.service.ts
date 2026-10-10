@@ -51,13 +51,18 @@ export class EmailAutomationEngineService {
     const actionsExecuted: string[] = [];
 
     try {
-      const leadName = context.fromEmail ? context.fromEmail.split('@')[0] : 'Valued Prospect';
+      const leadName = context.fromEmail
+        ? context.fromEmail.split('@')[0]
+        : 'Valued Prospect';
       const recipient = context.recipient || {
         id: 'synthetic_recipient',
         email: context.fromEmail,
         name: leadName,
         assignedSenderEmail: context.toEmail,
-        assignedProvider: context.provider === 'SIMULATOR' ? 'SYSTEM_DEFAULT' : (context.provider || 'SYSTEM_DEFAULT'),
+        assignedProvider:
+          context.provider === 'SIMULATOR'
+            ? 'SYSTEM_DEFAULT'
+            : context.provider || 'SYSTEM_DEFAULT',
         campaign: {
           title: 'Skyline Crest Residences',
           subject: context.subject,
@@ -67,7 +72,12 @@ export class EmailAutomationEngineService {
             name: 'Skyline Crest Residences',
             city: 'Mumbai',
             brochureUrl: '#',
-            amenities: ['Clubhouse', 'Gymnasium', 'Infinity Pool', '24/7 Security'],
+            amenities: [
+              'Clubhouse',
+              'Gymnasium',
+              'Infinity Pool',
+              '24/7 Security',
+            ],
           },
         },
         lead: {
@@ -80,7 +90,8 @@ export class EmailAutomationEngineService {
       };
 
       const campaignId = recipient?.campaignId;
-      const inboundTextLower = `${context.subject} ${context.body}`.toLowerCase();
+      const inboundTextLower =
+        `${context.subject} ${context.body}`.toLowerCase();
 
       let targetFlow: any = null;
 
@@ -94,7 +105,9 @@ export class EmailAutomationEngineService {
           },
         });
         if (!targetFlow) {
-          this.logger.warn(`Flow with ID ${context.forceFlowId} not found for simulation.`);
+          this.logger.warn(
+            `Flow with ID ${context.forceFlowId} not found for simulation.`,
+          );
           return {
             actionsExecuted: [`Flow ID ${context.forceFlowId} not found`],
             triggerMatched: false,
@@ -113,12 +126,15 @@ export class EmailAutomationEngineService {
 
         if (flows.length === 0) {
           this.logger.log('No active email flows found.');
-          return { actionsExecuted: ['No active email flows registered in system.'] };
+          return {
+            actionsExecuted: ['No active email flows registered in system.'],
+          };
         }
 
         // 2. Filter & prioritize matching flows (Campaign-scoped first, then Global)
         const campaignScopedFlows = flows.filter(
-          (f) => !f.isGlobal && campaignId && f.campaignIds.includes(campaignId),
+          (f) =>
+            !f.isGlobal && campaignId && f.campaignIds.includes(campaignId),
         );
         const globalFlows = flows.filter((f) => f.isGlobal);
         const candidateFlows = [...campaignScopedFlows, ...globalFlows];
@@ -134,8 +150,8 @@ export class EmailAutomationEngineService {
             const keywords: string[] = Array.isArray(cfg.keywords)
               ? cfg.keywords
               : typeof cfg.keywords === 'string'
-              ? cfg.keywords.split(',').map((k: string) => k.trim())
-              : [];
+                ? cfg.keywords.split(',').map((k: string) => k.trim())
+                : [];
             const matchMode = cfg.matchMode || 'contains';
 
             const hasMatch = keywords.some((kw) => {
@@ -156,20 +172,27 @@ export class EmailAutomationEngineService {
       }
 
       if (!targetFlow) {
-        this.logger.log(`No flow matched for inbound reply from ${context.fromEmail}`);
-        return { actionsExecuted: ['No matching flow found for inbound reply.'] };
+        this.logger.log(
+          `No flow matched for inbound reply from ${context.fromEmail}`,
+        );
+        return {
+          triggerMatched: false,
+          actionsExecuted: [
+            'Trigger not matched: No flow matched for inbound reply.',
+          ],
+        };
       }
 
       // Check trigger condition match
       let triggerMatched = true;
       let triggerReason = 'Inbound trigger condition met.';
       if (targetFlow.triggerType === 'keyword_match') {
-        const cfg = (targetFlow.triggerConfig || {}) as any;
+        const cfg = targetFlow.triggerConfig || {};
         const keywords: string[] = Array.isArray(cfg.keywords)
           ? cfg.keywords
           : typeof cfg.keywords === 'string'
-          ? cfg.keywords.split(',').map((k: string) => k.trim())
-          : [];
+            ? cfg.keywords.split(',').map((k: string) => k.trim())
+            : [];
         const matchMode = cfg.matchMode || 'contains';
 
         if (keywords.length > 0) {
@@ -236,7 +259,11 @@ export class EmailAutomationEngineService {
       const startNode = rawNodes.find((n) => n.nodeType === 'start');
 
       let currentNode: any = null;
-      if (startNode && startNode.config?.next_node_key && nodeMap.has(startNode.config.next_node_key)) {
+      if (
+        startNode &&
+        startNode.config?.next_node_key &&
+        nodeMap.has(startNode.config.next_node_key)
+      ) {
         currentNode = nodeMap.get(startNode.config.next_node_key);
       } else if (nonStartNodes.length > 0) {
         currentNode = nonStartNodes[0];
@@ -255,13 +282,16 @@ export class EmailAutomationEngineService {
         stepsCount++;
         executedKeys.add(currentNode.nodeKey);
 
-        const config = (currentNode.config || {}) as any;
+        const config = currentNode.config || {};
         const nodeType = currentNode.nodeType;
 
         // Determine default linear next node
-        const currentLinearIndex = nonStartNodes.findIndex((n) => n.nodeKey === currentNode.nodeKey);
-        let nextLinearNode =
-          currentLinearIndex >= 0 && currentLinearIndex < nonStartNodes.length - 1
+        const currentLinearIndex = nonStartNodes.findIndex(
+          (n) => n.nodeKey === currentNode.nodeKey,
+        );
+        const nextLinearNode =
+          currentLinearIndex >= 0 &&
+          currentLinearIndex < nonStartNodes.length - 1
             ? nonStartNodes[currentLinearIndex + 1]
             : null;
 
@@ -274,15 +304,21 @@ export class EmailAutomationEngineService {
             const subject = config.subject
               ? this.interpolateText(config.subject, recipient)
               : context.subject.startsWith('Re:')
-              ? context.subject
-              : `Re: ${context.subject}`;
+                ? context.subject
+                : `Re: ${context.subject}`;
 
             const htmlBody = this.interpolateText(
-              config.htmlBody || config.bodyHtml || config.textBody || 'Thank you for reaching out.',
+              config.htmlBody ||
+                config.bodyHtml ||
+                config.textBody ||
+                'Thank you for reaching out.',
               recipient,
             );
             const textBody = this.interpolateText(
-              config.textBody || config.bodyHtml || config.htmlBody || 'Thank you for reaching out.',
+              config.textBody ||
+                config.bodyHtml ||
+                config.htmlBody ||
+                'Thank you for reaching out.',
               recipient,
             );
 
@@ -302,9 +338,10 @@ export class EmailAutomationEngineService {
             outboundReplyText = textBody;
             renderedSubjectText = subject;
 
-            nextNodeToExecute = config.next_node_key && nodeMap.has(config.next_node_key)
-              ? nodeMap.get(config.next_node_key)
-              : nextLinearNode;
+            nextNodeToExecute =
+              config.next_node_key && nodeMap.has(config.next_node_key)
+                ? nodeMap.get(config.next_node_key)
+                : nextLinearNode;
             break;
           }
 
@@ -312,21 +349,33 @@ export class EmailAutomationEngineService {
           case 'ai_agent':
           case 'ai_reply': {
             const stopIfHumanActive = config.stopIfHumanActive !== false;
-            if (!context.isSimulation && stopIfHumanActive && recipient?.lead?.assignedUserId) {
+            if (
+              !context.isSimulation &&
+              stopIfHumanActive &&
+              recipient?.lead?.assignedUserId
+            ) {
               this.logger.log(
                 `Skipping AI autoreply: Lead ${recipient.lead.id} is already claimed by executive ${recipient.lead.assignedUserId}.`,
               );
-              actionsExecuted.push('AI reply skipped (lead is actively managed by a human sales executive)');
-              nextNodeToExecute = config.next_node_key && nodeMap.has(config.next_node_key)
-                ? nodeMap.get(config.next_node_key)
-                : nextLinearNode;
+              actionsExecuted.push(
+                'AI reply skipped (lead is actively managed by a human sales executive)',
+              );
+              nextNodeToExecute =
+                config.next_node_key && nodeMap.has(config.next_node_key)
+                  ? nodeMap.get(config.next_node_key)
+                  : nextLinearNode;
               break;
             }
 
-            let aiReply = { subject: `Re: ${context.subject}`, textBody: '', htmlBody: '' };
+            let aiReply = {
+              subject: `Re: ${context.subject}`,
+              textBody: '',
+              htmlBody: '',
+            };
             try {
               aiReply = await this.aiService.generateAutoreply({
-                leadName: recipient.name || recipient.lead?.firstName || 'Valued Buyer',
+                leadName:
+                  recipient.name || recipient.lead?.firstName || 'Valued Buyer',
                 inboundSubject: context.subject,
                 inboundBody: context.body,
                 originalCampaignTitle: recipient.campaign?.title,
@@ -335,7 +384,9 @@ export class EmailAutomationEngineService {
                 customInstructions: config.instructions,
               });
             } catch (aiErr: any) {
-              this.logger.warn(`AI generateAutoreply fallback: ${aiErr.message}`);
+              this.logger.warn(
+                `AI generateAutoreply fallback: ${aiErr.message}`,
+              );
               aiReply.textBody = `Thank you for contacting us regarding ${recipient.campaign?.project?.name || 'Skyline Crest Residences'}. We will share the complete price sheet and project highlights with you shortly.`;
               aiReply.htmlBody = `<p>${aiReply.textBody}</p>`;
             }
@@ -348,17 +399,22 @@ export class EmailAutomationEngineService {
                 plainTextContent: aiReply.textBody,
                 inboundMsgId: context.providerMsgId,
               });
-              actionsExecuted.push(`AI Concierge generated & dispatched reply: "${aiReply.subject}"`);
+              actionsExecuted.push(
+                `AI Concierge generated & dispatched reply: "${aiReply.subject}"`,
+              );
             } else {
-              actionsExecuted.push(`AI Concierge (Groq openai/gpt-oss-120b) generated reply: "${aiReply.subject}"`);
+              actionsExecuted.push(
+                `AI Concierge (Groq openai/gpt-oss-120b) generated reply: "${aiReply.subject}"`,
+              );
             }
 
             outboundReplyText = aiReply.textBody;
             renderedSubjectText = aiReply.subject;
 
-            nextNodeToExecute = config.next_node_key && nodeMap.has(config.next_node_key)
-              ? nodeMap.get(config.next_node_key)
-              : nextLinearNode;
+            nextNodeToExecute =
+              config.next_node_key && nodeMap.has(config.next_node_key)
+                ? nodeMap.get(config.next_node_key)
+                : nextLinearNode;
             break;
           }
 
@@ -370,8 +426,11 @@ export class EmailAutomationEngineService {
 
             if (criteriaType === 'tag') {
               const targetTag = (config.targetTag || '').toLowerCase().trim();
-              const leadTags: string[] = (recipient?.lead?.tags || []).map((t: any) =>
-                typeof t === 'string' ? t.toLowerCase() : (t.name || '').toLowerCase(),
+              const leadTags: string[] = (recipient?.lead?.tags || []).map(
+                (t: any) =>
+                  typeof t === 'string'
+                    ? t.toLowerCase()
+                    : (t.name || '').toLowerCase(),
               );
               conditionMet = !!targetTag && leadTags.includes(targetTag);
             } else if (criteriaType === 'budget') {
@@ -384,13 +443,17 @@ export class EmailAutomationEngineService {
               const kwList: string[] = Array.isArray(rawKeywords)
                 ? rawKeywords
                 : typeof rawKeywords === 'string'
-                ? rawKeywords.split(',').map((k: string) => k.trim().toLowerCase())
-                : [];
+                  ? rawKeywords
+                      .split(',')
+                      .map((k: string) => k.trim().toLowerCase())
+                  : [];
 
-              conditionMet = kwList.length === 0 || kwList.some((kw) => kw && inboundTextLower.includes(kw));
+              conditionMet =
+                kwList.length === 0 ||
+                kwList.some((kw) => kw && inboundTextLower.includes(kw));
             }
 
-            const branches = config.branches || (currentNode as any).branches;
+            const branches = config.branches || currentNode.branches;
             const branchKey = conditionMet ? 'yes' : 'no';
             const branchSteps: any[] = branches?.[branchKey] || [];
 
@@ -408,15 +471,21 @@ export class EmailAutomationEngineService {
                   const subject = bConfig.subject
                     ? this.interpolateText(bConfig.subject, recipient)
                     : context.subject.startsWith('Re:')
-                    ? context.subject
-                    : `Re: ${context.subject}`;
+                      ? context.subject
+                      : `Re: ${context.subject}`;
 
                   const htmlBody = this.interpolateText(
-                    bConfig.htmlBody || bConfig.bodyHtml || bConfig.textBody || 'Thank you for reaching out.',
+                    bConfig.htmlBody ||
+                      bConfig.bodyHtml ||
+                      bConfig.textBody ||
+                      'Thank you for reaching out.',
                     recipient,
                   );
                   const textBody = this.interpolateText(
-                    bConfig.textBody || bConfig.bodyHtml || bConfig.htmlBody || 'Thank you for reaching out.',
+                    bConfig.textBody ||
+                      bConfig.bodyHtml ||
+                      bConfig.htmlBody ||
+                      'Thank you for reaching out.',
                     recipient,
                   );
 
@@ -428,17 +497,28 @@ export class EmailAutomationEngineService {
                       plainTextContent: textBody,
                       inboundMsgId: context.providerMsgId,
                     });
-                    actionsExecuted.push(`[${branchKey.toUpperCase()}] Sent email reply: "${subject}"`);
+                    actionsExecuted.push(
+                      `[${branchKey.toUpperCase()}] Sent email reply: "${subject}"`,
+                    );
                   } else {
-                    actionsExecuted.push(`[${branchKey.toUpperCase()}] Send Email Reply: "${subject}"`);
+                    actionsExecuted.push(
+                      `[${branchKey.toUpperCase()}] Send Email Reply: "${subject}"`,
+                    );
                   }
                   outboundReplyText = textBody;
                   renderedSubjectText = subject;
                 } else if (bType === 'ai_agent' || bType === 'ai_reply') {
-                  let aiReply = { subject: `Re: ${context.subject}`, textBody: '', htmlBody: '' };
+                  let aiReply = {
+                    subject: `Re: ${context.subject}`,
+                    textBody: '',
+                    htmlBody: '',
+                  };
                   try {
                     aiReply = await this.aiService.generateAutoreply({
-                      leadName: recipient.name || recipient.lead?.firstName || 'Valued Buyer',
+                      leadName:
+                        recipient.name ||
+                        recipient.lead?.firstName ||
+                        'Valued Buyer',
                       inboundSubject: context.subject,
                       inboundBody: context.body,
                       originalCampaignTitle: recipient.campaign?.title,
@@ -459,9 +539,13 @@ export class EmailAutomationEngineService {
                       plainTextContent: aiReply.textBody,
                       inboundMsgId: context.providerMsgId,
                     });
-                    actionsExecuted.push(`[${branchKey.toUpperCase()}] AI Concierge dispatched reply: "${aiReply.subject}"`);
+                    actionsExecuted.push(
+                      `[${branchKey.toUpperCase()}] AI Concierge dispatched reply: "${aiReply.subject}"`,
+                    );
                   } else {
-                    actionsExecuted.push(`[${branchKey.toUpperCase()}] AI Concierge generated reply: "${aiReply.subject}"`);
+                    actionsExecuted.push(
+                      `[${branchKey.toUpperCase()}] AI Concierge generated reply: "${aiReply.subject}"`,
+                    );
                   }
                   outboundReplyText = aiReply.textBody;
                   renderedSubjectText = aiReply.subject;
@@ -471,14 +555,21 @@ export class EmailAutomationEngineService {
                     if (!context.isSimulation) {
                       await this.prisma.emailTag.upsert({
                         where: { name: tagName },
-                        create: { name: tagName, color: bConfig.color || '#8B5CF6' },
+                        create: {
+                          name: tagName,
+                          color: bConfig.color || '#8B5CF6',
+                        },
                         update: {},
                       });
                     }
-                    actionsExecuted.push(`[${branchKey.toUpperCase()}] Assigned CRM tag "${tagName}"`);
+                    actionsExecuted.push(
+                      `[${branchKey.toUpperCase()}] Assigned CRM tag "${tagName}"`,
+                    );
                   }
                 } else if (bType === 'end') {
-                  actionsExecuted.push(`[${branchKey.toUpperCase()}] Flow execution terminated.`);
+                  actionsExecuted.push(
+                    `[${branchKey.toUpperCase()}] Flow execution terminated.`,
+                  );
                   break;
                 }
               }
@@ -490,16 +581,20 @@ export class EmailAutomationEngineService {
                 actionsExecuted.push(
                   `Condition matched -> Branch TRUE (${config.if_true_node_key || 'continue sequence'})`,
                 );
-                nextNodeToExecute = config.if_true_node_key && nodeMap.has(config.if_true_node_key)
-                  ? nodeMap.get(config.if_true_node_key)
-                  : nextLinearNode;
+                nextNodeToExecute =
+                  config.if_true_node_key &&
+                  nodeMap.has(config.if_true_node_key)
+                    ? nodeMap.get(config.if_true_node_key)
+                    : nextLinearNode;
               } else {
                 actionsExecuted.push(
                   `Condition not matched -> Branch FALSE (${config.if_false_node_key || 'continue sequence'})`,
                 );
-                nextNodeToExecute = config.if_false_node_key && nodeMap.has(config.if_false_node_key)
-                  ? nodeMap.get(config.if_false_node_key)
-                  : nextLinearNode;
+                nextNodeToExecute =
+                  config.if_false_node_key &&
+                  nodeMap.has(config.if_false_node_key)
+                    ? nodeMap.get(config.if_false_node_key)
+                    : nextLinearNode;
               }
             }
             break;
@@ -520,9 +615,10 @@ export class EmailAutomationEngineService {
               actionsExecuted.push(`Assigned CRM tag "${tagName}"`);
             }
 
-            nextNodeToExecute = config.next_node_key && nodeMap.has(config.next_node_key)
-              ? nodeMap.get(config.next_node_key)
-              : nextLinearNode;
+            nextNodeToExecute =
+              config.next_node_key && nodeMap.has(config.next_node_key)
+                ? nodeMap.get(config.next_node_key)
+                : nextLinearNode;
             break;
           }
 
@@ -533,15 +629,22 @@ export class EmailAutomationEngineService {
           }
 
           default: {
-            this.logger.warn(`Unrecognized flow node type "${nodeType}" (Key: ${currentNode.nodeKey})`);
+            this.logger.warn(
+              `Unrecognized flow node type "${nodeType}" (Key: ${currentNode.nodeKey})`,
+            );
             nextNodeToExecute = nextLinearNode;
             break;
           }
         }
 
         // Avoid infinite loop if pointing to itself
-        if (nextNodeToExecute && nextNodeToExecute.nodeKey === currentNode.nodeKey) {
-          this.logger.warn(`Node ${currentNode.nodeKey} points to itself. Terminating execution.`);
+        if (
+          nextNodeToExecute &&
+          nextNodeToExecute.nodeKey === currentNode.nodeKey
+        ) {
+          this.logger.warn(
+            `Node ${currentNode.nodeKey} points to itself. Terminating execution.`,
+          );
           break;
         }
 
@@ -586,10 +689,12 @@ export class EmailAutomationEngineService {
     plainTextContent: string;
     inboundMsgId?: string;
   }) {
-    const { recipient, subject, htmlContent, plainTextContent, inboundMsgId } = args;
+    const { recipient, subject, htmlContent, plainTextContent, inboundMsgId } =
+      args;
 
     const providerType = recipient.assignedProvider || 'AWS_SES';
-    const fromEmail = recipient.assignedSenderEmail || recipient.campaign?.fromEmail;
+    const fromEmail =
+      recipient.assignedSenderEmail || recipient.campaign?.fromEmail;
     const fromName = recipient.campaign?.fromName || 'Sales & Advisory';
 
     const adapter = this.integrationsService.getAdapter(providerType);
@@ -643,8 +748,14 @@ export class EmailAutomationEngineService {
       .replace(/{{firstName}}/g, lead.firstName || clientName)
       .replace(/{{lastName}}/g, lead.lastName || '')
       .replace(/{{email}}/g, recipient.email || '')
-      .replace(/{{project_name}}/g, project.name || campaign.title || 'Our Project')
-      .replace(/{{projectName}}/g, project.name || campaign.title || 'Our Project')
+      .replace(
+        /{{project_name}}/g,
+        project.name || campaign.title || 'Our Project',
+      )
+      .replace(
+        /{{projectName}}/g,
+        project.name || campaign.title || 'Our Project',
+      )
       .replace(/{{city}}/g, project.city || 'Prime Location')
       .replace(/{{brochure_url}}/g, project.brochureUrl || '#')
       .replace(/{{brochureUrl}}/g, project.brochureUrl || '#');
