@@ -69,8 +69,8 @@ export class VoiceDispatcherService {
 
     let telephony = dto.telephonyId
       ? await this.prisma.voiceTelephonyIntegration.findUnique({
-        where: { id: dto.telephonyId },
-      })
+          where: { id: dto.telephonyId },
+        })
       : null;
 
     if (!telephony && !isDirectMode) {
@@ -82,8 +82,8 @@ export class VoiceDispatcherService {
 
     let agent = dto.agentPlatformId
       ? await this.prisma.voiceAgentIntegration.findUnique({
-        where: { id: dto.agentPlatformId },
-      })
+          where: { id: dto.agentPlatformId },
+        })
       : null;
 
     if (!agent && dto.voiceProvider) {
@@ -134,10 +134,7 @@ export class VoiceDispatcherService {
       agentCreds,
     );
     const validDids = telephony?.fromNumbers || [];
-    const fromNumber =
-      dto.fromNumber
-        ? dto.fromNumber
-        : validDids[0] || '';
+    const fromNumber = dto.fromNumber ? dto.fromNumber : validDids[0] || '';
 
     // Resolve project details dynamically from database if project is selected
     let project: any = null;

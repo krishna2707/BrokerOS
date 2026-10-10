@@ -22,7 +22,7 @@ export class VoiceCampaignService {
   private readonly logger = new Logger(VoiceCampaignService.name);
   private readonly prisma = prismaClient;
 
-  constructor(private readonly audienceService: VoiceAudienceService) { }
+  constructor(private readonly audienceService: VoiceAudienceService) {}
 
   async resolveForeignKeys(dto: {
     projectId?: string | null;

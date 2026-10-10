@@ -485,15 +485,14 @@ export class VoiceAudienceService {
 
         // Add CRM Call Record
         let callStatus:
-          | 'CONNECTED'
-          | 'NOT_ANSWERED'
-          | 'BUSY'
-          | 'FAILED'
-          | 'VOICEMAIL' = 'CONNECTED';
+          'CONNECTED' | 'NOT_ANSWERED' | 'BUSY' | 'FAILED' | 'VOICEMAIL' =
+          'CONNECTED';
         if (recipient.disposition === 'BUSY') callStatus = 'BUSY';
-        else if (recipient.disposition === 'NO_ANSWER') callStatus = 'NOT_ANSWERED';
+        else if (recipient.disposition === 'NO_ANSWER')
+          callStatus = 'NOT_ANSWERED';
         else if (recipient.disposition === 'FAILED') callStatus = 'FAILED';
-        else if (recipient.disposition === 'VOICEMAIL') callStatus = 'VOICEMAIL';
+        else if (recipient.disposition === 'VOICEMAIL')
+          callStatus = 'VOICEMAIL';
 
         const duration = recipient.callDurationSec || 0;
         await this.prisma.callRecord.create({
@@ -550,8 +549,7 @@ export class VoiceAudienceService {
       const leadName = r.lead
         ? `${r.lead.firstName} ${r.lead.lastName || ''}`.trim()
         : r.name || 'Prospect';
-      const mappedTemp =
-        mapVoiceSentimentToTemperature(r.sentiment) || 'WARM';
+      const mappedTemp = mapVoiceSentimentToTemperature(r.sentiment) || 'WARM';
 
       return {
         recipientId: r.id,
