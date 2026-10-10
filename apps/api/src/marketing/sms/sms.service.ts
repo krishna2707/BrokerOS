@@ -36,7 +36,7 @@ export class SmsService {
     private readonly analyticsService: SmsAnalyticsService,
     private readonly integrationsService: SmsIntegrationsService,
     private readonly trackingService: SmsTrackingService,
-  ) { }
+  ) {}
 
   // ── FACADE DELEGATIONS ──
 
@@ -206,7 +206,7 @@ export class SmsService {
     const hasMultiplePools = dto.senderPools && dto.senderPools.length > 1;
     const providerType = hasMultiplePools
       ? 'MULTI_PROVIDER'
-      : (dto.senderPools?.[0]?.provider || dto.providerType || 'TWILIO');
+      : dto.senderPools?.[0]?.provider || dto.providerType || 'TWILIO';
 
     let savedCampaign: any;
 
@@ -225,12 +225,28 @@ export class SmsService {
             allocationMode: dto.allocationMode ?? existing.allocationMode,
             audienceSource: dto.audienceSource ?? existing.audienceSource,
             isCpCampaign: dto.isCpCampaign ?? existing.isCpCampaign,
-            projectId: dto.projectId !== undefined ? projectId : existing.projectId,
-            integrationId: dto.integrationId !== undefined ? integrationId : existing.integrationId,
-            fromSender: dto.fromSender !== undefined ? (dto.fromSender || 'BrokerOS') : existing.fromSender,
-            messageContent: dto.messageContent !== undefined ? dto.messageContent : existing.messageContent,
-            dltTemplateId: dto.dltTemplateId !== undefined ? dto.dltTemplateId : existing.dltTemplateId,
-            audienceFilters: dto.audienceFilters !== undefined ? (dto.audienceFilters as any) : existing.audienceFilters,
+            projectId:
+              dto.projectId !== undefined ? projectId : existing.projectId,
+            integrationId:
+              dto.integrationId !== undefined
+                ? integrationId
+                : existing.integrationId,
+            fromSender:
+              dto.fromSender !== undefined
+                ? dto.fromSender || 'BrokerOS'
+                : existing.fromSender,
+            messageContent:
+              dto.messageContent !== undefined
+                ? dto.messageContent
+                : existing.messageContent,
+            dltTemplateId:
+              dto.dltTemplateId !== undefined
+                ? dto.dltTemplateId
+                : existing.dltTemplateId,
+            audienceFilters:
+              dto.audienceFilters !== undefined
+                ? (dto.audienceFilters as any)
+                : existing.audienceFilters,
           },
         });
       }
@@ -239,7 +255,9 @@ export class SmsService {
     if (!savedCampaign) {
       savedCampaign = await this.prisma.smsCampaign.create({
         data: {
-          title: dto.title?.trim() ? dto.title : `SMS Draft — ${new Date().toLocaleDateString()}`,
+          title: dto.title?.trim()
+            ? dto.title
+            : `SMS Draft — ${new Date().toLocaleDateString()}`,
           channel: dto.channel ?? 'SMS',
           providerType: providerType as any,
           allocationMode: dto.allocationMode || 'AUTO_EVEN',
@@ -251,7 +269,9 @@ export class SmsService {
           fromSender: dto.fromSender || 'BrokerOS',
           messageContent: dto.messageContent || '',
           dltTemplateId: dto.dltTemplateId,
-          audienceFilters: dto.audienceFilters ? (dto.audienceFilters as any) : undefined,
+          audienceFilters: dto.audienceFilters
+            ? (dto.audienceFilters as any)
+            : undefined,
           createdById: validUserId,
         },
       });
@@ -273,7 +293,9 @@ export class SmsService {
               phoneNumber: poolCfg.phoneNumber || null,
               senderId: poolCfg.senderId || null,
               provider: poolCfg.provider || null,
-              weight: Math.round(poolCfg.allocationPercentage || (100 / dto.senderPools!.length)),
+              weight: Math.round(
+                poolCfg.allocationPercentage || 100 / dto.senderPools!.length,
+              ),
               allocatedRecipients: poolCfg.allocatedLeads || 0,
               status: 'QUEUED',
             },
@@ -366,7 +388,7 @@ export class SmsService {
     const hasMultiplePools = dto.senderPools && dto.senderPools.length > 1;
     const providerType = hasMultiplePools
       ? 'MULTI_PROVIDER'
-      : (dto.senderPools?.[0]?.provider || dto.providerType || 'TWILIO');
+      : dto.senderPools?.[0]?.provider || dto.providerType || 'TWILIO';
 
     let campaign: any;
     if (dto.campaignId) {
@@ -390,7 +412,9 @@ export class SmsService {
             fromSender: dto.fromSender || 'BrokerOS',
             messageContent: dto.messageContent || '',
             dltTemplateId: dto.dltTemplateId,
-            audienceFilters: dto.audienceFilters ? (dto.audienceFilters as any) : undefined,
+            audienceFilters: dto.audienceFilters
+              ? (dto.audienceFilters as any)
+              : undefined,
             scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : null,
           },
         });
@@ -412,7 +436,9 @@ export class SmsService {
           fromSender: dto.fromSender || 'BrokerOS',
           messageContent: dto.messageContent || '',
           dltTemplateId: dto.dltTemplateId,
-          audienceFilters: dto.audienceFilters ? (dto.audienceFilters as any) : undefined,
+          audienceFilters: dto.audienceFilters
+            ? (dto.audienceFilters as any)
+            : undefined,
           scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : null,
           createdById: validUserId,
         },
@@ -512,11 +538,12 @@ export class SmsService {
 
     if (rawRecipients.length > 0) {
       if (dto.senderPools && dto.senderPools.length > 0) {
-        const partitionResult = this.audienceService.partitionAudienceAcrossPools(
-          rawRecipients,
-          dto.senderPools,
-          dto.allocationMode || 'AUTO_EVEN',
-        );
+        const partitionResult =
+          this.audienceService.partitionAudienceAcrossPools(
+            rawRecipients,
+            dto.senderPools,
+            dto.allocationMode || 'AUTO_EVEN',
+          );
 
         await this.prisma.campaignSmsSenderPool.deleteMany({
           where: { campaignId: campaign.id },
@@ -534,7 +561,11 @@ export class SmsService {
                 phoneNumber: poolCfg.phoneNumber || null,
                 senderId: poolCfg.senderId || null,
                 provider: poolCfg.provider || null,
-                weight: Math.round(alloc?.weight ?? poolCfg.allocationPercentage ?? (100 / dto.senderPools!.length)),
+                weight: Math.round(
+                  alloc?.weight ??
+                    poolCfg.allocationPercentage ??
+                    100 / dto.senderPools!.length,
+                ),
                 allocatedRecipients: alloc?.count ?? 0,
                 status: 'QUEUED',
               },
@@ -547,18 +578,23 @@ export class SmsService {
           poolIdMap.set(idx, cp.id);
         });
 
-        const finalRecipients = partitionResult.partitionedRecipients.map((rec) => ({
-          campaignId: rec.campaignId,
-          leadId: rec.leadId || null,
-          phone: rec.phone,
-          name: rec.name,
-          status: rec.status,
-          source: rec.source,
-          mergeData: rec.mergeData,
-          senderPoolId: rec.poolIndex !== undefined ? poolIdMap.get(rec.poolIndex) || null : null,
-          assignedSenderPhone: rec.assignedSenderPhone || null,
-          assignedProvider: rec.assignedProvider || null,
-        }));
+        const finalRecipients = partitionResult.partitionedRecipients.map(
+          (rec) => ({
+            campaignId: rec.campaignId,
+            leadId: rec.leadId || null,
+            phone: rec.phone,
+            name: rec.name,
+            status: rec.status,
+            source: rec.source,
+            mergeData: rec.mergeData,
+            senderPoolId:
+              rec.poolIndex !== undefined
+                ? poolIdMap.get(rec.poolIndex) || null
+                : null,
+            assignedSenderPhone: rec.assignedSenderPhone || null,
+            assignedProvider: rec.assignedProvider || null,
+          }),
+        );
 
         await this.prisma.smsRecipient.createMany({
           data: finalRecipients,
@@ -588,7 +624,7 @@ export class SmsService {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ campaignId }),
-    }).catch(() => { });
+    }).catch(() => {});
   }
 
   async dispatchCampaign(id: string) {
@@ -606,7 +642,9 @@ export class SmsService {
     return { success: true, message: `Dispatched SMS campaign ${id}` };
   }
 
-  calculateCostEstimate(dto: CalculateSmsCostEstimateDto): SmsPreFlightCostSummary {
+  calculateCostEstimate(
+    dto: CalculateSmsCostEstimateDto,
+  ): SmsPreFlightCostSummary {
     const totalRecipients = Number(dto.totalRecipients) || 0;
     const pools = dto.senderPools || [];
     const messageContent = dto.messageContent || '';
@@ -633,9 +671,8 @@ export class SmsService {
       const allocatedSegments = allocatedLeads * segments;
       const provider = p.provider || 'TWILIO';
       const pricing =
-        SMS_PROVIDER_PRICING_ESTIMATES[
-        provider as keyof typeof SMS_PROVIDER_PRICING_ESTIMATES
-        ] || SMS_PROVIDER_PRICING_ESTIMATES.TWILIO;
+        SMS_PROVIDER_PRICING_ESTIMATES[provider] ||
+        SMS_PROVIDER_PRICING_ESTIMATES.TWILIO;
 
       const costUSD = allocatedSegments * pricing.costPerSegmentUSD;
       const costINR = allocatedSegments * pricing.costPerSegmentINR;
