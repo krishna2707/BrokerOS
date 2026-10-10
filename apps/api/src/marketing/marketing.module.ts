@@ -209,4 +209,4 @@ import { WhatsAppModule } from './whatsapp/whatsapp.module.js';
     YouTubeAdsService,
   ],
 })
-export class MarketingModule { }
+export class MarketingModule {}
