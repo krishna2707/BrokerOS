@@ -26,7 +26,7 @@ export class WhatsAppTemplatesService {
   private readonly logger = new Logger(WhatsAppTemplatesService.name);
   private readonly prisma = prismaClient;
 
-  constructor(private readonly configService: WhatsAppConfigService) { }
+  constructor(private readonly configService: WhatsAppConfigService) {}
 
   /**
    * Sync message templates from Meta Graph API into local database.
@@ -189,10 +189,11 @@ export class WhatsAppTemplatesService {
   ) {
     let accountId = scopedAccountId || dto.accountId;
     if (!accountId) {
-      const defaultAccount = await this.prisma.whatsAppBusinessAccount.findFirst({
-        where: { isActive: true },
-        orderBy: { createdAt: 'desc' },
-      });
+      const defaultAccount =
+        await this.prisma.whatsAppBusinessAccount.findFirst({
+          where: { isActive: true },
+          orderBy: { createdAt: 'desc' },
+        });
       if (defaultAccount) accountId = defaultAccount.id;
     }
     if (!accountId) {
