@@ -21,7 +21,7 @@ import {
 
 @Controller('api/marketing/sms')
 export class SmsCampaignsController {
-  constructor(private readonly smsService: SmsService) { }
+  constructor(private readonly smsService: SmsService) {}
 
   @Get('projects')
   async getProjects() {
