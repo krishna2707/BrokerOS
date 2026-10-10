@@ -23,7 +23,7 @@ export class WhatsAppFlowEngineService {
   constructor(
     private readonly configService: WhatsAppConfigService,
     private readonly realtimeGateway: WhatsAppRealtimeGateway,
-  ) { }
+  ) {}
 
   /**
    * Dispatch an inbound message to the flows subsystem.
@@ -236,7 +236,7 @@ export class WhatsAppFlowEngineService {
             (message.replyId && row.reply_id === message.replyId) ||
             (message.text &&
               row.title.trim().toLowerCase() ===
-              message.text.trim().toLowerCase())
+                message.text.trim().toLowerCase())
           ) {
             hitKey = row.next_node_key;
             break;
