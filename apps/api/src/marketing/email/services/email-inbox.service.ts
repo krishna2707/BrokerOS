@@ -2,7 +2,12 @@
 // BrokerOS — Email Inbox Service (2-Way Team Inbox with Thread Continuity)
 // ============================================================================
 
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../lib/database/prisma.service.js';
 import { EmailIntegrationsService } from './email-integrations.service.js';
 import { EmailAiService } from '../ai/email-ai.service.js';
@@ -132,7 +137,9 @@ export class EmailInboxService {
       where: { id: conversationId },
     });
     if (!conv) {
-      throw new NotFoundException(`Email conversation #${conversationId} not found`);
+      throw new NotFoundException(
+        `Email conversation #${conversationId} not found`,
+      );
     }
 
     const messages = await this.prisma.emailMessage.findMany({
@@ -168,7 +175,7 @@ export class EmailInboxService {
       contactEmail.split('@')[0];
 
     // 2. Check for existing active conversation with this email
-    let existing = await this.prisma.emailConversation.findFirst({
+    const existing = await this.prisma.emailConversation.findFirst({
       where: {
         contactEmail: { equals: contactEmail, mode: 'insensitive' },
         isActive: true,
@@ -207,10 +214,11 @@ export class EmailInboxService {
     let senderEmail = dto.assignedSenderEmail;
 
     if (!senderEmail) {
-      const activeIntegration = await this.prisma.marketingIntegration.findFirst({
-        where: { isActive: true },
-        orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
-      });
+      const activeIntegration =
+        await this.prisma.marketingIntegration.findFirst({
+          where: { isActive: true },
+          orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+        });
       if (activeIntegration) {
         provider = activeIntegration.provider;
         senderEmail = activeIntegration.fromEmail;
@@ -232,7 +240,8 @@ export class EmailInboxService {
         assignedSenderName: senderUser?.name || 'Sales Team',
         status: 'open',
         unreadCount: 0,
-        lastMessageText: dto.initialMessage?.slice(0, 150) || 'Conversation started',
+        lastMessageText:
+          dto.initialMessage?.slice(0, 150) || 'Conversation started',
         lastMessageAt: new Date(),
       },
       include: {
@@ -285,19 +294,28 @@ export class EmailInboxService {
     const textContent = dto.text?.trim() || '';
     const htmlContent =
       dto.html?.trim() ||
-      textContent
-        .split('\n')
-        .map((p) => `<p style="margin:0 0 12px 0;line-height:1.5;">${p}</p>`)
-        .join('');
+      (textContent
+        ? textContent
+            .split('\n')
+            .map(
+              (p) => `<p style="margin:0 0 12px 0;line-height:1.5;">${p}</p>`,
+            )
+            .join('')
+        : '');
 
     if (!textContent && !htmlContent) {
       throw new BadRequestException('Message content cannot be empty');
     }
 
-    const replySubject = dto.subject || (conv.subject?.startsWith('Re:') ? conv.subject : `Re: ${conv.subject || 'Inquiry'}`);
+    const replySubject =
+      dto.subject ||
+      (conv.subject?.startsWith('Re:')
+        ? conv.subject
+        : `Re: ${conv.subject || 'Inquiry'}`);
     const provider = conv.assignedProvider || 'SYSTEM_DEFAULT';
     const fromEmail = conv.assignedSenderEmail || 'sales@brokeros.com';
-    const fromName = senderUser?.name || conv.assignedSenderName || 'Sales Team';
+    const fromName =
+      senderUser?.name || conv.assignedSenderName || 'Sales Team';
 
     // Find the latest inbound or outbound message in this thread for In-Reply-To header
     const lastMsg = await this.prisma.emailMessage.findFirst({
@@ -356,9 +374,13 @@ export class EmailInboxService {
       );
 
       providerMsgId = sendRes.providerMessageId || null;
-      this.logger.log(`Inbox Outbound Email dispatched via ${provider}: to=${conv.contactEmail} msgId=${providerMsgId}`);
+      this.logger.log(
+        `Inbox Outbound Email dispatched via ${provider}: to=${conv.contactEmail} msgId=${providerMsgId}`,
+      );
     } catch (err: any) {
-      this.logger.error(`Failed to dispatch email via ${provider}: ${err.message}`);
+      this.logger.error(
+        `Failed to dispatch email via ${provider}: ${err.message}`,
+      );
       // Record failed message or allow continuing in development
       if (process.env.NODE_ENV === 'production') {
         throw new BadRequestException(`Email delivery failed: ${err.message}`);
@@ -493,7 +515,9 @@ export class EmailInboxService {
     const leadName =
       dto?.leadName ||
       conv.contactName ||
-      (conv.lead ? `${conv.lead.firstName || ''} ${conv.lead.lastName || ''}`.trim() : '') ||
+      (conv.lead
+        ? `${conv.lead.firstName || ''} ${conv.lead.lastName || ''}`.trim()
+        : '') ||
       'Prospect';
 
     const advisorName =
@@ -504,7 +528,9 @@ export class EmailInboxService {
       'Property Advisory Consultant';
 
     const campaignTitle =
-      conv.campaign?.title || conv.lead?.interestedProject?.name || 'Exclusive Property Update';
+      conv.campaign?.title ||
+      conv.lead?.interestedProject?.name ||
+      'Exclusive Property Update';
 
     const projectInfo = conv.lead?.interestedProject
       ? {
@@ -541,4 +567,3 @@ export class EmailInboxService {
     };
   }
 }
-
