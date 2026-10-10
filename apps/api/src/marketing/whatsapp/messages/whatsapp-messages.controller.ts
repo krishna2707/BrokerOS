@@ -2,15 +2,7 @@
 // BrokerOS — WhatsApp Messages Controller
 // ============================================================================
 
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Query,
-  Body,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Body, Req } from '@nestjs/common';
 import { WhatsAppMessagesService } from './whatsapp-messages.service.js';
 import {
   SendWhatsAppMessageDto,
@@ -32,10 +24,7 @@ export class WhatsAppMessagesController {
   }
 
   @Post('send')
-  async sendMessageDirect(
-    @Body() dto: SendMessageDirectDto,
-    @Req() req: any,
-  ) {
+  async sendMessageDirect(@Body() dto: SendMessageDirectDto, @Req() req: any) {
     const sender = req?.user
       ? { id: req.user.id, name: req.user.name }
       : undefined;
@@ -65,4 +54,3 @@ export class WhatsAppMessagesController {
     return this.messagesService.sendMessage(conversationId, dto, sender);
   }
 }
-
