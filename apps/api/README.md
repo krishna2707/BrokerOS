@@ -143,8 +143,6 @@ pnpm --filter @brokeros/api test              # Run all Jest unit tests (*.spec.
 pnpm --filter @brokeros/api test:e2e          # Run end-to-end tests
 ```
 
----
-
 ## Docker
 
 The backend uses a highly optimized multi-stage Dockerfile powered by Turborepo:

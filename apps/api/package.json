@@ -113,7 +113,16 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "isolatedModules": true,
+            "module": "commonjs",
+            "target": "ES2022"
+          }
+        }
+      ]
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
@@ -121,6 +130,10 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
+      "^@brokeros/constants$": "<rootDir>/../../../packages/constants/src/index.ts",
+      "^@brokeros/types$": "<rootDir>/../../../packages/types/src/index.ts",
+      "^@brokeros/validators$": "<rootDir>/../../../packages/validators/src/index.ts",
+      "^@brokeros/prisma$": "<rootDir>/../../../packages/prisma/src/index.ts",
       "^(\\.{1,2}/.*)\\.js$": "$1"
     }
   },
