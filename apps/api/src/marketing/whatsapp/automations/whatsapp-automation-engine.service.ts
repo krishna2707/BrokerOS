@@ -24,7 +24,7 @@ export class WhatsAppAutomationEngineService {
   constructor(
     private readonly configService: WhatsAppConfigService,
     private readonly realtimeGateway: WhatsAppRealtimeGateway,
-  ) { }
+  ) {}
 
   /**
    * Fire all active automations matching the given trigger for an account.
