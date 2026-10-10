@@ -27,7 +27,7 @@ export class WhatsAppWebhookController {
   constructor(
     private readonly configService: WhatsAppConfigService,
     private readonly webhookService: WhatsAppWebhookService,
-  ) { }
+  ) {}
 
   /**
    * Meta Webhook Verification Handshake.
