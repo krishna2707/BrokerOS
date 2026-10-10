@@ -34,7 +34,7 @@ export class EmailService {
     private readonly analyticsService: EmailAnalyticsService,
     private readonly integrationsService: EmailIntegrationsService,
     private readonly trackingService: EmailTrackingService,
-  ) { }
+  ) {}
 
   // ── FACADE DELEGATIONS ──
 
@@ -137,7 +137,9 @@ export class EmailService {
     const partition = this.audienceService.partitionAudienceAcrossPools(
       new Array(totalRecipients).fill(0),
       pools,
-      pools.some((p) => (p.weight ?? 0) > 0) ? 'CUSTOM_PERCENTAGE' : 'AUTO_EVEN',
+      pools.some((p) => (p.weight ?? 0) > 0)
+        ? 'CUSTOM_PERCENTAGE'
+        : 'AUTO_EVEN',
     );
 
     let totalUsd = 0;
@@ -149,13 +151,14 @@ export class EmailService {
         Math.floor(totalRecipients / pools.length);
       const provider = p.provider || 'SYSTEM_DEFAULT';
       const pricing =
-        EMAIL_PROVIDER_PRICING_ESTIMATES[
-        provider as keyof typeof EMAIL_PROVIDER_PRICING_ESTIMATES
-        ] || EMAIL_PROVIDER_PRICING_ESTIMATES.SYSTEM_DEFAULT;
+        EMAIL_PROVIDER_PRICING_ESTIMATES[provider] ||
+        EMAIL_PROVIDER_PRICING_ESTIMATES.SYSTEM_DEFAULT;
 
       const costPer1kUSD = pricing.costPer1kUSD;
       const costUSD = Number(((allocated * costPer1kUSD) / 1000).toFixed(3));
-      const costINR = Number(((allocated * pricing.costPer1kINR) / 1000).toFixed(2));
+      const costINR = Number(
+        ((allocated * pricing.costPer1kINR) / 1000).toFixed(2),
+      );
 
       totalUsd += costUSD;
       totalInr += costINR;
@@ -163,7 +166,8 @@ export class EmailService {
       return {
         provider: provider as any,
         providerName: pricing.label,
-        domain: p.domain || (p.fromEmail ? p.fromEmail.split('@')[1] : 'domain'),
+        domain:
+          p.domain || (p.fromEmail ? p.fromEmail.split('@')[1] : 'domain'),
         fromEmail: p.fromEmail || '',
         allocatedLeads: allocated,
         percentage:
@@ -310,7 +314,7 @@ export class EmailService {
     const hasMultiplePools = dto.senderPools && dto.senderPools.length > 1;
     const providerType = hasMultiplePools
       ? 'MULTI_PROVIDER'
-      : (dto.senderPools?.[0]?.provider || dto.providerType || 'SYSTEM_DEFAULT');
+      : dto.senderPools?.[0]?.provider || dto.providerType || 'SYSTEM_DEFAULT';
 
     let savedCampaign: any;
 
@@ -397,12 +401,16 @@ export class EmailService {
         await Promise.all(
           dto.senderPools.map(async (p) => {
             let resolvedSenderDomainId = p.senderDomainId;
-            if (!resolvedSenderDomainId || resolvedSenderDomainId.startsWith('primary-')) {
+            if (
+              !resolvedSenderDomainId ||
+              resolvedSenderDomainId.startsWith('primary-')
+            ) {
               resolvedSenderDomainId = undefined;
               if (p.fromEmail) {
-                const foundDomain = await this.prisma.marketingSenderDomain.findFirst({
-                  where: { fromEmail: p.fromEmail.toLowerCase().trim() },
-                });
+                const foundDomain =
+                  await this.prisma.marketingSenderDomain.findFirst({
+                    where: { fromEmail: p.fromEmail.toLowerCase().trim() },
+                  });
                 if (foundDomain) {
                   resolvedSenderDomainId = foundDomain.id;
                 }
@@ -414,11 +422,16 @@ export class EmailService {
                 campaignId: savedCampaign.id,
                 senderDomainId: resolvedSenderDomainId || null,
                 integrationId: p.integrationId || null,
-                domain: p.domain || (p.fromEmail ? p.fromEmail.split('@')[1] : null),
+                domain:
+                  p.domain || (p.fromEmail ? p.fromEmail.split('@')[1] : null),
                 fromEmail: p.fromEmail || null,
                 fromName: p.fromName || null,
                 provider: p.provider || null,
-                weight: Math.round(p.weight ?? p.allocationPercentage ?? (100 / dto.senderPools!.length)),
+                weight: Math.round(
+                  p.weight ??
+                    p.allocationPercentage ??
+                    100 / dto.senderPools!.length,
+                ),
                 allocatedRecipients: p.allocatedLeads ?? 0,
               },
             });
@@ -449,16 +462,12 @@ export class EmailService {
     const hasMultiplePools = dto.senderPools && dto.senderPools.length > 1;
     const resolvedProviderType = hasMultiplePools
       ? 'MULTI_PROVIDER'
-      : (dto.senderPools?.[0]?.provider || dto.providerType || 'SYSTEM_DEFAULT');
+      : dto.senderPools?.[0]?.provider || dto.providerType || 'SYSTEM_DEFAULT';
 
     const defaultFromEmail =
-      dto.fromEmail?.trim() ||
-      dto.senderPools?.[0]?.fromEmail ||
-      '';
+      dto.fromEmail?.trim() || dto.senderPools?.[0]?.fromEmail || '';
     const defaultFromName =
-      dto.fromName?.trim() ||
-      dto.senderPools?.[0]?.fromName ||
-      'Sales Team';
+      dto.fromName?.trim() || dto.senderPools?.[0]?.fromName || 'Sales Team';
 
     let campaign: any;
 
@@ -484,11 +493,11 @@ export class EmailService {
             fromName:
               dto.fromName && dto.fromName.trim()
                 ? dto.fromName
-                : (existing.fromName || defaultFromName),
+                : existing.fromName || defaultFromName,
             fromEmail:
               dto.fromEmail && dto.fromEmail.trim()
                 ? dto.fromEmail
-                : (existing.fromEmail || defaultFromEmail),
+                : existing.fromEmail || defaultFromEmail,
             replyTo:
               dto.replyTo !== undefined
                 ? dto.replyTo || null
@@ -657,12 +666,18 @@ export class EmailService {
             const alloc = partitionResult.allocations[idx];
 
             let resolvedSenderDomainId = poolCfg.senderDomainId;
-            if (!resolvedSenderDomainId || resolvedSenderDomainId.startsWith('primary-')) {
+            if (
+              !resolvedSenderDomainId ||
+              resolvedSenderDomainId.startsWith('primary-')
+            ) {
               resolvedSenderDomainId = undefined;
               if (poolCfg.fromEmail) {
-                const foundDomain = await this.prisma.marketingSenderDomain.findFirst({
-                  where: { fromEmail: poolCfg.fromEmail.toLowerCase().trim() },
-                });
+                const foundDomain =
+                  await this.prisma.marketingSenderDomain.findFirst({
+                    where: {
+                      fromEmail: poolCfg.fromEmail.toLowerCase().trim(),
+                    },
+                  });
                 if (foundDomain) {
                   resolvedSenderDomainId = foundDomain.id;
                 }
@@ -674,11 +689,17 @@ export class EmailService {
                 campaignId: campaign.id,
                 senderDomainId: resolvedSenderDomainId || null,
                 integrationId: poolCfg.integrationId || null,
-                domain: poolCfg.domain || (poolCfg.fromEmail ? poolCfg.fromEmail.split('@')[1] : null),
+                domain:
+                  poolCfg.domain ||
+                  (poolCfg.fromEmail ? poolCfg.fromEmail.split('@')[1] : null),
                 fromEmail: poolCfg.fromEmail || null,
                 fromName: poolCfg.fromName || null,
                 provider: poolCfg.provider || null,
-                weight: Math.round(alloc?.weight ?? poolCfg.allocationPercentage ?? (100 / dto.senderPools!.length)),
+                weight: Math.round(
+                  alloc?.weight ??
+                    poolCfg.allocationPercentage ??
+                    100 / dto.senderPools!.length,
+                ),
                 allocatedRecipients: alloc?.count ?? 0,
                 status: 'ACTIVE',
               },
@@ -733,7 +754,7 @@ export class EmailService {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ campaignId }),
-    }).catch(() => { });
+    }).catch(() => {});
   }
 
   async dispatchCampaign(id: string) {
