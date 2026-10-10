@@ -101,4 +101,3 @@ export class DraftSmsAiReplyDto {
   @IsOptional()
   instruction?: string;
 }
-
