@@ -28,19 +28,21 @@ export class WhatsAppAiService {
   constructor(
     private readonly configService: WhatsAppConfigService,
     private readonly realtimeGateway: WhatsAppRealtimeGateway,
-  ) { }
+  ) {}
 
   /**
    * Get AI assistant configuration for an account.
    * NEVER returns decrypted API key to callers.
    */
   async getAiConfig(accountId?: string) {
-    let targetAccountId = accountId && accountId !== 'undefined' ? accountId : null;
+    let targetAccountId =
+      accountId && accountId !== 'undefined' ? accountId : null;
     if (!targetAccountId) {
-      const defaultAccount = await this.prisma.whatsAppBusinessAccount.findFirst({
-        where: { isActive: true },
-        orderBy: { createdAt: 'desc' },
-      });
+      const defaultAccount =
+        await this.prisma.whatsAppBusinessAccount.findFirst({
+          where: { isActive: true },
+          orderBy: { createdAt: 'desc' },
+        });
       if (defaultAccount) targetAccountId = defaultAccount.id;
     }
 
@@ -66,13 +68,18 @@ export class WhatsAppAiService {
    * Save or update AI assistant configuration.
    * Encrypts the provided API key using AES-256-GCM.
    */
-  async saveAiConfig(accountId: string | undefined, dto: SaveWhatsAppAiConfigDto) {
-    let targetAccountId = accountId && accountId !== 'undefined' ? accountId : null;
+  async saveAiConfig(
+    accountId: string | undefined,
+    dto: SaveWhatsAppAiConfigDto,
+  ) {
+    let targetAccountId =
+      accountId && accountId !== 'undefined' ? accountId : null;
     if (!targetAccountId) {
-      const defaultAccount = await this.prisma.whatsAppBusinessAccount.findFirst({
-        where: { isActive: true },
-        orderBy: { createdAt: 'desc' },
-      });
+      const defaultAccount =
+        await this.prisma.whatsAppBusinessAccount.findFirst({
+          where: { isActive: true },
+          orderBy: { createdAt: 'desc' },
+        });
       if (defaultAccount) targetAccountId = defaultAccount.id;
     }
 
@@ -178,20 +185,24 @@ export class WhatsAppAiService {
       throw new NotFoundException(`Conversation ${conversationId} not found`);
     }
 
-    let targetAccountId = accountId && accountId !== 'undefined' ? accountId : conversation.accountId;
+    let targetAccountId =
+      accountId && accountId !== 'undefined'
+        ? accountId
+        : conversation.accountId;
     if (!targetAccountId) {
-      const defaultAccount = await this.prisma.whatsAppBusinessAccount.findFirst({
-        where: { isActive: true },
-        orderBy: { createdAt: 'desc' },
-      });
+      const defaultAccount =
+        await this.prisma.whatsAppBusinessAccount.findFirst({
+          where: { isActive: true },
+          orderBy: { createdAt: 'desc' },
+        });
       if (defaultAccount) targetAccountId = defaultAccount.id;
     }
 
     // 1. Resolve AI credentials: check BYO config or fallback to system Groq/OpenAI keys
     const config = targetAccountId
       ? await this.prisma.whatsAppAiConfig.findUnique({
-        where: { accountId: targetAccountId },
-      })
+          where: { accountId: targetAccountId },
+        })
       : null;
 
     let provider = config?.provider || 'groq';
@@ -212,7 +223,8 @@ export class WhatsAppAiService {
     // Verify key format: Groq keys start with 'gsk_', OpenAI keys start with 'sk-'
     const isGroqKeyValid = provider === 'groq' && apiKey.startsWith('gsk_');
     const isOpenAiKeyValid =
-      provider === 'openai' && (apiKey.startsWith('sk-') || apiKey.length >= 20);
+      provider === 'openai' &&
+      (apiKey.startsWith('sk-') || apiKey.length >= 20);
 
     if (
       !apiKey ||
@@ -254,12 +266,10 @@ export class WhatsAppAiService {
       'Property Advisory Consultant';
 
     const projectName =
-      conversation.lead?.interestedProject?.name ||
-      'Prime Luxury Residences';
+      conversation.lead?.interestedProject?.name || 'Prime Luxury Residences';
 
     const projectCity =
-      conversation.lead?.interestedProject?.city ||
-      'Prime Downtown';
+      conversation.lead?.interestedProject?.city || 'Prime Downtown';
 
     // 3. Fetch recent conversation messages (last 20)
     const recentMessages = await this.prisma.whatsAppMessage.findMany({
@@ -281,7 +291,9 @@ export class WhatsAppAiService {
           ]
         : chronological.map((m) => ({
             role:
-              m.direction === 'INBOUND' ? ('user' as const) : ('assistant' as const),
+              m.direction === 'INBOUND'
+                ? ('user' as const)
+                : ('assistant' as const),
             content: m.body || `[${m.contentType || 'Media'}]`,
           }));
 
