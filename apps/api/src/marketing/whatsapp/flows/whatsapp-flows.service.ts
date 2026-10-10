@@ -126,7 +126,9 @@ export class WhatsAppFlowsService {
         await tx.whatsAppFlowNode.createMany({
           data: dto.nodes.map((node, idx) => ({
             flowId: flow.id,
-            nodeKey: node.nodeKey || `node_${idx}_${Date.now().toString(36).slice(-4)}`,
+            nodeKey:
+              node.nodeKey ||
+              `node_${idx}_${Date.now().toString(36).slice(-4)}`,
             nodeType: node.nodeType || 'send_message',
             config: (node.config as any) ?? {},
           })),
@@ -160,7 +162,9 @@ export class WhatsAppFlowsService {
           await tx.whatsAppFlowNode.createMany({
             data: dto.nodes.map((node, idx) => ({
               flowId: existing.id,
-              nodeKey: node.nodeKey || `node_${idx}_${Date.now().toString(36).slice(-4)}`,
+              nodeKey:
+                node.nodeKey ||
+                `node_${idx}_${Date.now().toString(36).slice(-4)}`,
               nodeType: node.nodeType || 'send_message',
               config: (node.config as any) ?? {},
             })),

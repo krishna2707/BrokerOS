@@ -23,8 +23,8 @@ export async function evaluateFlowConditionNode(
     const contact = await prisma.whatsAppContact.findUnique({
       where: { id: run.contactId },
     });
-    if (contact && (contact as any)[subjectKey] !== undefined) {
-      actualValue = String((contact as any)[subjectKey]);
+    if (contact && contact[subjectKey] !== undefined) {
+      actualValue = String(contact[subjectKey]);
     }
   }
 

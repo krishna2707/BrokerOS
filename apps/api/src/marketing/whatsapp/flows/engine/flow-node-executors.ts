@@ -84,11 +84,7 @@ export async function recordFlowBotMessage(
     data: { lastMessageText: body, lastMessageAt: msgRow.sentAt },
   });
 
-  realtimeGateway.emitMessageSent(
-    run.conversationId,
-    msgRow,
-    run.accountId,
-  );
+  realtimeGateway.emitMessageSent(run.conversationId, msgRow, run.accountId);
 }
 
 export interface NodeExecutionResult {
