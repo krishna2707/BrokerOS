@@ -116,4 +116,4 @@ import { WhatsAppService } from './whatsapp.service.js';
     WhatsAppService,
   ],
 })
-export class WhatsAppModule { }
+export class WhatsAppModule {}
