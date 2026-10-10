@@ -35,7 +35,7 @@ export interface EmailAiGenerateReplyArgs {
 export class EmailAiService {
   private readonly logger = new Logger(EmailAiService.name);
 
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Get active Email AI configuration. Masked API key.
@@ -101,7 +101,8 @@ export class EmailAiService {
           systemPrompt,
           isActive: dto.isActive ?? existing.isActive,
           autoReplyEnabled: dto.autoReplyEnabled ?? existing.autoReplyEnabled,
-          autoReplyMaxPerLead: dto.autoReplyMaxPerLead ?? existing.autoReplyMaxPerLead,
+          autoReplyMaxPerLead:
+            dto.autoReplyMaxPerLead ?? existing.autoReplyMaxPerLead,
         },
       });
     }
@@ -143,7 +144,9 @@ export class EmailAiService {
       try {
         rawApiKey = decrypt(config.apiKey);
       } catch {
-        this.logger.warn('Failed to decrypt custom Email AI key, falling back to .env');
+        this.logger.warn(
+          'Failed to decrypt custom Email AI key, falling back to .env',
+        );
       }
     }
 
@@ -165,13 +168,16 @@ export class EmailAiService {
     // Build context entities
     const clientName = args.leadName || 'Valued Client';
     const advisorName = args.advisorName || 'Property Advisory Consultant';
-    const projectName = args.project?.name || args.originalCampaignTitle || 'Our Premier Residential Project';
+    const projectName =
+      args.project?.name ||
+      args.originalCampaignTitle ||
+      'Our Premier Residential Project';
     const projectCity = args.project?.city || 'the prime city center';
-    const amenities = args.project?.amenities?.join(', ') || 'Clubhouse, Swimming Pool, High-speed Elevators, 24/7 Security';
+    const amenities =
+      args.project?.amenities?.join(', ') ||
+      'Clubhouse, Swimming Pool, High-speed Elevators, 24/7 Security';
 
-    const systemPrompt =
-      config?.systemPrompt ||
-      this.getDefaultSystemPrompt();
+    const systemPrompt = config?.systemPrompt || this.getDefaultSystemPrompt();
 
     const injectedSystemPrompt = `${systemPrompt}
 
@@ -296,7 +302,10 @@ Return strictly JSON: { "subject": "...", "body": "..." }.`;
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #1e293b; max-width: 600px;">
   ${parsedBody
     .split('\n\n')
-    .map((p: string) => `<p style="margin-bottom: 12px;">${p.replace(/\n/g, '<br/>')}</p>`)
+    .map(
+      (p: string) =>
+        `<p style="margin-bottom: 12px;">${p.replace(/\n/g, '<br/>')}</p>`,
+    )
     .join('')}
 </div>`;
 
@@ -317,24 +326,27 @@ Return strictly JSON: { "subject": "...", "body": "..." }.`;
       `Re: Your inquiry on ${projectName}`,
       `Floor Plans & Site Visit for ${clientName}`,
     ];
-    const pickedSubject =
-      args.inboundSubject?.startsWith('Re:')
-        ? args.inboundSubject
-        : args.inboundSubject
-          ? `Re: ${args.inboundSubject}`
-          : args.originalSubject || fallbackSubjects[Math.floor(Math.random() * fallbackSubjects.length)];
+    const pickedSubject = args.inboundSubject?.startsWith('Re:')
+      ? args.inboundSubject
+      : args.inboundSubject
+        ? `Re: ${args.inboundSubject}`
+        : args.originalSubject ||
+          fallbackSubjects[Math.floor(Math.random() * fallbackSubjects.length)];
 
     const fallbackBodies = [
       `Hello ${clientName},\n\nThank you for connecting regarding ${projectName}. We have detailed floor plans and current availability ready for your review.\n\nWould you have 10 minutes this week for a brief call or a scheduled site walkthrough?\n\nWarm regards,\n${advisorName}\nBrokerOS Advisory Team`,
       `Dear ${clientName},\n\nFollowing up on our discussions regarding ${projectName}, I wanted to share our latest pricing options and payment schedules.\n\nPlease let me know if tomorrow or this weekend works best for a private tour.\n\nBest regards,\n${advisorName}\nBrokerOS Advisory Team`,
     ];
-    const pickedBody = fallbackBodies[Math.floor(Math.random() * fallbackBodies.length)];
+    const pickedBody =
+      fallbackBodies[Math.floor(Math.random() * fallbackBodies.length)];
 
     const htmlBody = `
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #1e293b; max-width: 600px;">
   ${pickedBody
     .split('\n\n')
-    .map((p) => `<p style="margin-bottom: 12px;">${p.replace(/\n/g, '<br/>')}</p>`)
+    .map(
+      (p) => `<p style="margin-bottom: 12px;">${p.replace(/\n/g, '<br/>')}</p>`,
+    )
     .join('')}
 </div>`;
 
