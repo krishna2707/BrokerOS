@@ -114,4 +114,3 @@ export class DraftEmailAiReplyDto {
   @IsOptional()
   instruction?: string;
 }
-
