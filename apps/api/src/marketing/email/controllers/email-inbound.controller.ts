@@ -5,7 +5,10 @@
 import { Controller, Post, Body, Headers, HttpCode } from '@nestjs/common';
 import { Public } from '@thallesp/nestjs-better-auth';
 import { EmailInboundService } from '../services/email-inbound.service.js';
-import { UniversalInboundEmailDto, SimulateInboundReplyDto } from '../dto/email-flows.dto.js';
+import {
+  UniversalInboundEmailDto,
+  SimulateInboundReplyDto,
+} from '../dto/email-flows.dto.js';
 
 @Controller(['api/marketing/email/inbound', 'api/marketing/email/webhooks'])
 export class EmailInboundController {

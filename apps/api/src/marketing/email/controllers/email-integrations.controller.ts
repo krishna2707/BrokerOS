@@ -44,10 +44,7 @@ export class EmailIntegrationsController {
   }
 
   @Post(':id/domains')
-  async addDomain(
-    @Param('id') id: string,
-    @Body() dto: AddSenderDomainDto,
-  ) {
+  async addDomain(@Param('id') id: string, @Body() dto: AddSenderDomainDto) {
     return this.emailService.addSenderDomain(id, dto);
   }
 
