@@ -94,7 +94,8 @@ export class SmsAiService {
           systemPrompt,
           isActive: dto.isActive ?? existing.isActive,
           autoReplyEnabled: dto.autoReplyEnabled ?? existing.autoReplyEnabled,
-          autoReplyMaxPerLead: dto.autoReplyMaxPerLead ?? existing.autoReplyMaxPerLead,
+          autoReplyMaxPerLead:
+            dto.autoReplyMaxPerLead ?? existing.autoReplyMaxPerLead,
           maxCharacters: dto.maxCharacters ?? existing.maxCharacters,
         },
       });
@@ -170,7 +171,10 @@ RULES FOR SMS DRAFTS:
     if (args.messages && args.messages.length > 0) {
       const threadHistory = args.messages
         .slice(-8)
-        .map((m) => `${m.direction === 'INBOUND' ? `[Client ${leadName}]` : `[Advisor]`}: ${m.text}`)
+        .map(
+          (m) =>
+            `${m.direction === 'INBOUND' ? `[Client ${leadName}]` : `[Advisor]`}: ${m.text}`,
+        )
         .join('\n');
 
       userPrompt = `Ongoing SMS thread with lead "${leadName}":
@@ -220,13 +224,16 @@ Keep it warm, engaging, and STRICTLY UNDER ${maxChars} CHARACTERS with a clear q
         });
 
         if (res.ok) {
-          const data = (await res.json()) as any;
+          const data = await res.json();
           let replyText = data.choices?.[0]?.message?.content?.trim() || '';
           if (replyText.startsWith('"') && replyText.endsWith('"')) {
             replyText = replyText.slice(1, -1);
           }
           // Remove any accidental markdown or bracketed placeholders
-          replyText = replyText.replace(/\[.*?\]/g, '').replace(/\*\*.*?\*\*/g, '').trim();
+          replyText = replyText
+            .replace(/\[.*?\]/g, '')
+            .replace(/\*\*.*?\*\*/g, '')
+            .trim();
           if (replyText.length > maxChars) {
             replyText = replyText.slice(0, maxChars - 3) + '...';
           }
@@ -248,7 +255,8 @@ Keep it warm, engaging, and STRICTLY UNDER ${maxChars} CHARACTERS with a clear q
       `Hello ${leadName}, this is ${advisorName} regarding ${projectInfo.slice(0, 30)}. Would you have 2 minutes for a quick chat today?`,
       `Hi ${leadName}, we have exclusive floor plans available. When would be a good time for a quick call?`,
     ];
-    const pickedFallback = fallbackTemplates[Math.floor(Math.random() * fallbackTemplates.length)];
+    const pickedFallback =
+      fallbackTemplates[Math.floor(Math.random() * fallbackTemplates.length)];
 
     return {
       text: pickedFallback.slice(0, maxChars),
@@ -266,4 +274,3 @@ Rules:
 4. Never mention you are an AI. Never use bracketed placeholders.`;
   }
 }
-
