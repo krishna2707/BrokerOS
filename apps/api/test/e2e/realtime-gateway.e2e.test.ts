@@ -62,7 +62,10 @@ describe('API E2E: Realtime WebSocket Gateway (Notifications & Events)', () => {
 
       // Invariant: MUST emit to the user's specific active socket
       expect(mockServer.to).toHaveBeenCalledWith('socket-auth-101');
-      expect(mockServer.emit).toHaveBeenCalledWith('new_notification', notification);
+      expect(mockServer.emit).toHaveBeenCalledWith(
+        'new_notification',
+        notification,
+      );
     });
 
     it('cleans up socket mapping on client disconnect', () => {
