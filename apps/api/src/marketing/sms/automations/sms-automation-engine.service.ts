@@ -32,7 +32,7 @@ export class SmsAutomationEngineService {
     private readonly integrationsService: SmsIntegrationsService,
     private readonly aiService: SmsAiService,
     private readonly audienceService: SmsAudienceService,
-  ) { }
+  ) {}
 
   /**
    * Main entry point when an inbound SMS reply is received or simulated.
@@ -54,7 +54,10 @@ export class SmsAutomationEngineService {
         phone: context.fromPhone,
         name: 'Valued Client',
         assignedSenderPhone: context.toPhone,
-        assignedProvider: context.provider === 'SIMULATOR' ? 'TWILIO' : (context.provider || 'TWILIO'),
+        assignedProvider:
+          context.provider === 'SIMULATOR'
+            ? 'TWILIO'
+            : context.provider || 'TWILIO',
         campaign: {
           title: 'Skyline Crest Residences',
           fromSender: context.toPhone,
@@ -109,7 +112,10 @@ export class SmsAutomationEngineService {
         // 1. Check campaign-scoped flows first
         if (campaignId) {
           targetFlow = activeFlows.find(
-            (f) => !f.isGlobal && f.campaignIds && f.campaignIds.includes(campaignId),
+            (f) =>
+              !f.isGlobal &&
+              f.campaignIds &&
+              f.campaignIds.includes(campaignId),
           );
         }
 
@@ -128,7 +134,7 @@ export class SmsAutomationEngineService {
 
       // Evaluate trigger conditions
       const triggerType = targetFlow.triggerType || 'keyword_match';
-      const triggerConfig = (targetFlow.triggerConfig || {}) as any;
+      const triggerConfig = targetFlow.triggerConfig || {};
       let triggerMatched = false;
       let triggerReason = '';
 
@@ -139,7 +145,11 @@ export class SmsAutomationEngineService {
         triggerMatched = true;
         triggerReason = 'Trigger on Any Inbound Reply';
       } else if (triggerType === 'campaign_reply') {
-        if (campaignId && targetFlow.campaignIds && targetFlow.campaignIds.includes(campaignId)) {
+        if (
+          campaignId &&
+          targetFlow.campaignIds &&
+          targetFlow.campaignIds.includes(campaignId)
+        ) {
           triggerMatched = true;
           triggerReason = `Trigger on reply to campaign #${campaignId}`;
         } else if (targetFlow.isGlobal) {
@@ -163,7 +173,9 @@ export class SmsAutomationEngineService {
             ? `Exact keyword match for: ${inboundTextLower}`
             : 'No exact keyword matched';
         } else {
-          const matchedKw = kwList.find((kw) => kw && inboundTextLower.includes(kw));
+          const matchedKw = kwList.find(
+            (kw) => kw && inboundTextLower.includes(kw),
+          );
           if (matchedKw) {
             triggerMatched = true;
             triggerReason = `Contains keyword: "${matchedKw}"`;
@@ -216,7 +228,11 @@ export class SmsAutomationEngineService {
       const startNode = rawNodes.find((n) => n.nodeType === 'start');
 
       let currentNode: any = null;
-      if (startNode && startNode.config?.next_node_key && nodeMap.has(startNode.config.next_node_key)) {
+      if (
+        startNode &&
+        startNode.config?.next_node_key &&
+        nodeMap.has(startNode.config.next_node_key)
+      ) {
         currentNode = nodeMap.get(startNode.config.next_node_key);
       } else if (nonStartNodes.length > 0) {
         currentNode = nonStartNodes[0];
@@ -233,12 +249,15 @@ export class SmsAutomationEngineService {
         stepsCount++;
         executedKeys.add(currentNode.nodeKey);
 
-        const config = (currentNode.config || {}) as any;
+        const config = currentNode.config || {};
         const nodeType = currentNode.nodeType;
 
-        const currentLinearIndex = nonStartNodes.findIndex((n) => n.nodeKey === currentNode.nodeKey);
+        const currentLinearIndex = nonStartNodes.findIndex(
+          (n) => n.nodeKey === currentNode.nodeKey,
+        );
         const nextLinearNode =
-          currentLinearIndex >= 0 && currentLinearIndex < nonStartNodes.length - 1
+          currentLinearIndex >= 0 &&
+          currentLinearIndex < nonStartNodes.length - 1
             ? nonStartNodes[currentLinearIndex + 1]
             : null;
 
@@ -249,7 +268,10 @@ export class SmsAutomationEngineService {
           case 'send_sms':
           case 'send_sms_reply': {
             const textBody = this.interpolateText(
-              config.message || config.textContent || config.textBody || 'Thank you for your message.',
+              config.message ||
+                config.textContent ||
+                config.textBody ||
+                'Thank you for your message.',
               recipient,
             );
 
@@ -258,9 +280,13 @@ export class SmsAutomationEngineService {
                 recipient,
                 message: textBody,
               });
-              actionsExecuted.push(`Sent SMS reply: "${textBody.slice(0, 40)}..."`);
+              actionsExecuted.push(
+                `Sent SMS reply: "${textBody.slice(0, 40)}..."`,
+              );
             } else {
-              actionsExecuted.push(`Send SMS Reply: "${textBody.slice(0, 40)}..."`);
+              actionsExecuted.push(
+                `Send SMS Reply: "${textBody.slice(0, 40)}..."`,
+              );
             }
 
             outboundReplyText = textBody;
@@ -276,8 +302,14 @@ export class SmsAutomationEngineService {
           case 'ai_agent':
           case 'ai_reply': {
             const stopIfHumanActive = config.stopIfHumanActive !== false;
-            if (!context.isSimulation && stopIfHumanActive && recipient?.lead?.assignedUserId) {
-              actionsExecuted.push('AI reply skipped (lead is managed by human sales exec)');
+            if (
+              !context.isSimulation &&
+              stopIfHumanActive &&
+              recipient?.lead?.assignedUserId
+            ) {
+              actionsExecuted.push(
+                'AI reply skipped (lead is managed by human sales exec)',
+              );
               nextNodeToExecute =
                 config.next_node_key && nodeMap.has(config.next_node_key)
                   ? nodeMap.get(config.next_node_key)
@@ -287,26 +319,43 @@ export class SmsAutomationEngineService {
 
             const maxTurns = Number(config.maxTurns) || 3;
             if (!context.isSimulation && recipient?.phone) {
-              const previousAiMsgs = await this.prisma.smsMessage.count({
-                where: {
-                  OR: [
-                    { toPhone: recipient.phone, senderType: 'bot' },
-                    { toPhone: recipient.phone, senderName: { contains: 'AI' } },
-                  ],
-                },
-              }).catch(() => 0);
+              const previousAiMsgs = await this.prisma.smsMessage
+                .count({
+                  where: {
+                    OR: [
+                      { toPhone: recipient.phone, senderType: 'bot' },
+                      {
+                        toPhone: recipient.phone,
+                        senderName: { contains: 'AI' },
+                      },
+                    ],
+                  },
+                })
+                .catch(() => 0);
 
               if (previousAiMsgs >= maxTurns) {
-                this.logger.log(`AI Concierge reached max turns (${previousAiMsgs}/${maxTurns}) for ${recipient.phone}. Escalating prospect.`);
+                this.logger.log(
+                  `AI Concierge reached max turns (${previousAiMsgs}/${maxTurns}) for ${recipient.phone}. Escalating prospect.`,
+                );
                 if (recipient.id && !recipient.leadId) {
-                  await this.audienceService.promoteCsvRecipientToLead(recipient.id).catch(() => { });
+                  await this.audienceService
+                    .promoteCsvRecipientToLead(recipient.id)
+                    .catch(() => {});
                 } else if (recipient.leadId) {
-                  await this.prisma.lead.update({
-                    where: { id: recipient.leadId },
-                    data: { status: 'QUALIFIED', subStatus: 'PENDING', assignedUserId: null },
-                  }).catch(() => { });
+                  await this.prisma.lead
+                    .update({
+                      where: { id: recipient.leadId },
+                      data: {
+                        status: 'QUALIFIED',
+                        subStatus: 'PENDING',
+                        assignedUserId: null,
+                      },
+                    })
+                    .catch(() => {});
                 }
-                actionsExecuted.push(`AI Concierge reached max turns limit (${maxTurns}) → prospect escalated to Pre-Sales queue`);
+                actionsExecuted.push(
+                  `AI Concierge reached max turns limit (${maxTurns}) → prospect escalated to Pre-Sales queue`,
+                );
                 nextNodeToExecute =
                   config.next_node_key && nodeMap.has(config.next_node_key)
                     ? nodeMap.get(config.next_node_key)
@@ -318,7 +367,10 @@ export class SmsAutomationEngineService {
             let aiReplyText = '';
             try {
               const aiRes = await this.aiService.generateAutoreply({
-                leadName: recipient.name || recipient.lead?.firstName || 'Valued Client',
+                leadName:
+                  recipient.name ||
+                  recipient.lead?.firstName ||
+                  'Valued Client',
                 inboundBody: context.body,
                 originalCampaignTitle: recipient.campaign?.title,
                 project: recipient.campaign?.project,
@@ -334,9 +386,13 @@ export class SmsAutomationEngineService {
                 recipient,
                 message: aiReplyText,
               });
-              actionsExecuted.push(`AI Concierge (Groq) sent SMS: "${aiReplyText.slice(0, 40)}..."`);
+              actionsExecuted.push(
+                `AI Concierge (Groq) sent SMS: "${aiReplyText.slice(0, 40)}..."`,
+              );
             } else {
-              actionsExecuted.push(`AI Concierge generated SMS: "${aiReplyText.slice(0, 40)}..."`);
+              actionsExecuted.push(
+                `AI Concierge generated SMS: "${aiReplyText.slice(0, 40)}..."`,
+              );
             }
 
             outboundReplyText = aiReplyText;
@@ -359,9 +415,12 @@ export class SmsAutomationEngineService {
               const leadBudget = Number(recipient?.lead?.budget) || 0;
               conditionMet = leadBudget >= minBudget;
             } else if (criteriaType === 'tag') {
-              const targetTag = (config.tag || config.tagName || '').trim().toLowerCase();
-              const leadTags: string[] = (recipient?.lead?.tags || []).map((t: any) =>
-                (typeof t === 'string' ? t : t?.name || '').toLowerCase()
+              const targetTag = (config.tag || config.tagName || '')
+                .trim()
+                .toLowerCase();
+              const leadTags: string[] = (recipient?.lead?.tags || []).map(
+                (t: any) =>
+                  (typeof t === 'string' ? t : t?.name || '').toLowerCase(),
               );
               conditionMet = !!targetTag && leadTags.includes(targetTag);
             } else {
@@ -369,13 +428,17 @@ export class SmsAutomationEngineService {
               const kwList: string[] = Array.isArray(rawKeywords)
                 ? rawKeywords
                 : typeof rawKeywords === 'string'
-                  ? rawKeywords.split(',').map((k: string) => k.trim().toLowerCase())
+                  ? rawKeywords
+                      .split(',')
+                      .map((k: string) => k.trim().toLowerCase())
                   : [];
 
-              conditionMet = kwList.length === 0 || kwList.some((kw) => kw && inboundTextLower.includes(kw));
+              conditionMet =
+                kwList.length === 0 ||
+                kwList.some((kw) => kw && inboundTextLower.includes(kw));
             }
 
-            const branches = config.branches || (currentNode as any).branches;
+            const branches = config.branches || currentNode.branches;
             const branchKey = conditionMet ? 'yes' : 'no';
             const branchSteps: any[] = branches?.[branchKey] || [];
 
@@ -390,14 +453,23 @@ export class SmsAutomationEngineService {
 
                 if (bType === 'send_sms' || bType === 'send_sms_reply') {
                   const msg = this.interpolateText(
-                    bConfig.message || bConfig.textContent || 'Thank you for your message.',
+                    bConfig.message ||
+                      bConfig.textContent ||
+                      'Thank you for your message.',
                     recipient,
                   );
                   if (!context.isSimulation) {
-                    await this.dispatchOutboundReply({ recipient, message: msg });
-                    actionsExecuted.push(`[${branchKey.toUpperCase()}] Sent SMS: "${msg.slice(0, 35)}..."`);
+                    await this.dispatchOutboundReply({
+                      recipient,
+                      message: msg,
+                    });
+                    actionsExecuted.push(
+                      `[${branchKey.toUpperCase()}] Sent SMS: "${msg.slice(0, 35)}..."`,
+                    );
                   } else {
-                    actionsExecuted.push(`[${branchKey.toUpperCase()}] Send SMS: "${msg.slice(0, 35)}..."`);
+                    actionsExecuted.push(
+                      `[${branchKey.toUpperCase()}] Send SMS: "${msg.slice(0, 35)}..."`,
+                    );
                   }
                   outboundReplyText = msg;
                 } else if (bType === 'ai_agent' || bType === 'ai_reply') {
@@ -411,36 +483,56 @@ export class SmsAutomationEngineService {
                     });
                     aiMsg = aiRes.text;
                   } catch {
-                    aiMsg = 'Thank you for reaching out! We will connect with you shortly.';
+                    aiMsg =
+                      'Thank you for reaching out! We will connect with you shortly.';
                   }
                   if (!context.isSimulation) {
-                    await this.dispatchOutboundReply({ recipient, message: aiMsg });
-                    actionsExecuted.push(`[${branchKey.toUpperCase()}] AI Concierge sent SMS: "${aiMsg.slice(0, 35)}..."`);
+                    await this.dispatchOutboundReply({
+                      recipient,
+                      message: aiMsg,
+                    });
+                    actionsExecuted.push(
+                      `[${branchKey.toUpperCase()}] AI Concierge sent SMS: "${aiMsg.slice(0, 35)}..."`,
+                    );
                   } else {
-                    actionsExecuted.push(`[${branchKey.toUpperCase()}] AI Concierge generated SMS: "${aiMsg.slice(0, 35)}..."`);
+                    actionsExecuted.push(
+                      `[${branchKey.toUpperCase()}] AI Concierge generated SMS: "${aiMsg.slice(0, 35)}..."`,
+                    );
                   }
                   outboundReplyText = aiMsg;
                 } else if (bType === 'update_lead_status') {
-                  actionsExecuted.push(`[${branchKey.toUpperCase()}] Updated CRM status to ${bConfig.status || 'INTERESTED'}`);
+                  actionsExecuted.push(
+                    `[${branchKey.toUpperCase()}] Updated CRM status to ${bConfig.status || 'INTERESTED'}`,
+                  );
                 } else if (bType === 'add_tag') {
                   const bTag = (bConfig.tag || 'SMS_ENGAGED').trim();
                   if (!context.isSimulation && bTag) {
-                    await this.prisma.smsTag.upsert({
-                      where: { name: bTag },
-                      create: { name: bTag, color: '#3B82F6' },
-                      update: {},
-                    }).catch(() => { });
+                    await this.prisma.smsTag
+                      .upsert({
+                        where: { name: bTag },
+                        create: { name: bTag, color: '#3B82F6' },
+                        update: {},
+                      })
+                      .catch(() => {});
                   }
-                  actionsExecuted.push(`[${branchKey.toUpperCase()}] Applied tag "${bTag}"`);
+                  actionsExecuted.push(
+                    `[${branchKey.toUpperCase()}] Applied tag "${bTag}"`,
+                  );
                 }
               }
             } else {
-              actionsExecuted.push(`Condition evaluated to ${conditionMet ? 'TRUE' : 'FALSE'} (no branch steps configured)`);
+              actionsExecuted.push(
+                `Condition evaluated to ${conditionMet ? 'TRUE' : 'FALSE'} (no branch steps configured)`,
+              );
             }
 
             nextNodeToExecute = conditionMet
-              ? (config.yes_next_key && nodeMap.has(config.yes_next_key) ? nodeMap.get(config.yes_next_key) : nextLinearNode)
-              : (config.no_next_key && nodeMap.has(config.no_next_key) ? nodeMap.get(config.no_next_key) : nextLinearNode);
+              ? config.yes_next_key && nodeMap.has(config.yes_next_key)
+                ? nodeMap.get(config.yes_next_key)
+                : nextLinearNode
+              : config.no_next_key && nodeMap.has(config.no_next_key)
+                ? nodeMap.get(config.no_next_key)
+                : nextLinearNode;
             break;
           }
 
@@ -448,10 +540,12 @@ export class SmsAutomationEngineService {
           case 'update_lead_status': {
             const newStatus = config.status || 'INTERESTED';
             if (!context.isSimulation && recipient?.leadId) {
-              await this.prisma.lead.update({
-                where: { id: recipient.leadId },
-                data: { status: newStatus as any },
-              }).catch(() => { });
+              await this.prisma.lead
+                .update({
+                  where: { id: recipient.leadId },
+                  data: { status: newStatus },
+                })
+                .catch(() => {});
             }
             actionsExecuted.push(`Updated CRM status to ${newStatus}`);
             nextNodeToExecute =
@@ -465,11 +559,13 @@ export class SmsAutomationEngineService {
           case 'add_tag': {
             const tagName = (config.tag || 'SMS_REPLIED').trim();
             if (!context.isSimulation && tagName) {
-              await this.prisma.smsTag.upsert({
-                where: { name: tagName },
-                create: { name: tagName, color: '#3B82F6' },
-                update: {},
-              }).catch(() => { });
+              await this.prisma.smsTag
+                .upsert({
+                  where: { name: tagName },
+                  create: { name: tagName, color: '#3B82F6' },
+                  update: {},
+                })
+                .catch(() => {});
             }
             actionsExecuted.push(`Applied CRM tag "${tagName}"`);
             nextNodeToExecute =
@@ -483,19 +579,25 @@ export class SmsAutomationEngineService {
           case 'handoff_presales': {
             if (!context.isSimulation) {
               if (recipient.id && !recipient.leadId) {
-                await this.audienceService.promoteCsvRecipientToLead(recipient.id);
+                await this.audienceService.promoteCsvRecipientToLead(
+                  recipient.id,
+                );
               } else if (recipient.leadId) {
-                await this.prisma.lead.update({
-                  where: { id: recipient.leadId },
-                  data: {
-                    status: 'QUALIFIED',
-                    subStatus: 'PENDING',
-                    assignedUserId: null,
-                  },
-                }).catch(() => { });
+                await this.prisma.lead
+                  .update({
+                    where: { id: recipient.leadId },
+                    data: {
+                      status: 'QUALIFIED',
+                      subStatus: 'PENDING',
+                      assignedUserId: null,
+                    },
+                  })
+                  .catch(() => {});
               }
             }
-            actionsExecuted.push('Escalated prospect to Pre-Sales Manager triage queue');
+            actionsExecuted.push(
+              'Escalated prospect to Pre-Sales Manager triage queue',
+            );
             nextNodeToExecute =
               config.next_node_key && nodeMap.has(config.next_node_key)
                 ? nodeMap.get(config.next_node_key)
@@ -516,14 +618,16 @@ export class SmsAutomationEngineService {
       }
 
       if (flowRunId) {
-        await this.prisma.smsFlowRun.update({
-          where: { id: flowRunId },
-          data: {
-            status: 'completed',
-            outboundReply: outboundReplyText || null,
-            endedAt: new Date(),
-          },
-        }).catch(() => { });
+        await this.prisma.smsFlowRun
+          .update({
+            where: { id: flowRunId },
+            data: {
+              status: 'completed',
+              outboundReply: outboundReplyText || null,
+              endedAt: new Date(),
+            },
+          })
+          .catch(() => {});
       }
 
       return {
@@ -550,17 +654,31 @@ export class SmsAutomationEngineService {
     const campaign = recipient?.campaign || {};
     const project = campaign?.project || {};
 
-    const nameParts = (recipient?.name || lead?.firstName || 'Client').trim().split(' ');
+    const nameParts = (recipient?.name || lead?.firstName || 'Client')
+      .trim()
+      .split(' ');
     const firstName = lead?.firstName || nameParts[0] || 'Client';
-    const fullName = recipient?.name || `${lead?.firstName || ''} ${lead?.lastName || ''}`.trim() || firstName;
+    const fullName =
+      recipient?.name ||
+      `${lead?.firstName || ''} ${lead?.lastName || ''}`.trim() ||
+      firstName;
 
     return template
       .replace(/{{lead\.firstName}}/gi, firstName)
       .replace(/{{lead\.fullName}}/gi, fullName)
       .replace(/{{lead\.phone}}/gi, recipient?.phone || '')
-      .replace(/{{project\.name}}/gi, project?.name || campaign?.title || 'Luxury Residences')
-      .replace(/{{project\.startingPrice}}/gi, project?.startingPrice || '₹1.50 Cr')
-      .replace(/{{project\.location}}/gi, project?.address || project?.city || 'Prime Location')
+      .replace(
+        /{{project\.name}}/gi,
+        project?.name || campaign?.title || 'Luxury Residences',
+      )
+      .replace(
+        /{{project\.startingPrice}}/gi,
+        project?.startingPrice || '₹1.50 Cr',
+      )
+      .replace(
+        /{{project\.location}}/gi,
+        project?.address || project?.city || 'Prime Location',
+      )
       .replace(/{{agent\.name}}/gi, 'Property Consultant')
       .replace(/{{agent\.phone}}/gi, '+91 98000 00000')
       .replace(/{{shortUrl}}/gi, project?.brochureUrl || 'https://brokeros.io');
@@ -581,24 +699,35 @@ export class SmsAutomationEngineService {
     if (!provider || !fromPhone) {
       const activeIntegration = await this.prisma.smsIntegration.findFirst({
         where: { isActive: true },
-        include: { senderNumbers: { where: { isVerified: true }, orderBy: { createdAt: 'asc' } } },
+        include: {
+          senderNumbers: {
+            where: { isVerified: true },
+            orderBy: { createdAt: 'asc' },
+          },
+        },
         orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
       });
 
       if (activeIntegration) {
         provider = provider || activeIntegration.provider;
-        fromPhone = fromPhone || activeIntegration.senderNumbers[0]?.phoneNumber || activeIntegration.senderNumbers[0]?.senderId || activeIntegration.fromSender;
+        fromPhone =
+          fromPhone ||
+          activeIntegration.senderNumbers[0]?.phoneNumber ||
+          activeIntegration.senderNumbers[0]?.senderId ||
+          activeIntegration.fromSender;
       }
     }
 
     if (!fromPhone || !provider) {
-      this.logger.error(`Cannot dispatch outbound SMS reply: No verified sender number configured for recipient ${recipient?.phone || 'unknown'}`);
+      this.logger.error(
+        `Cannot dispatch outbound SMS reply: No verified sender number configured for recipient ${recipient?.phone || 'unknown'}`,
+      );
       return;
     }
 
     let credentials: SmsProviderCredentials | undefined;
     const integration = await this.prisma.smsIntegration.findFirst({
-      where: { provider: provider as any, isActive: true },
+      where: { provider: provider, isActive: true },
       orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
     });
 
