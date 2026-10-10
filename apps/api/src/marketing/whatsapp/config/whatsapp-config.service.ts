@@ -32,12 +32,12 @@ export class WhatsAppConfigService {
   async getConfig(id?: string) {
     const account = id
       ? await this.prisma.whatsAppBusinessAccount.findUnique({
-        where: { id },
-      })
+          where: { id },
+        })
       : await this.prisma.whatsAppBusinessAccount.findFirst({
-        where: { isActive: true },
-        orderBy: { createdAt: 'desc' },
-      });
+          where: { isActive: true },
+          orderBy: { createdAt: 'desc' },
+        });
 
     if (!account) {
       return null;
@@ -81,9 +81,7 @@ export class WhatsAppConfigService {
     const businessName =
       dto.businessName || phoneInfo?.verified_name || 'WhatsApp Business';
     const displayPhone =
-      dto.displayPhone ||
-      phoneInfo?.display_phone_number ||
-      dto.phoneNumberId;
+      dto.displayPhone || phoneInfo?.display_phone_number || dto.phoneNumberId;
 
     // Try auto-subscribing WABA to app webhooks
     try {
@@ -185,7 +183,10 @@ export class WhatsAppConfigService {
     const account = idOrPhoneNumberId
       ? await this.prisma.whatsAppBusinessAccount.findFirst({
           where: {
-            OR: [{ id: idOrPhoneNumberId }, { phoneNumberId: idOrPhoneNumberId }],
+            OR: [
+              { id: idOrPhoneNumberId },
+              { phoneNumberId: idOrPhoneNumberId },
+            ],
             isActive: true,
           },
         })
