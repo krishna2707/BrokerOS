@@ -20,7 +20,12 @@ export interface CreatePipelineDto {
 export interface UpdatePipelineDto {
   name?: string;
   isDefault?: boolean;
-  stages?: Array<{ id?: string; name: string; position: number; color?: string }>;
+  stages?: Array<{
+    id?: string;
+    name: string;
+    position: number;
+    color?: string;
+  }>;
 }
 
 export interface CreateDealDto {
@@ -64,7 +69,9 @@ export class WhatsAppPipelinesService {
         select: { id: true },
       });
       if (!anyAcc) {
-        throw new BadRequestException('No WhatsApp business account configured');
+        throw new BadRequestException(
+          'No WhatsApp business account configured',
+        );
       }
       return anyAcc.id;
     }
@@ -143,16 +150,19 @@ export class WhatsAppPipelinesService {
   }
 
   async createPipeline(dto: CreatePipelineDto, scopedAccountId?: string) {
-    const accountId = await this.resolveAccountId(dto.accountId || scopedAccountId);
+    const accountId = await this.resolveAccountId(
+      dto.accountId || scopedAccountId,
+    );
 
-    const stages = dto.stages && dto.stages.length > 0
-      ? dto.stages
-      : [
-          { name: 'New Inquiry', position: 0, color: '#3b82f6' },
-          { name: 'Site Visit Scheduled', position: 1, color: '#f59e0b' },
-          { name: 'Negotiation', position: 2, color: '#8b5cf6' },
-          { name: 'Closed Won', position: 3, color: '#10b981' },
-        ];
+    const stages =
+      dto.stages && dto.stages.length > 0
+        ? dto.stages
+        : [
+            { name: 'New Inquiry', position: 0, color: '#3b82f6' },
+            { name: 'Site Visit Scheduled', position: 1, color: '#f59e0b' },
+            { name: 'Negotiation', position: 2, color: '#8b5cf6' },
+            { name: 'Closed Won', position: 3, color: '#10b981' },
+          ];
 
     return this.prisma.whatsAppPipeline.create({
       data: {
@@ -175,7 +185,11 @@ export class WhatsAppPipelinesService {
     });
   }
 
-  async updatePipeline(id: string, dto: UpdatePipelineDto, scopedAccountId?: string) {
+  async updatePipeline(
+    id: string,
+    dto: UpdatePipelineDto,
+    scopedAccountId?: string,
+  ) {
     await this.getPipeline(id, scopedAccountId);
 
     return this.prisma.$transaction(async (tx) => {
@@ -242,7 +256,13 @@ export class WhatsAppPipelinesService {
       where: { pipelineId, accountId },
       include: {
         contact: {
-          select: { id: true, name: true, phone: true, email: true, company: true },
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            email: true,
+            company: true,
+          },
         },
         stage: true,
         assignedUser: {
@@ -259,8 +279,14 @@ export class WhatsAppPipelinesService {
     return { deals };
   }
 
-  async createDeal(dto: CreateDealDto, scopedAccountId?: string, userId?: string) {
-    const accountId = await this.resolveAccountId(dto.accountId || scopedAccountId);
+  async createDeal(
+    dto: CreateDealDto,
+    scopedAccountId?: string,
+    userId?: string,
+  ) {
+    const accountId = await this.resolveAccountId(
+      dto.accountId || scopedAccountId,
+    );
 
     return this.prisma.$transaction(async (tx) => {
       const deal = await tx.whatsAppDeal.create({
@@ -274,7 +300,9 @@ export class WhatsAppPipelinesService {
           value: dto.value ?? 0,
           currency: dto.currency || 'INR',
           notes: dto.notes?.trim(),
-          expectedCloseDate: dto.expectedCloseDate ? new Date(dto.expectedCloseDate) : null,
+          expectedCloseDate: dto.expectedCloseDate
+            ? new Date(dto.expectedCloseDate)
+            : null,
           assignedUserId: dto.assignedUserId,
         },
         include: {
@@ -297,7 +325,12 @@ export class WhatsAppPipelinesService {
     });
   }
 
-  async updateDeal(id: string, dto: UpdateDealDto, scopedAccountId?: string, userId?: string) {
+  async updateDeal(
+    id: string,
+    dto: UpdateDealDto,
+    scopedAccountId?: string,
+    userId?: string,
+  ) {
     const accountId = await this.resolveAccountId(scopedAccountId);
     const existing = await this.prisma.whatsAppDeal.findFirst({
       where: { id, accountId },
@@ -318,7 +351,9 @@ export class WhatsAppPipelinesService {
           currency: dto.currency,
           notes: dto.notes?.trim(),
           status: dto.status,
-          expectedCloseDate: dto.expectedCloseDate ? new Date(dto.expectedCloseDate) : undefined,
+          expectedCloseDate: dto.expectedCloseDate
+            ? new Date(dto.expectedCloseDate)
+            : undefined,
           assignedUserId: dto.assignedUserId,
         },
         include: {
