@@ -66,7 +66,9 @@ export class WhatsAppConversationsService {
         }
       }
     } catch (err: any) {
-      this.logger.warn(`Auto-provisioning conversations skipped: ${err?.message}`);
+      this.logger.warn(
+        `Auto-provisioning conversations skipped: ${err?.message}`,
+      );
     }
 
     const where: Record<string, any> = {

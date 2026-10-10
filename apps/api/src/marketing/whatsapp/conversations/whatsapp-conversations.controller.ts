@@ -28,7 +28,7 @@ export class WhatsAppConversationsController {
   constructor(
     private readonly conversationsService: WhatsAppConversationsService,
     private readonly messagesService: WhatsAppMessagesService,
-  ) { }
+  ) {}
 
   @Get()
   async listConversations(@Query() query: ListWhatsAppConversationsQueryDto) {
