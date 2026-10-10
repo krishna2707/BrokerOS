@@ -2,14 +2,7 @@
 // BrokerOS — Email Settings Tools (AI Config, Quick Replies, Tags) Controller
 // ============================================================================
 
-import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Param,
-  Body,
-} from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
 import { PrismaService } from '../../../lib/database/prisma.service.js';
 import { EmailAiService } from '../ai/email-ai.service.js';
 import {

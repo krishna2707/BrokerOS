@@ -13,14 +13,18 @@ import {
 } from '@nestjs/common';
 import { EmailFlowsService } from '../services/email-flows.service.js';
 import { EmailInboundService } from '../services/email-inbound.service.js';
-import { CreateEmailFlowDto, UpdateEmailFlowDto, SimulateInboundReplyDto } from '../dto/email-flows.dto.js';
+import {
+  CreateEmailFlowDto,
+  UpdateEmailFlowDto,
+  SimulateInboundReplyDto,
+} from '../dto/email-flows.dto.js';
 
 @Controller('api/marketing/email/flows')
 export class EmailFlowsController {
   constructor(
     private readonly flowsService: EmailFlowsService,
     private readonly inboundService: EmailInboundService,
-  ) { }
+  ) {}
 
   @Get()
   async findAll() {
@@ -63,7 +67,10 @@ export class EmailFlowsController {
   }
 
   @Post(':id/simulate')
-  async simulate(@Param('id') id: string, @Body() dto: Partial<SimulateInboundReplyDto>) {
+  async simulate(
+    @Param('id') id: string,
+    @Body() dto: Partial<SimulateInboundReplyDto>,
+  ) {
     return this.inboundService.simulateInboundReply({
       flowId: id,
       leadEmail: dto.leadEmail || 'prospect-tester@example.com',
