@@ -199,7 +199,9 @@ export class WhatsAppBroadcastsService {
       );
     }
 
-    const scheduledDate = dto.scheduledAt ? new Date(dto.scheduledAt) : new Date();
+    const scheduledDate = dto.scheduledAt
+      ? new Date(dto.scheduledAt)
+      : new Date();
     const initialStatus = 'SCHEDULED' as const;
 
     // 3. Atomically persist Broadcast and child Recipients
