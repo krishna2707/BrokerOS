@@ -19,7 +19,7 @@ import {
 
 @Controller('api/marketing/whatsapp/config')
 export class WhatsAppConfigController {
-  constructor(private readonly configService: WhatsAppConfigService) { }
+  constructor(private readonly configService: WhatsAppConfigService) {}
 
   @Get()
   async getCurrentConfig() {
