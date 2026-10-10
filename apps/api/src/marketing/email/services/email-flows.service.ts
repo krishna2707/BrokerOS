@@ -4,7 +4,10 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../lib/database/prisma.service.js';
-import type { CreateEmailFlowDto, UpdateEmailFlowDto } from '../dto/email-flows.dto.js';
+import type {
+  CreateEmailFlowDto,
+  UpdateEmailFlowDto,
+} from '../dto/email-flows.dto.js';
 
 @Injectable()
 export class EmailFlowsService {
@@ -73,7 +76,10 @@ export class EmailFlowsService {
           name: dto.name,
           description: dto.description,
           triggerType: dto.triggerType || 'keyword_match',
-          triggerConfig: (dto.triggerConfig as any) || { keywords: ['visit', 'price'], matchMode: 'contains' },
+          triggerConfig: (dto.triggerConfig as any) || {
+            keywords: ['visit', 'price'],
+            matchMode: 'contains',
+          },
           isGlobal: dto.isGlobal ?? true,
           campaignIds: dto.campaignIds || [],
           projectId: dto.projectId,

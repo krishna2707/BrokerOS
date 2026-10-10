@@ -6,7 +6,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../lib/database/prisma.service.js';
 import { EmailAutomationEngineService } from '../automations/email-automation-engine.service.js';
 import { EmailAiService } from '../ai/email-ai.service.js';
-import type { UniversalInboundEmailDto, SimulateInboundReplyDto } from '../dto/email-flows.dto.js';
+import type {
+  UniversalInboundEmailDto,
+  SimulateInboundReplyDto,
+} from '../dto/email-flows.dto.js';
 
 @Injectable()
 export class EmailInboundService {
@@ -16,7 +19,7 @@ export class EmailInboundService {
     private readonly prisma: PrismaService,
     private readonly automationEngine: EmailAutomationEngineService,
     private readonly aiService: EmailAiService,
-  ) { }
+  ) {}
 
   /**
    * Universal processor for parsed inbound emails.
@@ -30,13 +33,17 @@ export class EmailInboundService {
     const providerMsgId = dto.messageId;
     const inReplyTo = dto.inReplyTo;
 
-    this.logger.log(`Received Inbound Email via ${provider}: from=${fromEmail} to=${toEmail}`);
+    this.logger.log(
+      `Received Inbound Email via ${provider}: from=${fromEmail} to=${toEmail}`,
+    );
 
     // 1. Resolve CampaignRecipient by envelope and previous thread
     let matchedRecipient = await this.prisma.campaignRecipient.findFirst({
       where: {
         email: { equals: fromEmail, mode: 'insensitive' },
-        ...(toEmail ? { assignedSenderEmail: { equals: toEmail, mode: 'insensitive' } } : {}),
+        ...(toEmail
+          ? { assignedSenderEmail: { equals: toEmail, mode: 'insensitive' } }
+          : {}),
       },
       include: {
         campaign: {
@@ -114,9 +121,16 @@ export class EmailInboundService {
             leadId: matchedRecipient?.leadId || null,
             campaignId: matchedRecipient?.campaignId || null,
             recipientId: matchedRecipient?.id || null,
-            assignedProvider: matchedRecipient?.assignedProvider || provider || 'SYSTEM_DEFAULT',
-            assignedSenderEmail: toEmail || matchedRecipient?.assignedSenderEmail || 'sales@brokeros.com',
-            assignedSenderName: matchedRecipient?.campaign?.fromName || 'Sales Team',
+            assignedProvider:
+              matchedRecipient?.assignedProvider ||
+              provider ||
+              'SYSTEM_DEFAULT',
+            assignedSenderEmail:
+              toEmail ||
+              matchedRecipient?.assignedSenderEmail ||
+              'sales@brokeros.com',
+            assignedSenderName:
+              matchedRecipient?.campaign?.fromName || 'Sales Team',
             status: 'open',
             unreadCount: 1,
             lastMessageText: body.slice(0, 180) || 'New inbound email',
@@ -131,8 +145,12 @@ export class EmailInboundService {
             lastMessageText: body.slice(0, 180) || 'New inbound reply',
             lastMessageAt: new Date(),
             status: 'open',
-            ...(matchedRecipient?.leadId && !conversation.leadId ? { leadId: matchedRecipient.leadId } : {}),
-            ...(matchedRecipient?.assignedProvider ? { assignedProvider: matchedRecipient.assignedProvider } : {}),
+            ...(matchedRecipient?.leadId && !conversation.leadId
+              ? { leadId: matchedRecipient.leadId }
+              : {}),
+            ...(matchedRecipient?.assignedProvider
+              ? { assignedProvider: matchedRecipient.assignedProvider }
+              : {}),
             ...(toEmail ? { assignedSenderEmail: toEmail } : {}),
           },
         });
@@ -158,7 +176,9 @@ export class EmailInboundService {
         },
       });
     } catch (err: any) {
-      this.logger.warn(`Failed to sync inbound email to EmailConversation: ${err.message}`);
+      this.logger.warn(
+        `Failed to sync inbound email to EmailConversation: ${err.message}`,
+      );
     }
 
     // 4. Dispatch to Email Automation Engine
@@ -208,7 +228,9 @@ export class EmailInboundService {
           });
         }
       } catch (err: any) {
-        this.logger.warn(`Failed to record bot reply to EmailMessage: ${err.message}`);
+        this.logger.warn(
+          `Failed to record bot reply to EmailMessage: ${err.message}`,
+        );
       }
     }
 
@@ -357,10 +379,19 @@ export class EmailInboundService {
     const from = body?.from || body?.sender || '';
     const to = body?.recipient || body?.to || '';
     const subject = body?.subject || '';
-    const text = body?.['stripped-text'] || body?.['body-plain'] || body?.text || '';
-    const html = body?.['stripped-html'] || body?.['body-html'] || body?.html || '';
-    const messageId = headers?.['message-id'] || body?.['Message-Id'] || body?.['message-id'] || body?.id;
-    const inReplyTo = headers?.['in-reply-to'] || body?.['In-Reply-To'] || body?.['in-reply-to'];
+    const text =
+      body?.['stripped-text'] || body?.['body-plain'] || body?.text || '';
+    const html =
+      body?.['stripped-html'] || body?.['body-html'] || body?.html || '';
+    const messageId =
+      headers?.['message-id'] ||
+      body?.['Message-Id'] ||
+      body?.['message-id'] ||
+      body?.id;
+    const inReplyTo =
+      headers?.['in-reply-to'] ||
+      body?.['In-Reply-To'] ||
+      body?.['in-reply-to'];
 
     return this.handleInboundEmail({
       from,
@@ -383,20 +414,26 @@ export class EmailInboundService {
     // Handle Cloud Pub/Sub base64 payload if wrapped
     if (body?.message?.data && typeof body.message.data === 'string') {
       try {
-        const decoded = Buffer.from(body.message.data, 'base64').toString('utf8');
+        const decoded = Buffer.from(body.message.data, 'base64').toString(
+          'utf8',
+        );
         parsedBody = JSON.parse(decoded);
       } catch {
         // use original body if decoding fails
       }
     }
 
-    const from = parsedBody?.from || parsedBody?.sender || parsedBody?.emailAddress || '';
+    const from =
+      parsedBody?.from || parsedBody?.sender || parsedBody?.emailAddress || '';
     const to = parsedBody?.to || parsedBody?.recipient || '';
     const subject = parsedBody?.subject || '';
-    const text = parsedBody?.text || parsedBody?.snippet || parsedBody?.body || '';
+    const text =
+      parsedBody?.text || parsedBody?.snippet || parsedBody?.body || '';
     const html = parsedBody?.html || '';
-    const messageId = headers?.['message-id'] || parsedBody?.messageId || parsedBody?.id;
-    const inReplyTo = headers?.['in-reply-to'] || parsedBody?.inReplyTo || parsedBody?.threadId;
+    const messageId =
+      headers?.['message-id'] || parsedBody?.messageId || parsedBody?.id;
+    const inReplyTo =
+      headers?.['in-reply-to'] || parsedBody?.inReplyTo || parsedBody?.threadId;
 
     return this.handleInboundEmail({
       from,
@@ -416,7 +453,9 @@ export class EmailInboundService {
    */
   async parseOutlookInbound(body: any, headers?: any) {
     // If MS Graph notification with resourceData
-    const item = Array.isArray(body?.value) ? body.value[0]?.resourceData || body.value[0] : body;
+    const item = Array.isArray(body?.value)
+      ? body.value[0]?.resourceData || body.value[0]
+      : body;
 
     const from =
       item?.from?.emailAddress?.address ||
@@ -425,15 +464,20 @@ export class EmailInboundService {
       item?.sender ||
       '';
     const to =
-      (Array.isArray(item?.toRecipients) ? item.toRecipients[0]?.emailAddress?.address : null) ||
+      (Array.isArray(item?.toRecipients)
+        ? item.toRecipients[0]?.emailAddress?.address
+        : null) ||
       item?.to ||
       item?.recipient ||
       '';
     const subject = item?.subject || '';
     const text = item?.body?.content || item?.text || item?.bodyPreview || '';
-    const html = item?.body?.contentType === 'html' ? item.body.content : item?.html;
-    const messageId = headers?.['message-id'] || item?.internetMessageId || item?.id;
-    const inReplyTo = headers?.['in-reply-to'] || item?.conversationId || item?.inReplyTo;
+    const html =
+      item?.body?.contentType === 'html' ? item.body.content : item?.html;
+    const messageId =
+      headers?.['message-id'] || item?.internetMessageId || item?.id;
+    const inReplyTo =
+      headers?.['in-reply-to'] || item?.conversationId || item?.inReplyTo;
 
     return this.handleInboundEmail({
       from,
@@ -477,7 +521,8 @@ export class EmailInboundService {
    * Live Test Simulator: Injects a test lead reply without DNS MX setup
    */
   async simulateInboundReply(dto: SimulateInboundReplyDto) {
-    const fromEmail = this.cleanEmail(dto.leadEmail) || 'prospect-tester@example.com';
+    const fromEmail =
+      this.cleanEmail(dto.leadEmail) || 'prospect-tester@example.com';
     const toEmail = this.cleanEmail(dto.senderEmail) || 'sales@brokeros.com';
 
     const automationResult = await this.automationEngine.processInboundReply({
@@ -492,7 +537,9 @@ export class EmailInboundService {
 
     const outputText =
       automationResult.outboundReply ||
-      (automationResult.actionsExecuted?.length ? automationResult.actionsExecuted.join('\n') : null) ||
+      (automationResult.actionsExecuted?.length
+        ? automationResult.actionsExecuted.join('\n')
+        : null) ||
       'Inbound simulation processed with no outbound action.';
 
     return {
@@ -504,7 +551,8 @@ export class EmailInboundService {
       actionsExecuted: automationResult.actionsExecuted || [],
       outboundReply: automationResult.outboundReply || null,
       renderedSubject: automationResult.renderedSubject || null,
-      renderedBody: automationResult.renderedBody || automationResult.outboundReply || null,
+      renderedBody:
+        automationResult.renderedBody || automationResult.outboundReply || null,
       summary: outputText,
       output: {
         text: outputText,

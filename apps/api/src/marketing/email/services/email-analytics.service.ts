@@ -139,19 +139,25 @@ export class EmailAnalyticsService {
         const pSent = Math.max(pool.sentCount, poolDelivered + poolBounced);
         const pDelivered = Math.max(pool.deliveredCount, poolDelivered);
         const pOpenRate = pDelivered > 0 ? (poolOpened / pDelivered) * 100 : 0;
-        const pClickRate = pDelivered > 0 ? (poolClicked / pDelivered) * 100 : 0;
+        const pClickRate =
+          pDelivered > 0 ? (poolClicked / pDelivered) * 100 : 0;
         const pBounceRate = pSent > 0 ? (poolBounced / pSent) * 100 : 0;
 
         return {
           senderPoolId: pool.id,
           domain: pool.senderDomain?.domain || pool.domain || 'default',
-          fromEmail: pool.senderDomain?.fromEmail || pool.fromEmail || 'default',
-          fromName: pool.senderDomain?.fromName || pool.fromName || 'Sales Team',
-          provider: (pool.senderDomain?.integration?.provider || pool.provider || 'SYSTEM_DEFAULT') as any,
+          fromEmail:
+            pool.senderDomain?.fromEmail || pool.fromEmail || 'default',
+          fromName:
+            pool.senderDomain?.fromName || pool.fromName || 'Sales Team',
+          provider: (pool.senderDomain?.integration?.provider ||
+            pool.provider ||
+            'SYSTEM_DEFAULT') as any,
           allocatedRecipients: pool.allocatedRecipients,
           sentCount: pSent,
           deliveredCount: pDelivered,
-          deliveryRate: pSent > 0 ? Number(((pDelivered / pSent) * 100).toFixed(1)) : 0,
+          deliveryRate:
+            pSent > 0 ? Number(((pDelivered / pSent) * 100).toFixed(1)) : 0,
           openedCount: poolOpened,
           openRate: Number(pOpenRate.toFixed(1)),
           clickedCount: poolClicked,
@@ -205,42 +211,51 @@ export class EmailAnalyticsService {
     // Track inbound replies associated with this campaign or recipient
     const repliedMessages = await this.prisma.emailInboundMessage.findMany({
       where: {
-        OR: [{ matchedCampaignId: campaignId }, { matchedRecipientId: { not: null } }],
+        OR: [
+          { matchedCampaignId: campaignId },
+          { matchedRecipientId: { not: null } },
+        ],
       },
       select: { matchedRecipientId: true },
     });
     const repliedRecipientIds = new Set(
-      repliedMessages.map((m) => m.matchedRecipientId).filter(Boolean) as string[],
+      repliedMessages
+        .map((m) => m.matchedRecipientId)
+        .filter(Boolean) as string[],
     );
 
     // Compute live counter breakdown across the entire campaign
-    const [totalCount, openedCount, clickedCount, bouncedCount, crmLeadsCount] = await Promise.all([
-      this.prisma.campaignRecipient.count({ where: { campaignId } }),
-      this.prisma.campaignRecipient.count({
-        where: {
-          campaignId,
-          OR: [{ openCount: { gt: 0 } }, { status: { in: ['OPENED', 'CLICKED'] } }],
-        },
-      }),
-      this.prisma.campaignRecipient.count({
-        where: {
-          campaignId,
-          OR: [{ clickCount: { gt: 0 } }, { status: 'CLICKED' }],
-        },
-      }),
-      this.prisma.campaignRecipient.count({
-        where: {
-          campaignId,
-          status: { in: ['BOUNCED', 'FAILED'] },
-        },
-      }),
-      this.prisma.campaignRecipient.count({
-        where: {
-          campaignId,
-          leadId: { not: null },
-        },
-      }),
-    ]);
+    const [totalCount, openedCount, clickedCount, bouncedCount, crmLeadsCount] =
+      await Promise.all([
+        this.prisma.campaignRecipient.count({ where: { campaignId } }),
+        this.prisma.campaignRecipient.count({
+          where: {
+            campaignId,
+            OR: [
+              { openCount: { gt: 0 } },
+              { status: { in: ['OPENED', 'CLICKED'] } },
+            ],
+          },
+        }),
+        this.prisma.campaignRecipient.count({
+          where: {
+            campaignId,
+            OR: [{ clickCount: { gt: 0 } }, { status: 'CLICKED' }],
+          },
+        }),
+        this.prisma.campaignRecipient.count({
+          where: {
+            campaignId,
+            status: { in: ['BOUNCED', 'FAILED'] },
+          },
+        }),
+        this.prisma.campaignRecipient.count({
+          where: {
+            campaignId,
+            leadId: { not: null },
+          },
+        }),
+      ]);
 
     const repliedCount = repliedRecipientIds.size;
     const unopenedCount = Math.max(0, totalCount - openedCount - bouncedCount);
@@ -259,7 +274,10 @@ export class EmailAnalyticsService {
 
     // Filter by Engagement
     if (query?.engagement === 'OPENED') {
-      where.OR = [{ openCount: { gt: 0 } }, { status: { in: ['OPENED', 'CLICKED'] } }];
+      where.OR = [
+        { openCount: { gt: 0 } },
+        { status: { in: ['OPENED', 'CLICKED'] } },
+      ];
     } else if (query?.engagement === 'CLICKED') {
       where.OR = [{ clickCount: { gt: 0 } }, { status: 'CLICKED' }];
     } else if (query?.engagement === 'UNOPENED') {

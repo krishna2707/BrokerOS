@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../lib/database/prisma.service.js';
 import type {
   IEmailMarketingProvider,
@@ -31,7 +35,7 @@ export class EmailIntegrationsService {
   private readonly outlookAdapter = new OutlookAdapter();
   private readonly constantContactAdapter = new ConstantContactAdapter();
 
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   getAdapter(providerType: string): IEmailMarketingProvider {
     switch (providerType) {
@@ -64,18 +68,36 @@ export class EmailIntegrationsService {
       awsRegion: intOrDto.awsRegion || undefined,
       mailchimpServer: intOrDto.mailchimpServer || undefined,
       mailgunDomain: intOrDto.mailgunDomain || undefined,
-      mailgunRegion: (intOrDto.mailgunRegion as any) || undefined,
-      googleClientId: intOrDto.oauthClientId || intOrDto.googleClientId || undefined,
-      googleClientSecret: intOrDto.oauthClientSecret || intOrDto.googleClientSecret || undefined,
-      googleRefreshToken: intOrDto.oauthRefreshToken || intOrDto.googleRefreshToken || undefined,
+      mailgunRegion: intOrDto.mailgunRegion || undefined,
+      googleClientId:
+        intOrDto.oauthClientId || intOrDto.googleClientId || undefined,
+      googleClientSecret:
+        intOrDto.oauthClientSecret || intOrDto.googleClientSecret || undefined,
+      googleRefreshToken:
+        intOrDto.oauthRefreshToken || intOrDto.googleRefreshToken || undefined,
       googleAppPassword: intOrDto.googleAppPassword || undefined,
-      microsoftTenantId: intOrDto.oauthTenantId || intOrDto.microsoftTenantId || undefined,
-      microsoftClientId: intOrDto.oauthClientId || intOrDto.microsoftClientId || undefined,
-      microsoftClientSecret: intOrDto.oauthClientSecret || intOrDto.microsoftClientSecret || undefined,
-      microsoftRefreshToken: intOrDto.oauthRefreshToken || intOrDto.microsoftRefreshToken || undefined,
-      constantContactApiKey: intOrDto.constantContactApiKey || intOrDto.apiKey || undefined,
-      constantContactSecret: intOrDto.constantContactSecret || intOrDto.oauthClientSecret || undefined,
-      constantContactRefreshToken: intOrDto.constantContactRefreshToken || intOrDto.oauthRefreshToken || undefined,
+      microsoftTenantId:
+        intOrDto.oauthTenantId || intOrDto.microsoftTenantId || undefined,
+      microsoftClientId:
+        intOrDto.oauthClientId || intOrDto.microsoftClientId || undefined,
+      microsoftClientSecret:
+        intOrDto.oauthClientSecret ||
+        intOrDto.microsoftClientSecret ||
+        undefined,
+      microsoftRefreshToken:
+        intOrDto.oauthRefreshToken ||
+        intOrDto.microsoftRefreshToken ||
+        undefined,
+      constantContactApiKey:
+        intOrDto.constantContactApiKey || intOrDto.apiKey || undefined,
+      constantContactSecret:
+        intOrDto.constantContactSecret ||
+        intOrDto.oauthClientSecret ||
+        undefined,
+      constantContactRefreshToken:
+        intOrDto.constantContactRefreshToken ||
+        intOrDto.oauthRefreshToken ||
+        undefined,
       fromEmail: intOrDto.fromEmail,
       fromName: intOrDto.fromName,
       replyTo: intOrDto.replyTo,
@@ -156,8 +178,8 @@ export class EmailIntegrationsService {
 
     const resolvedFromEmail =
       dto.fromEmail &&
-        dto.fromEmail.includes('@') &&
-        dto.fromEmail !== 'marketing@example.com'
+      dto.fromEmail.includes('@') &&
+      dto.fromEmail !== 'marketing@example.com'
         ? dto.fromEmail
         : credentials?.fromEmail || dto.fromEmail || 'marketing@example.com';
 
@@ -290,11 +312,17 @@ export class EmailIntegrationsService {
 
     // Upsert discovered identities
     for (const identity of discovered) {
-      const email = (identity.fromEmail || identity.email || '').toLowerCase().trim();
+      const email = (identity.fromEmail || identity.email || '')
+        .toLowerCase()
+        .trim();
       if (!email || !email.includes('@')) continue;
 
       const domain = identity.domain || email.split('@')[1] || '';
-      const fromName = identity.fromName || identity.name || integration.fromName || 'Sales Team';
+      const fromName =
+        identity.fromName ||
+        identity.name ||
+        integration.fromName ||
+        'Sales Team';
       const existing = await this.prisma.marketingSenderDomain.findFirst({
         where: { integrationId, fromEmail: email },
       });
@@ -334,9 +362,15 @@ export class EmailIntegrationsService {
         let isDefaultVerified = discovered.some(
           (d: any) => (d.fromEmail || '').toLowerCase().trim() === defaultEmail,
         );
-        if (!isDefaultVerified && typeof (adapter as any).verifySenderIdentity === 'function') {
+        if (
+          !isDefaultVerified &&
+          typeof (adapter as any).verifySenderIdentity === 'function'
+        ) {
           try {
-            const v = await (adapter as any).verifySenderIdentity(defaultEmail, credentials);
+            const v = await (adapter as any).verifySenderIdentity(
+              defaultEmail,
+              credentials,
+            );
             isDefaultVerified = Boolean(v.isVerified);
           } catch {
             isDefaultVerified = true;
@@ -395,7 +429,10 @@ export class EmailIntegrationsService {
 
     if (typeof (adapter as any).verifySenderIdentity === 'function') {
       try {
-        const verifyRes = await (adapter as any).verifySenderIdentity(email, credentials);
+        const verifyRes = await (adapter as any).verifySenderIdentity(
+          email,
+          credentials,
+        );
         if (!verifyRes.isVerified) {
           throw new BadRequestException(
             verifyRes.reason ||

@@ -16,7 +16,7 @@ import {
 
 @Injectable()
 export class EmailAudienceService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   buildLeadWhereClause(
     filters: any = {},
@@ -359,7 +359,9 @@ export class EmailAudienceService {
     } else if (dto.campaignIds && dto.campaignIds.length > 0) {
       where.campaignId = { in: dto.campaignIds };
     } else {
-      throw new BadRequestException('At least one campaignId or recipientId is required');
+      throw new BadRequestException(
+        'At least one campaignId or recipientId is required',
+      );
     }
 
     const recipients = await this.prisma.campaignRecipient.findMany({
