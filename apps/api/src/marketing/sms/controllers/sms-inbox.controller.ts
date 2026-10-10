@@ -25,7 +25,7 @@ import {
 
 @Controller('api/marketing/sms/inbox')
 export class SmsInboxController {
-  constructor(private readonly inboxService: SmsInboxService) { }
+  constructor(private readonly inboxService: SmsInboxService) {}
 
   @Get('conversations')
   async listConversations(@Query() query: ListSmsConversationsQueryDto) {
@@ -108,4 +108,3 @@ export class SmsInboxController {
     return this.inboxService.draftAiReply(id, dto);
   }
 }
-

@@ -14,7 +14,7 @@ import { BirdSmsWebhookParser } from '@brokeros/int-sms-bird';
 @Public()
 @Controller('api/marketing/sms/webhooks')
 export class SmsWebhooksController {
-  constructor(private readonly smsService: SmsService) { }
+  constructor(private readonly smsService: SmsService) {}
 
   @Post('twilio')
   @HttpCode(200)

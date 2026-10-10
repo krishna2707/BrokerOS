@@ -44,10 +44,7 @@ export class SmsIntegrationsController {
   }
 
   @Post(':id/numbers')
-  async addNumber(
-    @Param('id') id: string,
-    @Body() dto: AddSenderNumberDto,
-  ) {
+  async addNumber(@Param('id') id: string, @Body() dto: AddSenderNumberDto) {
     return this.smsService.addSenderNumber(id, dto);
   }
 

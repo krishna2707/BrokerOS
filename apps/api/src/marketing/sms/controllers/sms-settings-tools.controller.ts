@@ -2,21 +2,11 @@
 // BrokerOS — SMS Settings Tools (AI Config, Quick Replies, Tags) Controller
 // ============================================================================
 
-import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Param,
-  Body,
-} from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
 import { PrismaService } from '../../../lib/database/prisma.service.js';
 import { SmsAiService } from '../ai/sms-ai.service.js';
 import { DEFAULT_SMS_QUICK_REPLIES } from '@brokeros/constants';
-import {
-  SaveSmsAiConfigDto,
-  CreateSmsTagDto,
-} from '../dto/sms-flows.dto.js';
+import { SaveSmsAiConfigDto, CreateSmsTagDto } from '../dto/sms-flows.dto.js';
 
 @Controller('api/marketing/sms')
 export class SmsSettingsToolsController {
@@ -38,7 +28,9 @@ export class SmsSettingsToolsController {
   }
 
   @Post('ai/test')
-  async testAi(@Body() body: { text: string; instructions?: string; leadName?: string }) {
+  async testAi(
+    @Body() body: { text: string; instructions?: string; leadName?: string },
+  ) {
     return this.aiService.generateAutoreply({
       inboundBody: body.text || 'Is a 3BHK available?',
       customInstructions: body.instructions,
