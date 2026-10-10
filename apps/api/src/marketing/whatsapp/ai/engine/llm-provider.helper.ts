@@ -13,7 +13,15 @@ export interface LlmCompletionRequest {
 export async function callLlmChatCompletion(
   req: LlmCompletionRequest,
 ): Promise<string> {
-  const { provider, model, apiKey, systemPrompt, messages, logger, temperature = 0.8 } = req;
+  const {
+    provider,
+    model,
+    apiKey,
+    systemPrompt,
+    messages,
+    logger,
+    temperature = 0.8,
+  } = req;
 
   let endpoint = 'https://api.groq.com/openai/v1/chat/completions';
   if (provider === 'openai') {
@@ -29,10 +37,7 @@ export async function callLlmChatCompletion(
       },
       body: JSON.stringify({
         model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages,
-        ],
+        messages: [{ role: 'system', content: systemPrompt }, ...messages],
         max_tokens: 500,
         temperature,
       }),
