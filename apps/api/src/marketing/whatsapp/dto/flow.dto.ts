@@ -16,7 +16,14 @@ export class FlowNodeInputDto {
   @IsOptional()
   id?: string;
 
-  @Transform(({ obj, value }) => value || obj?.node_key || obj?.id || obj?.key || ('node_' + Math.random().toString(36).slice(2, 7)))
+  @Transform(
+    ({ obj, value }) =>
+      value ||
+      obj?.node_key ||
+      obj?.id ||
+      obj?.key ||
+      'node_' + Math.random().toString(36).slice(2, 7),
+  )
   @IsString()
   @IsOptional()
   nodeKey?: string;

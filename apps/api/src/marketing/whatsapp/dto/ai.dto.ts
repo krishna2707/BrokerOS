@@ -50,4 +50,3 @@ export class DraftReplyDto {
   @IsOptional()
   instruction?: string;
 }
-
