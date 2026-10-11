@@ -14,6 +14,7 @@ import {
   InventorySellThroughData,
 } from "../components/InventorySellThroughChart";
 import { Loader2, TrendingUp } from "lucide-react";
+import { ExportAnalyticsReportButton } from "@/components/analytics/ExportAnalyticsReportButton";
 
 interface AnalyticsData {
   widgets: PostSalesAnalyticsWidgetsData;
@@ -74,6 +75,40 @@ export default function PostSalesAnalytics() {
     load();
   }, [timeRange]);
 
+  const reportPayload = data
+    ? {
+      departmentName: "Post-Sales Manager Operations & Handover Analytics",
+      departmentCode: "POST_SALES_MANAGER",
+      timeRange,
+      generatedAt: new Date().toLocaleString(),
+      summaryCards: [
+        { label: "Booked Pipeline", value: data.widgets?.totalBooked ?? 0, subtitle: "Total Booked" },
+        { label: "Handover Completed", value: data.widgets?.totalHandoverCompleted ?? 0, subtitle: "Possessions delivered" },
+        { label: "Total Revenue Collected", value: `₹${(data.widgets?.totalRevenue || 0).toLocaleString()}`, subtitle: "Collections" },
+        { label: "Inbound Brokerage Earned", value: `₹${(data.widgets?.totalCommission || 0).toLocaleString()}`, subtitle: "Brokerage Commission" },
+        { label: "Avg Handover Velocity", value: `${data.velocity ?? 0} days`, subtitle: "Booking to keys" },
+      ],
+      funnelStages: [
+        { name: "Booking", count: data.funnel?.booking ?? 0, color: "#ec4899" },
+        { name: "Document Verification", count: data.funnel?.document ?? 0, color: "#8b5cf6" },
+        { name: "Loan Sanction", count: data.funnel?.loan ?? 0, color: "#f59e0b" },
+        { name: "Sale Agreement", count: data.funnel?.agreement ?? 0, color: "#3b82f6" },
+        { name: "Possession Handover", count: data.funnel?.handover ?? 0, color: "#10b981" },
+      ],
+      financialMetrics: [
+        { label: "Aggregate Booking Collections", value: `₹${(data.widgets?.totalRevenue || 0).toLocaleString()}` },
+        { label: "Inbound Builder Commission", value: `₹${(data.widgets?.totalCommission || 0).toLocaleString()}` },
+      ],
+      activityMetrics: [
+        { label: "Loan Cases Approved", value: data.loanSuccessRate?.approved ?? 0 },
+        { label: "Loan Cases In Progress", value: data.loanSuccessRate?.inProgress ?? 0 },
+        { label: "Loan Cases Rejected", value: data.loanSuccessRate?.rejected ?? 0 },
+        { label: "Handovers Scheduled", value: data.handoverReadiness?.scheduled ?? 0 },
+        { label: "Keys Handed Over", value: data.handoverReadiness?.handedOver ?? 0 },
+      ],
+    }
+    : null;
+
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-8 animate-enter">
       {/* Header */}
@@ -90,25 +125,32 @@ export default function PostSalesAnalytics() {
           </p>
         </div>
 
-        <div className="flex bg-slate-100 p-1 rounded-full border border-slate-200/60">
-          {[
-            { id: "weekly", label: "Weekly" },
-            { id: "monthly", label: "Monthly" },
-            { id: "yearly", label: "Yearly" },
-            { id: "all-time", label: "All Time" },
-          ].map((r) => (
-            <button
-              key={r.id}
-              onClick={() => setTimeRange(r.id)}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                timeRange === r.id
-                  ? "bg-white text-[var(--text-primary)] shadow-xs"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              {r.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex bg-slate-100 p-1 rounded-full border border-slate-200/60">
+            {[
+              { id: "weekly", label: "Weekly" },
+              { id: "monthly", label: "Monthly" },
+              { id: "yearly", label: "Yearly" },
+              { id: "all-time", label: "All Time" },
+            ].map((r) => (
+              <button
+                key={r.id}
+                onClick={() => setTimeRange(r.id)}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  timeRange === r.id
+                    ? "bg-white text-[var(--text-primary)] shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+
+          <ExportAnalyticsReportButton
+            payload={reportPayload}
+            filenamePrefix="postsales_manager_analytics"
+          />
         </div>
       </div>
 
