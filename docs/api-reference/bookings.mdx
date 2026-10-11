@@ -1,0 +1,202 @@
+---
+title: "Bookings API"
+sidebarTitle: "Bookings"
+description: "Create bookings, lock inventory units, upload KYC documents, and manage post-sales lifecycle."
+---
+
+The Bookings API transforms a qualified Lead into a confirmed deal. Booking a unit automatically updates the inventory matrix (`status: SOLD`), converts the lead into a post-sales `Customer` entity, and initiates the post-sales lifecycle (bank loan sanction, builder-buyer agreement, and handover).
+
+```http
+BASE URL: /api/leads
+```
+
+---
+
+## Endpoints Summary
+
+| Method | Path | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/leads/:id/booking` | Retrieve active booking details for a lead | Authenticated |
+| `POST` | `/api/leads/:id/booking` | Create or draft a new unit booking | Authenticated |
+| `PATCH` | `/api/leads/:id/booking` | Update terms, payment references, or agreed price | Authenticated |
+| `POST` | `/api/leads/:id/booking/done` | Confirm booking (marks unit SOLD & converts lead to Customer) | Authenticated |
+| `POST` | `/api/leads/:id/booking/cancel` | Cancel booking and release inventory hold | Authenticated |
+| `POST` | `/api/leads/:id/booking/documents` | Upload KYC documents (PAN, Aadhaar, Cheque copy) | Authenticated |
+| `POST` | `/api/leads/:id/booking/loan-case` | Update home loan application progress and bank details | Authenticated |
+| `POST` | `/api/leads/:id/booking/agreement` | Save agreement for sale draft and registration dates | Authenticated |
+| `POST` | `/api/leads/:id/booking/handover` | Save key handover, snags, and possession checklist | Authenticated |
+| `POST` | `/api/leads/:id/booking/post-sales-file` | Upload files for loan, agreement, or handover stages | Authenticated |
+
+---
+
+## Create Booking
+
+```http
+POST /api/leads/:id/booking
+```
+
+Creates a new booking record associated with the specified lead.
+
+### Request Body
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `userId` | `string` | **Yes** | Executive ID creating the booking |
+| `unitId` | `string` | No | ID of the inventory unit being purchased |
+| `unitDescription` | `string` | No | Unit layout description (e.g. `Tower 2, Unit 804, 3BHK 1650 sq.ft.`) |
+| `agreedPrice` | `number` | No | Final agreed sale consideration (in local currency) |
+| `bookingAmount` | `number` | No | Token payment received (e.g. `500000`) |
+| `paymentMode` | `string` | No | `CHEQUE`, `NEFT_RTGS`, `UPI`, `CREDIT_CARD`, `DEMAND_DRAFT` |
+| `transactionRef` | `string` | No | UTR number, cheque number, or gateway payment ID |
+| `commissionPercentage` | `number` | No | Applicable CP commission percentage (e.g. `2.5`) |
+| `commissionAmount` | `number` | No | Calculated broker commission payout |
+| `loanRequired` | `boolean` | No | Flag indicating if buyer needs bank financing assistance |
+| `remarks` | `string` | No | Special terms, parking allocations, or payment schedules |
+
+### Request Example
+
+```json
+{
+  "userId": "cm123user002",
+  "unitId": "cm123unit804",
+  "unitDescription": "Tower B, Flat 804, 3BHK East-facing",
+  "agreedPrice": 13500000,
+  "bookingAmount": 500000,
+  "paymentMode": "NEFT_RTGS",
+  "transactionRef": "HDFC0001928374",
+  "loanRequired": true,
+  "commissionPercentage": 2.0,
+  "remarks": "Covered parking slot #B1-44 included in agreed consideration"
+}
+```
+
+---
+
+## Confirm Booking
+
+```http
+POST /api/leads/:id/booking/done
+```
+
+Finalizes the transaction. Executing this endpoint triggers three core CRM events:
+1. Changes the inventory `Unit` status to `SOLD`.
+2. Converts the `Lead` record into an official `Customer` entity.
+3. Automatically opens Post-Sales tracking (Loan Case, Agreement, Possession).
+
+### Request Body
+
+```json
+{
+  "bookingId": "cm123book001"
+}
+```
+
+---
+
+## Cancel Booking
+
+```http
+POST /api/leads/:id/booking/cancel
+```
+
+Cancels an active booking, releases the unit back into available inventory (`status: AVAILABLE`), and logs the cancellation reason for audit purposes.
+
+### Request Body
+
+```json
+{
+  "bookingId": "cm123book001",
+  "reason": "Customer loan application rejected by multiple banks; token refunded per cancellation policy"
+}
+```
+
+---
+
+## Upload Booking Document
+
+```http
+POST /api/leads/:id/booking/documents
+Content-Type: multipart/form-data
+```
+
+Uploads buyer identification and financial documents directly to Vercel Blob storage.
+
+### Form Fields
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `file` | `binary` | Document file (PDF, JPG, PNG) |
+| `bookingId` | `string` | Target booking UUID |
+| `docType` | `string` | `PAN_CARD`, `AADHAAR_CARD`, `PASSPORT`, `CHEQUE_COPY`, `APPLICATION_FORM` |
+| `description` | `string` | Optional description (e.g. `Primary applicant PAN card`) |
+
+---
+
+## Post-Sales Workflow Endpoints
+
+```mermaid
+graph LR
+    A[Booking Done] --> B[Loan Case]
+    B --> C[Agreement for Sale]
+    C --> D[Possession & Handover]
+```
+
+### 1. Save Loan Case
+
+```http
+POST /api/leads/:id/booking/loan-case
+```
+
+```json
+{
+  "bookingId": "cm123book001",
+  "data": {
+    "bankName": "State Bank of India",
+    "loanOfficerName": "Vikram Singh",
+    "loanAmountRequested": 10000000,
+    "sanctionStatus": "IN_REVIEW",
+    "applicationReference": "SBI-HL-2026-9921",
+    "disbursementSchedule": "CONSTRUCTION_LINKED"
+  }
+}
+```
+
+### 2. Save Agreement for Sale
+
+```http
+POST /api/leads/:id/booking/agreement
+```
+
+```json
+{
+  "bookingId": "cm123book001",
+  "data": {
+    "draftSentDate": "2026-10-15",
+    "customerApprovedDate": "2026-10-18",
+    "registrationScheduledDate": "2026-10-25",
+    "subRegistrarOffice": "Shivajinagar Sub-Registrar",
+    "stampDutyPaid": 765000,
+    "registrationStatus": "SCHEDULED"
+  }
+}
+```
+
+### 3. Save Handover & Possession
+
+```http
+POST /api/leads/:id/booking/handover
+```
+
+```json
+{
+  "bookingId": "cm123book001",
+  "data": {
+    "possessionNoticeDate": "2027-03-01",
+    "keyHandoverDate": "2027-03-15",
+    "snagListStatus": "CLEARED",
+    "keysHandedOver": 4,
+    "parkingAllotmentLetterIssued": true,
+    "maintenanceClearanceSigned": true
+  }
+}
+```
