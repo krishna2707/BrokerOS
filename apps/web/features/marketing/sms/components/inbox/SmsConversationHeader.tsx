@@ -77,18 +77,6 @@ export const SmsConversationHeader: React.FC<SmsConversationHeaderProps> = ({
       {/* Action Controls */}
       <div className="flex items-center gap-2.5">
         {/* Dedicated Thread Route Badge */}
-        <div
-          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-bg-subtle rounded-xl border border-border-default text-[11px] text-text-secondary"
-          title={`Outbound SMS routed via ${provMeta.name} sender ${conversation.assignedSenderPhone || ''}`}
-        >
-          <Server className="w-3 h-3 text-amber-500" />
-          <span className="font-semibold font-mono text-[10px] text-amber-600 dark:text-amber-400 uppercase">
-            {provMeta.name}
-          </span>
-          {conversation.assignedSenderPhone && (
-            <span className="font-mono text-[10px] text-text-tertiary">({conversation.assignedSenderPhone})</span>
-          )}
-        </div>
 
         {/* Status Dropdown */}
         <select
