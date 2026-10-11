@@ -13,6 +13,7 @@ import { CMLeaderboard } from "./_components/CMLeaderboard";
 import { ConversionAnalytics } from "./_components/ConversionAnalytics";
 import { BrokerageSettlement } from "./_components/BrokerageSettlement";
 import { SiteVisitAnalytics } from "./_components/SiteVisitAnalytics";
+import { ExportAnalyticsReportButton } from "@/components/analytics/ExportAnalyticsReportButton";
 
 export default function CPAnalyticsPage() {
   const [range, setRange] = useState("all-time");
@@ -42,6 +43,39 @@ export default function CPAnalyticsPage() {
 
   const ranges = ["weekly", "monthly", "yearly", "all-time"];
 
+  const reportPayload = data
+    ? {
+      departmentName: "Channel Partner Enterprise Operations & Network Analytics",
+      departmentCode: "CHANNEL_PARTNER",
+      timeRange: range,
+      generatedAt: new Date().toLocaleString(),
+      summaryCards: [
+        { label: "Total Booked Revenue", value: `₹${(data.topWidgets?.totalRevenue || 0).toLocaleString()}`, subtitle: "Gross token value" },
+        { label: "Total Bookings", value: data.topWidgets?.totalBookings ?? 0, subtitle: "Deals closed" },
+        { label: "Units Sold", value: data.topWidgets?.totalUnitsSold ?? 0, subtitle: "Handover complete" },
+        { label: "Units Reserved", value: data.topWidgets?.totalUnitsReserved ?? 0, subtitle: "Under token" },
+        { label: "Handover Pending", value: data.topWidgets?.totalHandoverPending ?? 0, subtitle: "In pipeline" },
+      ],
+      funnelStages: [
+        { name: "Active Brokers", count: data.topWidgets?.totalBrokers ?? 0, color: "#6366f1" },
+        { name: "Site Visits", count: data.topWidgets?.totalSiteVisits ?? 0, color: "#a855f7" },
+        { name: "Reserved Units", count: data.topWidgets?.totalUnitsReserved ?? 0, color: "#f59e0b" },
+        { name: "Confirmed Bookings", count: data.topWidgets?.totalBookings ?? 0, color: "#10b981" },
+        { name: "Units Handed Over", count: data.topWidgets?.totalUnitsSold ?? 0, color: "#059669" },
+      ],
+      financialMetrics: [
+        { label: "Total CP Development Revenue", value: `₹${(data.topWidgets?.totalRevenue || 0).toLocaleString()}` },
+        { label: "Booking Token Revenue", value: `₹${(data.topWidgets?.totalBookingRevenue || 0).toLocaleString()}` },
+      ],
+      activityMetrics: [
+        { label: "Total Confirmed Bookings", value: data.topWidgets?.totalBookings ?? 0 },
+        { label: "Units Sold", value: data.topWidgets?.totalUnitsSold ?? 0 },
+        { label: "Units Reserved", value: data.topWidgets?.totalUnitsReserved ?? 0 },
+        { label: "Handovers Pending", value: data.topWidgets?.totalHandoverPending ?? 0 },
+      ],
+    }
+    : null;
+
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-8 animate-enter">
       {/* Header */}
@@ -58,20 +92,27 @@ export default function CPAnalyticsPage() {
           </p>
         </div>
 
-        <div className="flex bg-slate-100 p-1 rounded-full border border-slate-200/60 w-fit">
-          {ranges.map((r) => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                range === r
-                  ? "bg-white text-[var(--text-primary)] shadow-xs"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              {r.charAt(0).toUpperCase() + r.slice(1).replace("-", " ")}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex bg-slate-100 p-1 rounded-full border border-slate-200/60 w-fit">
+            {ranges.map((r) => (
+              <button
+                key={r}
+                onClick={() => setRange(r)}
+                className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  range === r
+                    ? "bg-white text-[var(--text-primary)] shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                {r.charAt(0).toUpperCase() + r.slice(1).replace("-", " ")}
+              </button>
+            ))}
+          </div>
+
+          <ExportAnalyticsReportButton
+            payload={reportPayload}
+            filenamePrefix="channel_partner_analytics"
+          />
         </div>
       </div>
 
