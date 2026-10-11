@@ -1,0 +1,93 @@
+---
+title: "GPS-Verified Site Visits & Anti-Spoofing"
+sidebarTitle: "Site Verification"
+description: "How sales executives verify physical project visits using live camera selfie captures, GPS proximity validation, and manager approval workflows."
+---
+
+## Why Site Visit Verification is Critical
+
+In high-ticket real estate sales, site visits represent the most significant leading indicator of future bookings. Brokerages must verify that sales executives actually accompanied prospective buyers to the physical project site, rather than logging fictitious meetings from home or office desks.
+
+BrokerOS eliminates fraudulent check-ins through a **tamper-resistant GPS selfie verification workflow**:
+- The executive must capture a live photo using the in-app camera (gallery uploads are disallowed)
+- Device GPS coordinates are captured at the exact second the shutter triggers
+- The system computes the distance between the agent's location and the project's registered coordinates
+- Photos and metadata are uploaded to Vercel Blob and submitted to the manager for validation
+
+---
+
+## Step-by-Step Verification Workflow
+
+<Steps>
+  <Step title="Open Scheduled Site Visit">
+    The sales executive opens an active `SiteVisit` record on their mobile app and taps **Verify Visit**.
+  </Step>
+
+  <Step title="GPS Precision Check">
+    The app requests high-accuracy foreground coordinates using `expo-location`. The GPS fix must have an accuracy rating within 50 meters. If an agent is in an underground parking lot with a degraded satellite fix, they are instructed to move to an open area.
+  </Step>
+
+  <Step title="Capture Live Selfie on Site">
+    The camera opens directly inside the application. The executive captures a photo with the project building, sales lounge, or construction gate visible in the background. The app overlays:
+    - Live UTC and local timestamp
+    - High-precision GPS latitude and longitude
+    - Project name and lead identification number
+  </Step>
+
+  <Step title="Upload to Cloud Storage">
+    The photo is uploaded to Vercel Blob cloud storage via `@brokeros/storage`. A permanent URL is attached to a new `SiteVisitVerification` database record.
+  </Step>
+
+  <Step title="Automated Proximity Calculation">
+    The backend runs the **Haversine formula** comparing the capture coordinates against the project's official coordinates registered in the database:
+    - If distance is within **500 meters**: Marked as `VERIFIED`.
+    - If distance exceeds **500 meters**: Flagged as `OUT_OF_RANGE` for administrative audit.
+  </Step>
+
+  <Step title="Manager Review & Approval">
+    In the Next.js web application, the Sales Manager inspects the site visit record:
+    - Reviews the submitted selfie image
+    - Inspects the Google Maps satellite pin showing where the photo was taken vs. the project gate
+    - Clicks **Approve** or **Reject** (with mandatory rejection reasoning).
+  </Step>
+</Steps>
+
+---
+
+## Database Architecture (`SiteVisitVerification`)
+
+The verification record is persisted in PostgreSQL using the Prisma schema:
+
+| Database Field | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `String (UUID)` | Unique identifier for the verification record. |
+| `siteVisitId` | `String` | Foreign key referencing the parent `SiteVisit`. |
+| `photoUrl` | `String` | Secure Vercel Blob storage URL of the selfie image. |
+| `latitude` | `Float` | High-precision latitude at the instant of capture. |
+| `longitude` | `Float` | High-precision longitude at the instant of capture. |
+| `distanceMeters` | `Float` | Computed distance between the capture location and the project gate. |
+| `capturedAt` | `DateTime` | Verified device timestamp when the photo was snapped. |
+| `status` | `Enum` | `PENDING`, `APPROVED`, or `REJECTED`. |
+| `rejectionReason` | `String?` | Optional explanation if management rejects the submission. |
+
+---
+
+## Anti-Spoofing Safeguards
+
+BrokerOS enforces three strict anti-spoofing measures:
+
+1. **No Photo Gallery Ingestion**: The app interface intentionally disables external gallery or camera roll selection. Only real-time shutter clicks from the active device camera are accepted.
+2. **Mock Location Detection**: On Android devices, the location engine inspects the `isFromMockProvider` flag. If mock locations or fake GPS simulation apps are active, the submission is rejected.
+3. **Timestamp Integrity Checks**: The client timestamp is cross-referenced with server time to ensure employees cannot alter their device clock to fake historical visits.
+
+---
+
+## Configurable Project Geofencing Tolerances
+
+Admins can customize geofence tolerances per project in **Web Dashboard -> Inventory -> Project Settings**:
+
+| Setting | Default Standard | Customization Advice |
+| :--- | :--- | :--- |
+| **Proximity Radius** | 500 meters | Increase to 1,000m for sprawling 100-acre township projects. |
+| **Auto-Approval Policy** | Disabled (Manual Review) | Enable for mature, verified sales executive teams. |
+| **Out-of-Range Enforcement** | Flag for Audit | Automatically locks the visit until a manager reviews the discrepancy. |
