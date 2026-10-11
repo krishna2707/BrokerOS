@@ -10,6 +10,8 @@ import { TowerHeatmap } from "./components/TowerHeatmap";
 import { Leaderboard } from "@/components/dashboard/Leaderboard";
 import { ProjectAnalytics } from "./components/ProjectAnalytics";
 import { DailyActivityHeatmap } from "./components/DailyActivityHeatmap";
+import { ExportAnalyticsReportButton } from "@/components/analytics/ExportAnalyticsReportButton";
+
 
 export default function SalesExecAnalyticsPage() {
   const router = useRouter();
@@ -56,23 +58,44 @@ export default function SalesExecAnalyticsPage() {
     }
   };
 
-  const exportToCSV = () => {
-    if (!analyticsData) return;
-    const rows: any[][] = [
-      ["Metric", "Value"],
-      ["Total Revenue", analyticsData.financial?.totalRevenue],
-      ["Realized Commission", analyticsData.financial?.realizedCommission],
-      ["Projected Commission", analyticsData.financial?.projectedCommission],
-    ];
-    const csvContent =
-      "data:text/csv;charset=utf-8," + rows.map((e) => e.join(",")).join("\n");
-    const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csvContent));
-    link.setAttribute("download", `sales_exec_analytics_${timeRange}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const reportPayload = analyticsData
+    ? {
+      departmentName: "Sales Executive Performance Analytics",
+      departmentCode: "SALES_EXECUTIVE",
+      timeRange,
+      generatedAt: new Date().toLocaleString(),
+      summaryCards: [
+        { label: "Total Sales Revenue", value: `₹${(analyticsData.financial?.totalRevenue || 0).toLocaleString()}`, subtitle: "Booked Value" },
+        { label: "Realized Commission", value: `₹${(analyticsData.financial?.realizedCommission || 0).toLocaleString()}`, subtitle: "Earned" },
+        { label: "Projected Commission", value: `₹${(analyticsData.financial?.projectedCommission || 0).toLocaleString()}`, subtitle: "In-flight" },
+        { label: "Units Sold", value: analyticsData.financial?.unitsSold ?? 0, subtitle: "Closed bookings" },
+      ],
+      funnelStages: [
+        { name: "Active Leads", count: analyticsData.funnel?.leads ?? 0, color: "#6366f1" },
+        { name: "Site Visits Done", count: analyticsData.funnel?.siteVisits ?? 0, color: "#a855f7" },
+        { name: "In Negotiation", count: analyticsData.funnel?.negotiations ?? 0, color: "#f59e0b" },
+        { name: "Confirmed Bookings", count: analyticsData.funnel?.bookings ?? 0, color: "#10b981" },
+      ],
+      financialMetrics: [
+        { label: "Total Booked Revenue", value: `₹${(analyticsData.financial?.totalRevenue || 0).toLocaleString()}` },
+        { label: "Realized Commission Payout", value: `₹${(analyticsData.financial?.realizedCommission || 0).toLocaleString()}` },
+        { label: "Pipeline Projected Commission", value: `₹${(analyticsData.financial?.projectedCommission || 0).toLocaleString()}` },
+        { label: "Units Sold Count", value: analyticsData.financial?.unitsSold ?? 0 },
+      ],
+      detailedSections: [
+        {
+          title: "Funnel Progression & Conversion",
+          metrics: [
+            { label: "Total Assigned Leads", value: analyticsData.funnel?.leads ?? 0 },
+            { label: "Site Visits Completed", value: analyticsData.funnel?.siteVisits ?? 0 },
+            { label: "Offers Negotiated", value: analyticsData.funnel?.negotiations ?? 0 },
+            { label: "Bookings Closed", value: analyticsData.funnel?.bookings ?? 0 },
+            { label: "Overall Conversion Rate", value: `${analyticsData.funnel?.conversionRate ?? 0}%` },
+          ],
+        },
+      ],
+    }
+    : null;
 
   if (loading && !analyticsData) {
     return (
@@ -127,23 +150,19 @@ export default function SalesExecAnalyticsPage() {
               <button
                 key={r.id}
                 onClick={() => setTimeRange(r.id)}
-                className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                  timeRange === r.id
-                    ? "bg-white text-[var(--text-primary)] shadow-xs"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
+                className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${timeRange === r.id
+                  ? "bg-white text-[var(--text-primary)] shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
+                  }`}
               >
                 {r.label}
               </button>
             ))}
           </div>
-          <button
-            onClick={exportToCSV}
-            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all active:scale-[0.96] press-effect shadow-2xs flex items-center gap-1.5 cursor-pointer"
-          >
-            <Download size={13} />
-            <span>Export CSV</span>
-          </button>
+          <ExportAnalyticsReportButton
+            payload={reportPayload}
+            filenamePrefix="sales_exec_analytics"
+          />
         </div>
       </div>
 
