@@ -2,6 +2,7 @@ import { View, Text, ActivityIndicator, ScrollView, TouchableOpacity } from 'rea
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { useEffect, useState, useCallback } from 'react';
 import { authClient } from '../../../../lib/auth-client';
+import { exportAnalyticsHtmlMobile } from '../../../../lib/export-utils';
 
 export default function SourcingAnalyticsScreen() {
   const [timeRange, setTimeRange] = useState("all-time");
@@ -59,6 +60,42 @@ export default function SourcingAnalyticsScreen() {
     );
   };
 
+  const handleExportReport = () => {
+    if (!data) return;
+    const payload = {
+      departmentName: 'Sourcing Manager CP Analytics & Network Yield',
+      departmentCode: 'SOURCING_MANAGER',
+      timeRange,
+      generatedAt: new Date().toLocaleString(),
+      summaryCards: [
+        { label: 'Active Brokers', value: data.topWidgets?.totalBrokers ?? 0, subtitle: 'Registered CP Network' },
+        { label: 'Partner Meetings', value: data.topWidgets?.totalMeetings ?? 0, subtitle: 'CP Connects' },
+        { label: 'Follow-ups Done', value: data.topWidgets?.totalFollowUps ?? 0, subtitle: 'Relationship touches' },
+        { label: 'Deals Sourced', value: data.topWidgets?.totalBookingsGenerated ?? 0, subtitle: 'Bookings generated' },
+        { label: 'Total Booking Revenue', value: `₹${(data.topWidgets?.totalBookingRevenue || 0).toLocaleString()}`, subtitle: 'Gross token value' },
+        { label: 'Commission Disbursed', value: `₹${(data.topWidgets?.totalBrokerCommissionPaid || 0).toLocaleString()}`, subtitle: 'Broker settlements' },
+      ],
+      funnelStages: [
+        { name: 'Active Brokers', count: data.topWidgets?.totalBrokers ?? 0, color: '#6366f1' },
+        { name: 'Partner Meetings', count: data.topWidgets?.totalMeetings ?? 0, color: '#a855f7' },
+        { name: 'Follow-ups Done', count: data.topWidgets?.totalFollowUps ?? 0, color: '#f59e0b' },
+        { name: 'Deals Sourced', count: data.topWidgets?.totalBookingsGenerated ?? 0, color: '#10b981' },
+      ],
+      financialMetrics: [
+        { label: 'Gross CP Booking Revenue', value: `₹${(data.topWidgets?.totalBookingRevenue || 0).toLocaleString()}` },
+        { label: 'Disbursed Broker Commission', value: `₹${(data.topWidgets?.totalBrokerCommissionPaid || 0).toLocaleString()}` },
+        { label: 'Handover Realized Revenue', value: `₹${(data.topWidgets?.totalRevenueHandoverDone || 0).toLocaleString()}` },
+      ],
+      activityMetrics: [
+        { label: 'Registered CP Brokers', value: data.topWidgets?.totalBrokers ?? 0 },
+        { label: 'Sourcing Meetings Conducted', value: data.topWidgets?.totalMeetings ?? 0 },
+        { label: 'Broker Follow-ups', value: data.topWidgets?.totalFollowUps ?? 0 },
+        { label: 'Converted CP Bookings', value: data.topWidgets?.totalBookingsGenerated ?? 0 },
+      ],
+    };
+    exportAnalyticsHtmlMobile(payload, 'sourcing_manager_analytics');
+  };
+
   return (
     <ScrollView className="flex-1 bg-[#f8fafc]" contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
       {/* Header and Toggle */}
@@ -67,23 +104,33 @@ export default function SourcingAnalyticsScreen() {
         <Text className="text-slate-500 text-sm font-medium mt-1">Deep dive into performance & conversions.</Text>
       </View>
 
-      {/* Time Range Segmented Control */}
-      <View className="flex-row bg-slate-200 border-0 p-1.5 rounded-full self-start mb-6">
-        {ranges.map(range => (
-          <TouchableOpacity
-            key={range}
-            onPress={() => setTimeRange(range)}
-          >
-            <View 
-              key={timeRange === range ? 'active' : 'inactive'}
-              className={`px-4 py-1.5 rounded-full ${timeRange === range ? 'bg-white shadow-sm' : ''}`}
+      {/* Time Range Segmented Control & Export */}
+      <View className="flex-row items-center justify-between flex-wrap gap-2 mb-6">
+        <View className="flex-row bg-slate-200 border-0 p-1.5 rounded-full self-start">
+          {ranges.map(range => (
+            <TouchableOpacity
+              key={range}
+              onPress={() => setTimeRange(range)}
             >
-              <Text className={`text-sm font-bold ${timeRange === range ? 'text-slate-900' : 'text-slate-500'}`}>
-                {range.charAt(0).toUpperCase() + range.slice(1).replace('-', ' ')}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+              <View 
+                key={timeRange === range ? 'active' : 'inactive'}
+                className={`px-4 py-1.5 rounded-full ${timeRange === range ? 'bg-white shadow-sm' : ''}`}
+              >
+                <Text className={`text-sm font-bold ${timeRange === range ? 'text-slate-900' : 'text-slate-500'}`}>
+                  {range.charAt(0).toUpperCase() + range.slice(1).replace('-', ' ')}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <TouchableOpacity
+          onPress={handleExportReport}
+          className="bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-full flex-row items-center gap-1.5 active:bg-indigo-100"
+        >
+          <Feather name="file-text" size={14} color="#4f46e5" />
+          <Text className="text-indigo-700 font-bold text-xs">Export Report</Text>
+        </TouchableOpacity>
       </View>
 
       {status === "loading" && (
