@@ -1,0 +1,141 @@
+---
+title: "Get BrokerOS Running Locally"
+sidebarTitle: "Local Setup"
+description: "Boot the full BrokerOS monorepo on your machine Docker or manual, your choice."
+---
+
+This guide gets you a fully working local instance of BrokerOS with demo users, real inventory, and seeded bookings ready to go.
+
+## What You Need
+
+- **Node.js** v22+ LTS
+- **pnpm** v10+: `npm install -g pnpm`
+- **Docker Desktop**: recommended, spins up everything in one command
+  - _OR_ PostgreSQL 16+ and Redis 7+ running locally if you prefer manual setup
+- **Android Studio**: only needed if you want to run the mobile auto-dialer
+
+<Tip>
+  Using an AI IDE like Claude Code, Cursor, Antigravity etc.? Use `/setup-codebase` command in the chat and it handles everything automatically all env files, secrets, dependencies, database, and all dev servers.
+</Tip>
+
+---
+
+## Step 1: Clone & Install
+
+```bash
+git clone https://github.com/trybrokeros/BrokerOS.git
+cd BrokerOS
+pnpm install
+```
+
+---
+
+## Step 2: Configure Environment
+
+Copy the environment templates for every workspace:
+
+```bash
+cp .env.example .env
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
+cp apps/workers/.env.example apps/workers/.env
+cp apps/mobile/.env.example apps/mobile/.env
+```
+
+Then open the root `.env` and set at minimum:
+
+```ini
+DATABASE_URL="postgresql://crm:crm@localhost:5432/crm"
+REDIS_URL="redis://localhost:6379"
+BETTER_AUTH_SECRET="replace-with-a-32-char-random-string"
+BETTER_AUTH_URL="http://localhost:3333"
+```
+
+<Note>
+  The root `.env` is for infrastructure of database, Redis, auth secrets, API keys. The app-level `.env` files (`apps/web`, `apps/api`, etc.) are only for local URLs like `NEXT_PUBLIC_API_URL=http://localhost:3333`.
+</Note>
+
+---
+
+## Step 3:  Start the Platform
+
+<Tabs>
+  <Tab title="Docker (Recommended)">
+
+The fastest path. One command builds and starts **5 containers**: PostgreSQL 16, Redis 7, NestJS API, BullMQ Workers, and the Next.js Web App, all wired together.
+
+```bash
+docker compose up --build
+```
+
+Once running:
+
+| Service | URL |
+| :--- | :--- |
+| **Web Dashboard** | `localhost:3000` |
+| **NestJS API** | `localhost:3333` |
+| **Background Workers** | `localhost:3334/health` |
+| **PostgreSQL** | `localhost:5432` (user: `crm`, db: `crm`) |
+| **Redis** | `localhost:6379` |
+
+<Note>
+  Docker doesn't run the mobile app. To run the Android app alongside Docker, follow the manual mobile step below.
+</Note>
+
+  </Tab>
+  <Tab title="Manual">
+
+#### Database
+
+```bash
+pnpm db:generate   # Generate the Prisma client
+pnpm db:migrate    # Apply all migrations
+pnpm db:seed       # Seed demo users, projects, inventory, and bookings
+```
+
+#### Start Dev Servers
+
+```bash
+# All at once (API + Web + Workers via Turborepo)
+pnpm dev
+
+# Or individually:
+pnpm dev:api      # NestJS API → http://localhost:3333
+pnpm dev:web      # Next.js Web → http://localhost:3000
+pnpm dev:workers  # BullMQ Workers → http://localhost:3334
+```
+
+#### Mobile (Android only)
+
+Set `EXPO_PUBLIC_API_URL` in `apps/mobile/.env` to your machine's LAN IP first, then:
+
+```bash
+pnpm dev:mobile        # Start Metro bundler, press 'a' for Android
+# or compile natively:
+cd apps/mobile && npx expo run:android
+```
+
+  </Tab>
+</Tabs>
+
+---
+
+## Demo Accounts
+
+All seeded users share the same password: **`Demo@1234`**
+
+| Role | Email |
+| :--- | :--- |
+| Admin | `admin@demo.com` |
+| Pre-Sales Manager | `presalesmanager@demo.com` |
+| Pre-Sales Agent | `presales1@demo.com` , `presales2@demo.com`, `presales3@demo.com` |
+| Sales Manager | `salesmanager@demo.com` |
+| Sales Executive | `salesexec1@demo.com`, `salesexec2@demo.com`, `salesexec3@demo.com` |
+| Post-Sales | `postsales1@demo.com`, `postsales2@demo.com`,`postsales3@demo.com` |
+| Marketing Manager | `marketing@demo.com` |
+| Finance | `finance@demo.com` |
+| Business Manager | `businessmanager@demo.com` |
+| Sourcing Manager | `sourcingmanager1@demo.com`, `sourcingmanager2@demo.com`, `sourcingmanager3@demo.com` |
+| Closing Manager | `closingmanager1@demo.com`, `closingmanager2@demo.com`, `closingmanager3@demo.com`|
+| Channel Partner Head | `cp1@demo.com`,  `cp2@demo.com`,  `cp3@demo.com` |
+| Director | `director@demo.com` |
