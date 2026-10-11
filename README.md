@@ -242,7 +242,7 @@ If you are using an **AI IDE (like Antigravity / Cursor)** or CLI, you don't nee
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/sumamakhan761/BrokerOS.git
+git clone https://github.com/trybrokeros/BrokerOS.git
 cd BrokerOS
 
 # 2. Install dependencies across all monorepo packages
