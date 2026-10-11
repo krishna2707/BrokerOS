@@ -11,6 +11,8 @@ import { PhoneOutgoing, PhoneIncoming, Target, Target as TargetIcon, CheckCircle
 import { authClient } from '@/lib/auth-client';
 import { Loader2 } from 'lucide-react';
 
+import { ExportAnalyticsReportButton } from '@/components/analytics/ExportAnalyticsReportButton';
+
 export default function ManagerAnalytics() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -42,23 +44,38 @@ export default function ManagerAnalytics() {
     load();
   }, [timeRange]);
 
-  const exportToCSV = () => {
-    if (!data) return;
-    const rows = [
-      ['Metric', 'Value'],
-      ['Team Total Leads', data.pipeline.totalLeads],
-      ['Team Calls Made', data.calls.made],
-      ['Lost Leads', data.pipeline.lost],
-      ['Speed to Lead (min)', data.managerMetrics.avgSpeedToLeadMinutes],
-    ];
-    const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
-    const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csvContent));
-    link.setAttribute("download", `team_analytics_${timeRange}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const reportPayload = data
+    ? {
+      departmentName: 'Pre-Sales Manager Team Analytics',
+      departmentCode: 'PRE_SALES_MANAGER',
+      timeRange,
+      generatedAt: new Date().toLocaleString(),
+      summaryCards: [
+        { label: 'Team Pipeline Leads', value: data.pipeline?.totalLeads ?? 0, subtitle: 'Total Leads' },
+        { label: 'Team Calls Made', value: data.calls?.made ?? 0, subtitle: 'Outbound dials' },
+        { label: 'Calls Connected', value: data.calls?.connected ?? 0, change: `${data.calls?.connectedPercentage ?? 0}%`, subtitle: 'Conversations' },
+        { label: 'Site Visits', value: data.pipeline?.siteVisits ?? 0, subtitle: 'Total Visits' },
+        { label: 'Deals Booked', value: data.pipeline?.booked ?? 0, subtitle: 'Converted' },
+        { label: 'Speed to Lead', value: `${data.managerMetrics?.avgSpeedToLeadMinutes ?? 0}m`, subtitle: 'Avg intake response' },
+      ],
+      funnelStages: [
+        { name: 'Total Leads', count: data.pipeline?.totalLeads ?? 0, color: '#6366f1' },
+        { name: 'New Leads', count: data.pipeline?.newLeads ?? 0, color: '#818cf8' },
+        { name: 'Contacted', count: data.pipeline?.contacted ?? 0, color: '#a855f7' },
+        { name: 'Interested', count: data.pipeline?.interested ?? 0, color: '#fbbf24' },
+        { name: 'Qualified', count: data.pipeline?.qualified ?? 0, color: '#34d399' },
+        { name: 'Site Visits', count: data.pipeline?.siteVisits ?? 0, color: '#10b981' },
+        { name: 'Booked', count: data.pipeline?.booked ?? 0, color: '#059669' },
+        { name: 'Lost', count: data.pipeline?.lost ?? 0, color: '#ef4444' },
+      ],
+      activityMetrics: [
+        { label: 'Team Outbound Dials', value: data.calls?.made ?? 0 },
+        { label: 'Connected Conversations', value: data.calls?.connected ?? 0 },
+        { label: 'Connection Rate', value: `${data.calls?.connectedPercentage ?? 0}%` },
+        { label: 'Speed to Lead', value: `${data.managerMetrics?.avgSpeedToLeadMinutes ?? 0} mins` },
+      ],
+    }
+    : null;
 
   if (loading && !data) {
     return (
@@ -134,12 +151,10 @@ export default function ManagerAnalytics() {
               </button>
             ))}
           </div>
-          <button
-            onClick={exportToCSV}
-            className="px-5 py-2 rounded-full text-sm font-semibold bg-indigo-500 text-white hover:bg-indigo-600 transition-colors shadow-sm flex items-center gap-2"
-          >
-            Export CSV
-          </button>
+          <ExportAnalyticsReportButton
+            payload={reportPayload}
+            filenamePrefix="presales_team_analytics"
+          />
         </div>
       </div>
 
