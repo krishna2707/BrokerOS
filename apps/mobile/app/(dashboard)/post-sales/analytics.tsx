@@ -6,6 +6,8 @@ import { PipelinePyramid } from '../../../components/analytics/PipelinePyramid';
 import { VelocityGauge } from '../../../components/analytics/VelocityGauge';
 import { StatusDistributionBar } from '../../../components/analytics/StatusDistributionBar';
 import { InventorySellThroughChart, InventorySellThroughData } from '../../../components/analytics/InventorySellThroughChart';
+import { Feather } from '@expo/vector-icons';
+import { exportAnalyticsHtmlMobile } from '../../../lib/export-utils';
 
 interface AnalyticsData {
   widgets: PostSalesAnalyticsWidgetsData;
@@ -86,6 +88,42 @@ export default function Analytics() {
     );
   }
 
+  const handleExportReport = () => {
+    if (!data) return;
+    const payload = {
+      departmentName: 'Post-Sales Operational Analytics',
+      departmentCode: 'POST_SALES',
+      timeRange,
+      generatedAt: new Date().toLocaleString(),
+      summaryCards: [
+        { label: 'Booked Customers', value: data.widgets?.totalBooked ?? 0, subtitle: 'Total Booked' },
+        { label: 'Handover Complete', value: data.widgets?.totalHandoverCompleted ?? 0, subtitle: 'Keys Delivered' },
+        { label: 'Total Revenue', value: `₹${(data.widgets?.totalRevenue || 0).toLocaleString()}`, subtitle: 'Collections' },
+        { label: 'Total Commission', value: `₹${(data.widgets?.totalCommission || 0).toLocaleString()}`, subtitle: 'Earned' },
+        { label: 'Velocity to Handover', value: `${data.velocity ?? 0} days`, subtitle: 'Mean duration' },
+      ],
+      funnelStages: [
+        { name: 'Booking', count: data.funnel?.booking ?? 0, color: '#ec4899' },
+        { name: 'Document Verification', count: data.funnel?.document ?? 0, color: '#8b5cf6' },
+        { name: 'Bank Loan', count: data.funnel?.loan ?? 0, color: '#f59e0b' },
+        { name: 'Builder Agreement', count: data.funnel?.agreement ?? 0, color: '#3b82f6' },
+        { name: 'Possession Handover', count: data.funnel?.handover ?? 0, color: '#10b981' },
+      ],
+      financialMetrics: [
+        { label: 'Total Revenue Collected', value: `₹${(data.widgets?.totalRevenue || 0).toLocaleString()}` },
+        { label: 'Inbound Brokerage Commission', value: `₹${(data.widgets?.totalCommission || 0).toLocaleString()}` },
+      ],
+      activityMetrics: [
+        { label: 'Loan Approved', value: data.loanSuccessRate?.approved ?? 0 },
+        { label: 'Loan In Progress', value: data.loanSuccessRate?.inProgress ?? 0 },
+        { label: 'Loan Rejected', value: data.loanSuccessRate?.rejected ?? 0 },
+        { label: 'Handover Scheduled', value: data.handoverReadiness?.scheduled ?? 0 },
+        { label: 'Keys Handed Over', value: data.handoverReadiness?.handedOver ?? 0 },
+      ],
+    };
+    exportAnalyticsHtmlMobile(payload, 'postsales_analytics');
+  };
+
   return (
     <ScrollView
       className="flex-1 bg-gray-50 p-4"
@@ -97,23 +135,33 @@ export default function Analytics() {
         <Text className="text-gray-500 text-sm mt-1">Monitor your team's post-sales performance</Text>
       </View>
 
-      {/* Time Range Segmented Control */}
-      <View className="flex-row bg-slate-200 border-0 p-1.5 rounded-full self-start mb-4">
-        {ranges.map(r => (
-          <TouchableOpacity
-            key={r.id}
-            onPress={() => setTimeRange(r.id)}
-          >
-            <View 
-              key={timeRange === r.id ? 'active' : 'inactive'}
-              className={`px-4 py-1.5 rounded-full ${timeRange === r.id ? 'bg-white shadow-sm' : ''}`}
+      {/* Time Range Segmented Control & Export */}
+      <View className="flex-row items-center justify-between flex-wrap gap-2 mb-4">
+        <View className="flex-row bg-slate-200 border-0 p-1.5 rounded-full self-start">
+          {ranges.map(r => (
+            <TouchableOpacity
+              key={r.id}
+              onPress={() => setTimeRange(r.id)}
             >
-              <Text className={`text-sm font-bold ${timeRange === r.id ? 'text-slate-900' : 'text-slate-500'}`}>
-                {r.label}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+              <View 
+                key={timeRange === r.id ? 'active' : 'inactive'}
+                className={`px-4 py-1.5 rounded-full ${timeRange === r.id ? 'bg-white shadow-sm' : ''}`}
+              >
+                <Text className={`text-sm font-bold ${timeRange === r.id ? 'text-slate-900' : 'text-slate-500'}`}>
+                  {r.label}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <TouchableOpacity
+          onPress={handleExportReport}
+          className="bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-full flex-row items-center gap-1.5 active:bg-indigo-100"
+        >
+          <Feather name="file-text" size={14} color="#4f46e5" />
+          <Text className="text-indigo-700 font-bold text-xs">Export Report</Text>
+        </TouchableOpacity>
       </View>
 
       {data && <PostSalesAnalyticsWidgets widgets={data.widgets} />}
