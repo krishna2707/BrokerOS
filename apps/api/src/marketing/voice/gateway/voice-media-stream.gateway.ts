@@ -17,6 +17,7 @@ import { Public } from '@thallesp/nestjs-better-auth';
 import { VoiceAudioService } from '../services/voice-audio.service.js';
 import { VoiceAudioTranscoder } from './voice-audio-transcoder.js';
 import { StreamSessionManager } from './voice-stream-session.js';
+import { VoiceAiAudioBridgeService } from './voice-ai-audio-bridge.service.js';
 
 @Public()
 @WebSocketGateway({
@@ -35,7 +36,10 @@ export class VoiceMediaStreamGateway
   private readonly logger = new Logger(VoiceMediaStreamGateway.name);
   private readonly sessionManager = new StreamSessionManager();
 
-  constructor(private readonly audioService?: VoiceAudioService) {}
+  constructor(
+    private readonly audioService?: VoiceAudioService,
+    private readonly aiBridge?: VoiceAiAudioBridgeService,
+  ) {}
 
   handleConnection(client: Socket) {
     this.logger.log(
@@ -69,8 +73,26 @@ export class VoiceMediaStreamGateway
       customParams,
     );
 
-    // Speak First Message as soon as the media stream connects
-    if (session.firstMessage && this.audioService) {
+    // Speak First Message or engage AI Audio Bridge as soon as the media stream connects
+    if (this.aiBridge) {
+      await this.aiBridge.handleSessionStart(
+        session,
+        (chunk) => {
+          client.emit('media', {
+            event: 'media',
+            streamSid,
+            media: { payload: chunk },
+          });
+          this.sessionManager.recordPacketSent(streamSid);
+        },
+        () => {
+          client.emit('clear', {
+            event: 'clear',
+            streamSid,
+          });
+        },
+      );
+    } else if (session.firstMessage && this.audioService) {
       try {
         const audio = await this.audioService.previewTtsAudio({
           text: session.firstMessage,
@@ -113,8 +135,12 @@ export class VoiceMediaStreamGateway
     @MessageBody() data: any,
   ) {
     const streamSid = data?.streamSid;
+    const payload = data?.media?.payload;
     if (streamSid) {
       this.sessionManager.recordPacketReceived(streamSid);
+      if (payload && this.aiBridge) {
+        this.aiBridge.handleInboundAudioChunk(streamSid, payload);
+      }
     }
   }
 
@@ -126,6 +152,7 @@ export class VoiceMediaStreamGateway
     const streamSid = data?.streamSid || data?.stop?.streamSid;
     if (streamSid) {
       this.sessionManager.endSession(streamSid);
+      this.aiBridge?.handleSessionEnd(streamSid);
     }
     return { event: 'stopped', streamSid };
   }
