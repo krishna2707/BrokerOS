@@ -7,6 +7,7 @@ import { Lead } from '../../../../components/leads/misc/lead-management-types';
 import LeadSearchBar from '../../../../components/leads/list/LeadSearchBar';
 import LeadListItem from '../../../../components/leads/list/LeadListItem';
 import LeadFilters from '../../../../components/leads/list/LeadFilters';
+import { exportLeadsToCsvMobile } from '../../../../lib/export-utils';
 import { useLocalSearchParams } from 'expo-router';
 
 export default function SalesExecLeadList() {
@@ -75,6 +76,8 @@ export default function SalesExecLeadList() {
         selectedLeads={[]}
         leads={leads}
         startDialer={() => {}}
+        onExport={() => exportLeadsToCsvMobile(filteredLeads, 'sales_exec_leads')}
+        exportCount={filteredLeads.length}
       />
 
       <LeadFilters
