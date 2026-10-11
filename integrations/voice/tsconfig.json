@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "node16",
+    "declaration": true,
+    "declarationMap": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "noEmit": false,
+    "outDir": "./dist",
+    "rootDir": "./"
+  },
+  "include": [
+    "index.ts",
+    "bridge/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "__tests__",
+    "agents",
+    "telephony"
+  ]
+}
