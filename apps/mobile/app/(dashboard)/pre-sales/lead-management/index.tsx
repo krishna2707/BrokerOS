@@ -11,6 +11,7 @@ import LeadSearchBar from '../../../../components/leads/list/LeadSearchBar';
 import LeadFilters from '../../../../components/leads/list/LeadFilters';
 import LeadListItem from '../../../../components/leads/list/LeadListItem';
 import AutoDialerModal from '../../../../components/leads/modals/AutoDialerModal';
+import { exportLeadsToCsvMobile } from '../../../../lib/export-utils';
 
 export default function LeadManagementList() {
   const { data: session } = authClient.useSession();
@@ -108,6 +109,8 @@ export default function LeadManagementList() {
         selectedLeads={selectedLeads}
         leads={leads}
         startDialer={startDialer}
+        onExport={() => exportLeadsToCsvMobile(filteredLeads, 'presales_leads')}
+        exportCount={filteredLeads.length}
       />
 
       <LeadFilters
