@@ -10,6 +10,7 @@ import LeadSearchBar from '../../../../components/leads/list/LeadSearchBar';
 import LeadListItem from '../../../../components/leads/list/LeadListItem';
 import LeadFilters from '../../../../components/leads/list/LeadFilters';
 import AutoDialerModal from '../../../../components/leads/modals/AutoDialerModal';
+import { exportLeadsToCsvMobile } from '../../../../lib/export-utils';
 
 export default function PostSalesLeadManagementList() {
   const { data: session } = authClient.useSession();
@@ -122,6 +123,8 @@ export default function PostSalesLeadManagementList() {
         selectedLeads={selectedLeads}
         leads={leads}
         startDialer={startDialer}
+        onExport={() => exportLeadsToCsvMobile(filteredLeads, 'postsales_pipeline')}
+        exportCount={filteredLeads.length}
       />
 
       <LeadFilters
