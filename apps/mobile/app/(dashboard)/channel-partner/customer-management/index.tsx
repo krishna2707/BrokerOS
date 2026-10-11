@@ -12,6 +12,7 @@ import LeadListItem from '@/components/leads/list/LeadListItem';
 import LeadFilters from '@/components/leads/list/LeadFilters';
 import AutoDialerModal from '@/components/leads/modals/AutoDialerModal';
 import ClosingManagerNewLeadModal from '@/components/leads/modals/ClosingManagerNewLeadModal';
+import { exportLeadsToCsvMobile } from '@/lib/export-utils';
 
 export default function CPCustomerManagementList() {
   const { data: session } = authClient.useSession();
@@ -127,6 +128,8 @@ export default function CPCustomerManagementList() {
         selectedLeads={selectedLeads}
         leads={leads}
         startDialer={startDialer}
+        onExport={() => exportLeadsToCsvMobile(filteredLeads, 'channel_partner_customers')}
+        exportCount={filteredLeads.length}
       />
 
       <LeadFilters
