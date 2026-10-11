@@ -20,3 +20,6 @@ export * from './ads/index.js';
 // WhatsApp Marketing & CRM
 export * from './whatsapp/index.js';
 
+// Lead, Customer & Analytics Exports
+export * from './export.js';
+

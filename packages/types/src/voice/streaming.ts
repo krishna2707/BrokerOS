@@ -8,6 +8,7 @@ export interface TelephonyStreamSession {
   streamSid: string;
   callSid: string;
   campaignId?: string;
+  recipientId?: string;
   agentPlatform?: string;
   voiceId: string;
   voiceProvider: string;
@@ -17,6 +18,9 @@ export interface TelephonyStreamSession {
   startedAt: Date;
   audioPacketsReceived: number;
   audioPacketsSent: number;
+  apiKey?: string;
+  variables?: Record<string, any>;
+  isAiReady?: boolean;
 }
 
 export interface TelephonyStreamCustomParameters {
@@ -27,6 +31,8 @@ export interface TelephonyStreamCustomParameters {
   agentPlatform?: string;
   voiceId?: string;
   voiceProvider?: string;
+  apiKey?: string;
+  callSid?: string;
 }
 
 export interface AudioStreamChunk {
