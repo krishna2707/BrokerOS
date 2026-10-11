@@ -212,7 +212,12 @@ export class MarketingVoiceProcessor implements OnModuleInit, OnModuleDestroy {
       const chunk = queuedRecipients.slice(i, i + maxConcurrency);
 
       await Promise.all(
-        chunk.map(async (recipient) => {
+        chunk.map(async (recipient, idx) => {
+          // Stagger dispatches by 500ms (2 calls/sec) to respect carrier CPS rate limits
+          if (idx > 0) {
+            await new Promise((resolve) => setTimeout(resolve, idx * 500));
+          }
+
           const normalizedPhone = MarketingVoiceProcessor.normalizePhoneNumber(recipient.phone);
           const normalizedVariables = normalizeVoiceLeadVariables(
             recipient,
