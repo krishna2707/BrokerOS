@@ -1,0 +1,421 @@
+/* ==========================================================================
+   BrokerOS Enterprise Documentation Custom Styling
+   ========================================================================== */
+
+/* ─── Global Full-Width Layout on Large Screens ──────────────────────────── */
+/* Remove 1440px (max-w-8xl) constraint so layout uses the full screen width */
+div[class*="max-w-8xl"],
+div[class*="peer-[.is-not-custom]"] {
+  max-width: 100% !important;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+/* ─── Left Navigation Sidebar (Clean 240px dock) ────────────────────────── */
+#sidebar,
+nav#sidebar,
+aside:has(nav),
+aside:first-of-type {
+  width: 240px !important;
+  min-width: 240px !important;
+  max-width: 240px !important;
+  flex: 0 0 240px !important;
+}
+
+/* Left Sidebar Items & Links */
+#sidebar a,
+nav#sidebar a,
+aside:has(nav) a {
+  font-size: 0.875rem !important;
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+/* ─── Right Sidebar: "On this page" (TOC) Pushed to Right Edge ──────────── */
+/* Override Mintlify's max-w-[28rem] (448px) column to a compact 210px */
+#content-side-layout {
+  width: 210px !important;
+  min-width: 210px !important;
+  max-width: 210px !important;
+  flex: 0 0 210px !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+#table-of-contents-layout {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding-left: 1rem !important;
+  padding-right: 0 !important;
+}
+
+#table-of-contents {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* "On this page" Header Title */
+#table-of-contents h2,
+#content-side-layout h2,
+[id*="on-this-page"] {
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* "On this page" TOC Links */
+.toc a,
+#table-of-contents-content a,
+#table-of-contents a,
+[data-component-part="scroll-area-content"] a {
+  font-size: 0.8125rem !important;
+  line-height: 1.45 !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  display: block !important;
+  word-break: break-word !important;
+}
+
+/* ─── Center Content Area: Maximized Reading Space ──────────────────────── */
+/* Remove xl:w-[calc(100%-28rem)] and auto-margins so content takes full room */
+#content-area {
+  flex: 1 1 0% !important;
+  width: auto !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 1.5rem !important;
+  padding-right: 2rem !important;
+}
+
+/* The actual documentation reading container (widened to 960px) */
+#content,
+.mdx-content,
+.prose,
+[class*="prose"],
+article {
+  max-width: 960px !important;
+  width: 100% !important;
+}
+
+/* ─── Comfortable, Crisp Typography (Standard 16px - Not Tiny) ─────────── */
+body,
+html {
+  font-size: 16px !important;
+}
+
+/* Body Paragraphs & Content Text */
+.prose,
+[class*="prose"],
+#content,
+article,
+main {
+  font-size: 1rem !important;
+  /* 16px standard readable text */
+  line-height: 1.72 !important;
+}
+
+.prose p,
+[class*="prose"] p,
+#content p,
+article p {
+  font-size: 1rem !important;
+  line-height: 1.72 !important;
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
+  color: #D1D5DB !important;
+  /* clear readable text on dark */
+}
+
+/* Headings (Decreased & Compact) */
+h1,
+#page-title,
+.prose h1,
+#content h1,
+[class*="prose"] h1 {
+  font-size: 1.65rem !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  margin-bottom: 0.75rem !important;
+}
+
+h2:not([data-component-part="card-title"]):not(.card h2),
+.prose h2:not([data-component-part="card-title"]):not(.card h2),
+#content h2:not([data-component-part="card-title"]):not(.card h2) {
+  font-size: 1.4rem !important;
+  line-height: 1.35 !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em !important;
+  margin-top: 2rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* ─── Cards & Card Titles (Compact, Decreased Font Size) ────────────────── */
+[data-component-part="card-title"],
+h2[data-component-part="card-title"],
+.card h2,
+.card [data-component-part="card-title"],
+#content .card h2,
+#content [data-component-part="card-title"],
+.card h2.not-prose {
+  font-size: 1.1rem !important;
+  line-height: 1.35 !important;
+  font-weight: 600 !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.25rem !important;
+  letter-spacing: -0.01em !important;
+}
+
+[data-component-part="card-content"],
+.card [data-component-part="card-content"],
+.card [data-component-part="card-content"] span,
+.card [data-component-part="card-content"] p {
+  font-size: 0.785rem !important;
+  line-height: 1.45 !important;
+}
+
+h3,
+.prose h3,
+#content h3 {
+  font-size: 1.2rem !important;
+  line-height: 1.4 !important;
+  font-weight: 600 !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+h4,
+.prose h4,
+#content h4 {
+  font-size: 1.05rem !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+}
+
+/* Lists */
+.prose ul,
+.prose ol,
+#content ul,
+#content ol {
+  font-size: 1rem !important;
+  line-height: 1.68 !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.85rem !important;
+}
+
+.prose li,
+#content li {
+  margin-top: 0.3rem !important;
+  margin-bottom: 0.3rem !important;
+}
+
+/* ─── Custom Search Bar (Pulsing Royal Indigo Border & Glow) ───────────── */
+[data-search-button],
+.search-button,
+[aria-label*="search"],
+[placeholder*="Search"],
+button[data-testid*="search"],
+.mintlify-search,
+.DocSearch-Button {
+  background: rgba(79, 70, 229, 0.04) !important;
+  border: 2px solid #4F46E5 !important;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15), 0 4px 14px rgba(79, 70, 229, 0.1) !important;
+  border-radius: 12px !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  min-width: 270px !important;
+  padding: 10px 16px !important;
+}
+
+[data-search-button]:hover,
+.search-button:hover,
+[aria-label*="search"]:hover,
+[placeholder*="Search"]:hover,
+button[data-testid*="search"]:hover,
+.mintlify-search:hover,
+.DocSearch-Button:hover {
+  transform: translateY(-2px) !important;
+  border-color: #6366F1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25), 0 8px 24px rgba(79, 70, 229, 0.22) !important;
+}
+
+/* Subtle breathing glow on search input */
+@keyframes brokeros-search-glow {
+  0% {
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15), 0 4px 12px rgba(79, 70, 229, 0.08);
+  }
+
+  50% {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.28), 0 6px 20px rgba(79, 70, 229, 0.2);
+  }
+
+  100% {
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15), 0 4px 12px rgba(79, 70, 229, 0.08);
+  }
+}
+
+[data-search-button],
+.DocSearch-Button {
+  animation: brokeros-search-glow 3s ease-in-out infinite !important;
+}
+
+/* ─── Custom Branded Scrollbar ─────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #4F46E5 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #4F46E5;
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #3730A3;
+}
+
+/* ─── Interactive Cards & Grids (Smaller compact font) ─────────────────── */
+.card,
+[class*="CardGroup"]>*,
+[class*="card"] {
+  border-radius: 12px !important;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+  font-size: 0.85rem !important;
+}
+
+.card:hover,
+[class*="CardGroup"]>*:hover,
+[class*="card"]:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 28px -6px rgba(79, 70, 229, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Card Titles (Small, compact & sleek) */
+[data-component-part="card-title"],
+h2[data-component-part="card-title"],
+.not-prose[data-component-part="card-title"],
+[class*="CardGroup"] h1,
+[class*="CardGroup"] h2,
+[class*="CardGroup"] h3,
+[class*="CardGroup"] h4,
+[class*="CardGroup"] [data-component-part="card-title"],
+.card h1,
+.card h2,
+.card h3,
+.card h4,
+[class*="card"] h1,
+[class*="card"] h2,
+[class*="card"] h3,
+[class*="card"] [class*="title"],
+[class*="Card"] [class*="title"] {
+  font-size: 0.7rem !important;
+  /* ~12.8px - clearly smaller, elegant */
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  margin-top: 0.35rem !important;
+  margin-bottom: 0.1rem !important;
+}
+
+/* Card Descriptions / Content */
+[data-component-part="card-content"],
+[data-component-part="card-content"] *,
+[data-component-part="card-content"] p,
+[data-component-part="card-content"] span,
+.card p,
+.card span,
+[class*="CardGroup"] p,
+[class*="CardGroup"] span,
+[class*="card"] p,
+[class*="card"] [class*="description"] {
+  font-size: 0.8rem !important;
+  /* ~12px */
+  line-height: 1.42 !important;
+  margin: 0 !important;
+}
+
+
+/* ─── Domain Specific Status Badges ─────────────────────────────────────── */
+.badge-cp {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-brokerage {
+  background-color: rgba(79, 70, 229, 0.12);
+  color: #4F46E5;
+  border: 1px solid rgba(79, 70, 229, 0.3);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-hot {
+  background-color: rgba(239, 68, 68, 0.12);
+  color: #DC2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ─── Code Blocks & Tables (Decreased font size) ────────────────────────── */
+pre code {
+  font-family: var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace) !important;
+  font-size: 0.825rem !important;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  margin-top: 0.75rem !important;
+  margin-bottom: 1.25rem !important;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  font-size: 0.825rem !important;
+}
+
+table th {
+  background-color: rgba(24, 24, 24, 0.8);
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 12px !important;
+  font-size: 0.8rem !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 1);
+}
+
+table td {
+  padding: 8px 12px !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.45 !important;
+  border-bottom: 1px solid rgba(243, 244, 246, 1);
+}
+
+table tr:last-child td {
+  border-bottom: none;
+}
