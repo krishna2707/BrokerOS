@@ -36,27 +36,42 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     }
   };
 
+
+
   const renderStatus = () => {
     if (!isOutbound) return null;
 
     switch (message.status) {
       case 'READ':
-        return <CheckCheck className="w-3.5 h-3.5 text-blue-500" />;
+        return (
+          <CheckCheck className="w-3.5 h-3.5 text-sky-300 shrink-0" />
+        );
+
       case 'DELIVERED':
-        return <CheckCheck className="w-3.5 h-3.5 text-text-tertiary" />;
+        return (
+          <CheckCheck className="w-3.5 h-3.5 text-white/75 shrink-0" />
+        );
+
       case 'SENT':
-        return <Check className="w-3.5 h-3.5 text-text-tertiary" />;
+        return (
+          <Check className="w-3.5 h-3.5 text-white/75 shrink-0" />
+        );
+
       case 'FAILED':
         return (
           <span title={message.failureReason || 'Failed to deliver'}>
-            <AlertCircle className="w-3.5 h-3.5 text-rose-500" />
+            <AlertCircle className="w-3.5 h-3.5 text-rose-300 shrink-0" />
           </span>
         );
+
       case 'PENDING':
       default:
-        return <Clock className="w-3.5 h-3.5 text-text-tertiary animate-pulse" />;
+        return (
+          <Clock className="w-3.5 h-3.5 text-white/60 animate-pulse shrink-0" />
+        );
     }
   };
+
 
   return (
     <div
