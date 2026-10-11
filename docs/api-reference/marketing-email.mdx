@@ -1,0 +1,134 @@
+---
+title: "Marketing Email API"
+sidebarTitle: "Marketing (Email)"
+description: "Send HTML newsletters, brochures, and automated email campaigns with open, click, and bounce tracking."
+---
+
+The Marketing Email API manages high-volume marketing and transactional email campaigns through providers including SendGrid, Brevo, AWS SES, and Mailchimp. It handles audience segmentation, SPF/DKIM domain verification, dynamic personalization, and tracking webhooks.
+
+```http
+BASE URL: /api/marketing
+```
+
+---
+
+## Endpoints Summary
+
+| Method | Path | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/marketing/campaigns` | List email campaigns with pagination and filters | Marketing / Admin |
+| `POST` | `/api/marketing/campaigns` | Create and schedule a new email campaign | Marketing / Admin |
+| `POST` | `/api/marketing/campaigns/draft` | Save an unfinished email campaign draft | Marketing / Admin |
+| `POST` | `/api/marketing/audience-preview` | Filter and preview target email recipient count | Marketing / Admin |
+| `POST` | `/api/marketing/campaigns/cost-estimate` | Estimate sending costs based on volume | Marketing / Admin |
+| `POST` | `/api/marketing/campaigns/send-test` | Send a test rendering to an internal email | Marketing / Admin |
+| `GET` | `/api/marketing/campaigns/:id` | Fetch email campaign configuration and HTML body | Marketing / Admin |
+| `POST` | `/api/marketing/campaigns/:id/dispatch` | Launch campaign via BullMQ worker queue | Marketing / Admin |
+| `GET` | `/api/marketing/campaigns/:id/analytics` | Open rates, click maps, bounces, and unsubscribes | Marketing / Admin |
+| `GET` | `/api/marketing/campaigns/:id/recipients` | Paginated recipient engagement status log | Marketing / Admin |
+| `POST` | `/api/marketing/recipients/:recipientId/promote` | Convert active email opener to CRM Lead | Marketing / Admin |
+| `DELETE` | `/api/marketing/campaigns/:id` | Delete an email campaign | Marketing / Admin |
+
+---
+
+## Create Email Campaign
+
+```http
+POST /api/marketing/campaigns
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `name` | `string` | **Yes** | Campaign internal title |
+| `subject` | `string` | **Yes** | Email subject line with optional merge tags |
+| `previewText` | `string` | No | Inbox preview preheader snippet |
+| `fromName` | `string` | **Yes** | Sender display name (e.g. `BrokerOS Luxury Collection`) |
+| `fromEmail` | `string` | **Yes** | Verified sender email (e.g. `sales@properties.yourfirm.com`) |
+| `replyTo` | `string` | No | Destination email for direct client replies |
+| `htmlContent` | `string` | **Yes** | Responsive HTML email body |
+| `projectId` | `string` | No | Target project UUID |
+| `audienceSource` | `string` | **Yes** | `CRM_LEADS` or `CSV_UPLOAD` |
+| `targetCriteria` | `object` | No | Status, temperature, or budget filters |
+
+### Request Example
+
+```json
+{
+  "name": "Emerald Heights - Tower B Official Unveiling",
+  "subject": "Exclusive Preview: Luxury 3BHK Homes in Whitefield",
+  "previewText": "Private invitation for priority booking this weekend",
+  "fromName": "Emerald Heights Sales Team",
+  "fromEmail": "sales@emeraldheights.com",
+  "replyTo": "concierge@emeraldheights.com",
+  "htmlContent": "<html><body><h1>Hello {{firstName}},</h1><p>You are cordially invited...</p></body></html>",
+  "projectId": "cm123proj001",
+  "audienceSource": "CRM_LEADS",
+  "targetCriteria": {
+    "leadStatuses": ["CONTACTED", "INTERESTED"],
+    "leadTemperatures": ["HOT", "WARM"]
+  }
+}
+```
+
+---
+
+## Send Test Email
+
+```http
+POST /api/marketing/campaigns/send-test
+```
+
+Sends an immediate preview email to your inbox to check layout rendering across desktop and mobile clients (Apple Mail, Gmail, Outlook).
+
+### Request Body
+
+```json
+{
+  "toEmail": "marketing.lead@yourfirm.com",
+  "subject": "[TEST PREVIEW] Exclusive Preview: Luxury 3BHK Homes",
+  "htmlContent": "<html>...</html>",
+  "sampleData": {
+    "firstName": "Rahul",
+    "project": "Emerald Heights"
+  }
+}
+```
+
+---
+
+## Dispatch Campaign
+
+```http
+POST /api/marketing/campaigns/:id/dispatch
+```
+
+Transitions campaign status to `SENDING` and delegates email batch processing to `apps/workers/src/marketing-email.processor.ts`.
+
+---
+
+## Analytics & Engagement
+
+```http
+GET /api/marketing/campaigns/:id/analytics
+```
+
+### Response Example
+
+```json
+{
+  "campaignId": "cm123email001",
+  "totalSent": 3450,
+  "delivered": 3410,
+  "bounced": 40,
+  "opened": 1420,
+  "uniqueOpens": 1180,
+  "openRate": "34.6%",
+  "clicked": 420,
+  "uniqueClicks": 380,
+  "clickThroughRate": "11.1%",
+  "unsubscribed": 8,
+  "spamComplaints": 0
+}
+```
