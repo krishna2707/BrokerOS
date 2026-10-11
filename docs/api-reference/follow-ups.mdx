@@ -1,0 +1,120 @@
+---
+title: "Follow-Ups API"
+sidebarTitle: "Follow-Ups"
+description: "Schedule, track, update, and complete telecalling and sales follow-up tasks."
+---
+
+Follow-ups represent scheduled touchpoints (calls, WhatsApp messages, virtual meetings) assigned to sales executives or telecallers. BrokerOS tracks pending follow-ups to ensure zero lead drop-off and powers the daily telecalling queue on mobile.
+
+```http
+BASE URL: /api/leads
+```
+
+---
+
+## Endpoints Summary
+
+| Method | Path | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/leads/:id/follow-ups` | List all follow-up tasks for a lead | Authenticated |
+| `POST` | `/api/leads/:id/follow-ups` | Schedule a new follow-up task | Authenticated |
+| `PATCH` | `/api/leads/follow-ups/:followUpId` | Update follow-up status, remarks, or date | Authenticated |
+| `DELETE` | `/api/leads/follow-ups/:followUpId` | Delete a scheduled follow-up | Authenticated |
+
+---
+
+## List Lead Follow-Ups
+
+```http
+GET /api/leads/:id/follow-ups
+```
+
+Returns all historical and upcoming follow-ups associated with a specific lead, ordered chronologically.
+
+### Response Example
+
+```json
+[
+  {
+    "id": "cm123fu001",
+    "leadId": "cm123lead001",
+    "userId": "cm123user002",
+    "scheduledDate": "2026-10-02T10:00:00.000Z",
+    "type": "CALL",
+    "status": "PENDING",
+    "remarks": "Check if client reviewed project brochure and pricing sheet",
+    "completedAt": null,
+    "createdAt": "2026-09-30T09:00:00.000Z"
+  }
+]
+```
+
+---
+
+## Create Follow-Up
+
+```http
+POST /api/leads/:id/follow-ups
+```
+
+Schedules a new follow-up for a lead. When scheduled, the lead's `nextFollowUpDate` field is automatically synced, ensuring it surfaces in the executive's daily priority dialer queue.
+
+### Request Body
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `userId` | `string` | **Yes** | ID of the agent or executive responsible for this follow-up |
+| `scheduledDate` | `string` | **Yes** | ISO 8601 timestamp for the reminder (e.g. `2026-10-03T14:30:00Z`) |
+| `type` | `string` | No | Follow-up channel: `CALL`, `WHATSAPP`, `EMAIL`, `MEETING`, `SITE_VISIT` |
+| `remarks` | `string` | No | Instructions or discussion context from previous touchpoint |
+
+### Request Example
+
+```json
+{
+  "userId": "cm123user002",
+  "scheduledDate": "2026-10-03T15:00:00.000Z",
+  "type": "CALL",
+  "remarks": "Discuss 10:90 subvention payment scheme requested by client"
+}
+```
+
+---
+
+## Update Follow-Up
+
+```http
+PATCH /api/leads/follow-ups/:followUpId
+```
+
+Updates a follow-up task. Used to mark a follow-up as completed, reschedule the reminder, or append discussion remarks.
+
+### Request Body
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `status` | `string` | No | `PENDING`, `COMPLETED`, `CANCELLED`, `MISSED` |
+| `remarks` | `string` | No | Updated call notes or outcome summary |
+| `scheduledDate` | `string` | No | New ISO timestamp if rescheduling |
+| `type` | `string` | No | Updated contact medium |
+| `completedAt` | `string` | No | ISO timestamp when the call or task was finished |
+
+### Request Example (Mark Completed)
+
+```json
+{
+  "status": "COMPLETED",
+  "remarks": "Client agreed to schedule a site visit for Saturday morning",
+  "completedAt": "2026-10-02T10:14:22.000Z"
+}
+```
+
+---
+
+## Delete Follow-Up
+
+```http
+DELETE /api/leads/follow-ups/:followUpId
+```
+
+Permanently removes a follow-up record.
