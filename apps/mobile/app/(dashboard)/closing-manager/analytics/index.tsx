@@ -2,6 +2,7 @@ import { View, Text, ActivityIndicator, ScrollView, TouchableOpacity } from 'rea
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { useEffect, useState, useCallback } from 'react';
 import { authClient } from '../../../../lib/auth-client';
+import { exportAnalyticsHtmlMobile } from '../../../../lib/export-utils';
 
 export default function ClosingAnalyticsScreen() {
   const [timeRange, setTimeRange] = useState("all-time");
@@ -10,19 +11,19 @@ export default function ClosingAnalyticsScreen() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const fetchAnalytics = useCallback(async () => {
-      setStatus("loading");
-      try {
-        const baseURL = process.env.EXPO_PUBLIC_API_URL as string;
-        const res = await authClient.$fetch(`/api/dashboard/closing-manager/analytics?range=${timeRange}`, { baseURL });
-        if (res.error) throw new Error(res.error.message || "Failed to load analytics");
-        setData(res.data);
-        setStatus("success");
-      } catch (err: any) {
-        console.error(err);
-        setErrorMsg(err.message || "Connection Error");
-        setStatus("error");
-      }
-    }, [timeRange]);
+    setStatus("loading");
+    try {
+      const baseURL = process.env.EXPO_PUBLIC_API_URL as string;
+      const res = await authClient.$fetch(`/api/dashboard/closing-manager/analytics?range=${timeRange}`, { baseURL });
+      if (res.error) throw new Error(res.error.message || "Failed to load analytics");
+      setData(res.data);
+      setStatus("success");
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || "Connection Error");
+      setStatus("error");
+    }
+  }, [timeRange]);
 
   useEffect(() => {
     // Debounce to prevent concurrent SecureStore access on rapid taps (avoids navigation context errors)
@@ -38,7 +39,7 @@ export default function ClosingAnalyticsScreen() {
       return <Text className="text-sm text-slate-400 text-center py-8">No data available</Text>;
     }
     const maxVal = Math.max(...items.map(i => i[valueKey] || 0), 1);
-    
+
     return (
       <View className="flex-col gap-3 mt-4">
         {items.map((item, idx) => {
@@ -59,6 +60,39 @@ export default function ClosingAnalyticsScreen() {
     );
   };
 
+  const handleExportReport = () => {
+    if (!data) return;
+    const payload = {
+      departmentName: 'Closing Manager CP Pipeline & Closure Analytics',
+      departmentCode: 'CLOSING_MANAGER',
+      timeRange,
+      generatedAt: new Date().toLocaleString(),
+      summaryCards: [
+        { label: 'Total Booked Revenue', value: `₹${(data.topWidgets?.totalRevenue || 0).toLocaleString()}`, subtitle: 'Gross deal volume' },
+        { label: 'Confirmed Bookings', value: data.topWidgets?.totalBookings ?? 0, subtitle: 'Closed bookings' },
+        { label: 'Token Collected', value: `₹${(data.topWidgets?.totalBookingAmount || 0).toLocaleString()}`, subtitle: 'Token advance' },
+        { label: 'Active Brokers', value: data.topWidgets?.totalBrokers ?? 0, subtitle: 'Network brokers' },
+        { label: 'Units Sold', value: data.topWidgets?.totalUnitsSold ?? 0, subtitle: 'Inventory units' },
+      ],
+      funnelStages: [
+        { name: 'Active Brokers', count: data.topWidgets?.totalBrokers ?? 0, color: '#6366f1' },
+        { name: 'Follow-ups Done', count: data.topWidgets?.totalFollowUps ?? 0, color: '#a855f7' },
+        { name: 'Confirmed Bookings', count: data.topWidgets?.totalBookings ?? 0, color: '#10b981' },
+        { name: 'Units Sold', count: data.topWidgets?.totalUnitsSold ?? 0, color: '#059669' },
+      ],
+      financialMetrics: [
+        { label: 'Total Gross Closed Revenue', value: `₹${(data.topWidgets?.totalRevenue || 0).toLocaleString()}` },
+        { label: 'Token Advance Collections', value: `₹${(data.topWidgets?.totalBookingAmount || 0).toLocaleString()}` },
+      ],
+      activityMetrics: [
+        { label: 'Confirmed CP Bookings', value: data.topWidgets?.totalBookings ?? 0 },
+        { label: 'Inventory Units Sold', value: data.topWidgets?.totalUnitsSold ?? 0 },
+        { label: 'Active CP Brokers', value: data.topWidgets?.totalBrokers ?? 0 },
+      ],
+    };
+    exportAnalyticsHtmlMobile(payload, 'closing_manager_analytics');
+  };
+
   return (
     <ScrollView className="flex-1 bg-[#f8fafc]" contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
       {/* Header and Toggle */}
@@ -67,23 +101,33 @@ export default function ClosingAnalyticsScreen() {
         <Text className="text-slate-500 text-sm font-medium mt-1">Monitor your closing pipeline & handovers.</Text>
       </View>
 
-      {/* Time Range Segmented Control */}
-      <View className="flex-row bg-slate-200 border-0 p-1.5 rounded-full self-start mb-6">
-        {ranges.map(range => (
-          <TouchableOpacity
-            key={range}
-            onPress={() => setTimeRange(range)}
-          >
-            <View 
-              key={timeRange === range ? 'active' : 'inactive'}
-              className={`px-4 py-1.5 rounded-full ${timeRange === range ? 'bg-white shadow-sm' : ''}`}
+      {/* Time Range Segmented Control & Export */}
+      <View className="flex-row items-center justify-between flex-wrap gap-2 mb-6">
+        <View className="flex-row bg-slate-200 border-0 p-1.5 rounded-full self-start">
+          {ranges.map(range => (
+            <TouchableOpacity
+              key={range}
+              onPress={() => setTimeRange(range)}
             >
-              <Text className={`text-sm font-bold ${timeRange === range ? 'text-slate-900' : 'text-slate-500'}`}>
-                {range.charAt(0).toUpperCase() + range.slice(1).replace('-', ' ')}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+              <View
+                key={timeRange === range ? 'active' : 'inactive'}
+                className={`px-4 py-1.5 rounded-full ${timeRange === range ? 'bg-white shadow-sm' : ''}`}
+              >
+                <Text className={`text-sm font-bold ${timeRange === range ? 'text-slate-900' : 'text-slate-500'}`}>
+                  {range.charAt(0).toUpperCase() + range.slice(1).replace('-', ' ')}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <TouchableOpacity
+          onPress={handleExportReport}
+          className="bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-full flex-row items-center gap-1.5 active:bg-indigo-100"
+        >
+          <Feather name="file-text" size={14} color="#4f46e5" />
+          <Text className="text-indigo-700 font-bold text-xs">Export Report</Text>
+        </TouchableOpacity>
       </View>
 
       {status === "loading" && (
@@ -102,15 +146,15 @@ export default function ClosingAnalyticsScreen() {
 
       {status === "success" && data && (
         <View className="space-y-6 flex-col gap-6">
-          
+
           {/* Revenue Highlight Row */}
           <View className="bg-slate-900 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-             <View className="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/20 rounded-full" />
-             <View className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-3">
-               <FontAwesome5 name="rupee-sign" size={16} color="#34d399" />
-             </View>
-             <Text className="text-xs text-slate-400 font-medium">Total Revenue Generated</Text>
-             <Text className="text-3xl font-black text-white mt-1">₹{(data.topWidgets.totalRevenue || 0).toLocaleString('en-IN')}</Text>
+            <View className="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/20 rounded-full" />
+            <View className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-3">
+              <FontAwesome5 name="rupee-sign" size={16} color="#34d399" />
+            </View>
+            <Text className="text-xs text-slate-400 font-medium">Total Revenue Generated</Text>
+            <Text className="text-3xl font-black text-white mt-1">₹{(data.topWidgets.totalRevenue || 0).toLocaleString('en-IN')}</Text>
           </View>
 
           {/* Top Row Widgets */}
@@ -122,7 +166,7 @@ export default function ClosingAnalyticsScreen() {
               </View>
               <Text className="text-2xl font-black text-slate-900">{data.topWidgets.totalBookings}</Text>
             </View>
-            
+
             <View className="w-[48%] bg-emerald-50 rounded-2xl p-4 border border-emerald-100 shadow-sm">
               <View className="flex-row items-center gap-2 mb-2">
                 <View className="p-1.5 bg-emerald-200 rounded-lg"><Feather name="home" size={16} color="#059669" /></View>
@@ -221,16 +265,14 @@ export default function ClosingAnalyticsScreen() {
               {data.top5Brokers?.map((broker: any) => (
                 <View key={broker.rank} className="flex-row items-center justify-between p-2 bg-slate-50 rounded-xl">
                   <View className="flex-row items-center gap-3">
-                    <View className={`w-8 h-8 rounded-full items-center justify-center ${
-                      broker.rank === 1 ? 'bg-yellow-100' :
-                      broker.rank === 2 ? 'bg-slate-200' :
-                      broker.rank === 3 ? 'bg-orange-100' : 'bg-slate-100'
-                    }`}>
-                      <Text className={`font-bold text-xs ${
-                        broker.rank === 1 ? 'text-yellow-700' :
-                        broker.rank === 2 ? 'text-slate-700' :
-                        broker.rank === 3 ? 'text-orange-700' : 'text-slate-500'
-                      }`}>#{broker.rank}</Text>
+                    <View className={`w-8 h-8 rounded-full items-center justify-center ${broker.rank === 1 ? 'bg-yellow-100' :
+                        broker.rank === 2 ? 'bg-slate-200' :
+                          broker.rank === 3 ? 'bg-orange-100' : 'bg-slate-100'
+                      }`}>
+                      <Text className={`font-bold text-xs ${broker.rank === 1 ? 'text-yellow-700' :
+                          broker.rank === 2 ? 'text-slate-700' :
+                            broker.rank === 3 ? 'text-orange-700' : 'text-slate-500'
+                        }`}>#{broker.rank}</Text>
                     </View>
                     <View>
                       <Text className="font-bold text-slate-900 text-sm">{broker.name}</Text>

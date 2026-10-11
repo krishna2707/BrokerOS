@@ -12,6 +12,7 @@ import LeadListItem from '../../../../components/leads/list/LeadListItem';
 import LeadFilters from '../../../../components/leads/list/LeadFilters';
 import AutoDialerModal from '../../../../components/leads/modals/AutoDialerModal';
 import ClosingManagerNewLeadModal from '../../../../components/leads/modals/ClosingManagerNewLeadModal';
+import { exportLeadsToCsvMobile } from '../../../../lib/export-utils';
 
 export default function ClosingManagerLeadManagementList() {
   const { data: session } = authClient.useSession();
@@ -128,6 +129,8 @@ export default function ClosingManagerLeadManagementList() {
         selectedLeads={selectedLeads}
         leads={leads}
         startDialer={startDialer}
+        onExport={() => exportLeadsToCsvMobile(filteredLeads, 'closing_manager_leads')}
+        exportCount={filteredLeads.length}
       />
 
       <LeadFilters
