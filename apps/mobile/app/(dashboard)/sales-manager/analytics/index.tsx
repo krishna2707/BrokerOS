@@ -7,6 +7,8 @@ import { TowerHeatmap } from '../../sales-executive/analytics/components/TowerHe
 import { SharedLeaderboard } from '@/components/shared/SharedLeaderboard';
 import { DetailedMetricsGrid } from './components/DetailedMetricsGrid';
 import { Users, Award } from 'lucide-react-native';
+import { Feather } from '@expo/vector-icons';
+import { exportAnalyticsHtmlMobile } from '@/lib/export-utils';
 
 const ranges = [
   { id: 'weekly', label: 'Weekly' },
@@ -63,6 +65,37 @@ export default function SalesManagerAnalyticsScreen() {
     );
   }
 
+  const handleExportReport = () => {
+    if (!analyticsData) return;
+    const payload = {
+      departmentName: 'Sales Manager Team Analytics & Forecasting',
+      departmentCode: 'SALES_MANAGER',
+      timeRange,
+      generatedAt: new Date().toLocaleString(),
+      summaryCards: [
+        { label: 'Team Total Revenue', value: `₹${(analyticsData.financial?.totalRevenue || 0).toLocaleString()}`, subtitle: 'Booked Gross Sales' },
+        { label: 'Team Deals Closed', value: analyticsData.financial?.dealsClosed ?? 0, subtitle: 'Confirmed bookings' },
+        { label: 'Average Deal Size', value: `₹${(analyticsData.financial?.averageDealSize || 0).toLocaleString()}`, subtitle: 'Per booking average' },
+        { label: 'Pipeline Value', value: `₹${(analyticsData.financial?.pipelineValue || 0).toLocaleString()}`, subtitle: 'Open negotiation value' },
+      ],
+      funnelStages: analyticsData.funnel
+        ? [
+          { name: 'Team Leads', count: analyticsData.funnel.leads ?? 0, color: '#6366f1' },
+          { name: 'Site Visits', count: analyticsData.funnel.siteVisits ?? 0, color: '#a855f7' },
+          { name: 'Negotiations', count: analyticsData.funnel.negotiations ?? 0, color: '#f59e0b' },
+          { name: 'Bookings', count: analyticsData.funnel.bookings ?? 0, color: '#10b981' },
+        ]
+        : undefined,
+      financialMetrics: [
+        { label: 'Aggregate Team Revenue', value: `₹${(analyticsData.financial?.totalRevenue || 0).toLocaleString()}` },
+        { label: 'Total Bookings Count', value: analyticsData.financial?.dealsClosed ?? 0 },
+        { label: 'Mean Ticket Size', value: `₹${(analyticsData.financial?.averageDealSize || 0).toLocaleString()}` },
+        { label: 'In-Flight Pipeline Value', value: `₹${(analyticsData.financial?.pipelineValue || 0).toLocaleString()}` },
+      ],
+    };
+    exportAnalyticsHtmlMobile(payload, 'sales_manager_analytics');
+  };
+
   return (
     <ScrollView
       className="flex-1 bg-[#f8fafc]"
@@ -82,8 +115,8 @@ export default function SalesManagerAnalyticsScreen() {
         </Text>
       </View>
 
-      {/* Time Range Segmented Control */}
-      <View className="px-6 mb-4">
+      {/* Time Range Segmented Control & Export */}
+      <View className="px-6 mb-4 flex-row items-center justify-between flex-wrap gap-2">
         <View className="flex-row bg-slate-200 border-0 p-1.5 rounded-full self-start">
           {ranges.map(r => (
             <TouchableOpacity
@@ -101,6 +134,14 @@ export default function SalesManagerAnalyticsScreen() {
             </TouchableOpacity>
           ))}
         </View>
+
+        <TouchableOpacity
+          onPress={handleExportReport}
+          className="bg-emerald-50 border border-emerald-300 px-3.5 py-2 rounded-full flex-row items-center gap-1.5 active:bg-emerald-100"
+        >
+          <Feather name="file-text" size={14} color="#059669" />
+          <Text className="text-emerald-700 font-bold text-xs">Export Report</Text>
+        </TouchableOpacity>
       </View>
 
       {analyticsData && (

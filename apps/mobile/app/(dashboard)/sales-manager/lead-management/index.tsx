@@ -7,6 +7,7 @@ import { Lead } from '../../../../components/leads/misc/lead-management-types';
 import LeadSearchBar from '../../../../components/leads/list/LeadSearchBar';
 import LeadListItem from '../../../../components/leads/list/LeadListItem';
 import LeadFilters from '../../../../components/leads/list/LeadFilters';
+import { exportLeadsToCsvMobile } from '../../../../lib/export-utils';
 
 export default function SalesManagerLeadList() {
   const router = useRouter();
@@ -74,6 +75,8 @@ export default function SalesManagerLeadList() {
         selectedLeads={[]}
         leads={leads}
         startDialer={() => {}}
+        onExport={() => exportLeadsToCsvMobile(filteredLeads, 'sales_manager_leads')}
+        exportCount={filteredLeads.length}
       />
 
       <LeadFilters
