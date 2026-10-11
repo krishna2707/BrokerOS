@@ -1,0 +1,108 @@
+---
+title: "API Reference"
+sidebarTitle: "Overview"
+description: "The BrokerOS REST API is a NestJS 11 application running on port 3001. All endpoints are prefixed with /api."
+---
+
+## Base URL
+
+```
+https://api.yourdomain.com
+```
+
+All endpoints begin with `/api`. For local development:
+```
+http://localhost:3001
+```
+
+---
+
+## Authentication
+
+All endpoints (except where marked **Public**) require a valid Better Auth session. Include the session cookie in every request — it is set automatically by the browser after login.
+
+For programmatic access (e.g. mobile app background services, scripts), pass the session token as a Bearer header:
+
+```http
+Authorization: Bearer <session_token>
+```
+
+Read the full auth guide → [Authentication](/api-reference/authentication)
+
+---
+
+## Response Format
+
+All responses are JSON. Successful responses return the data directly (object or array). Errors follow this shape:
+
+```json
+{
+  "statusCode": 400,
+  "message": "phone must be a string",
+  "error": "Bad Request"
+}
+```
+
+---
+
+## Role-Based Access
+
+Most endpoints check the authenticated user's role before responding. If your role does not have access, you receive:
+
+```json
+{
+  "statusCode": 403,
+  "message": "Forbidden resource"
+}
+```
+
+The role is **always read from the server-side session** — never from the request body.
+
+---
+
+## API Modules
+
+<CardGroup cols={2}>
+  <Card title="Leads" icon="users" href="/api-reference/leads">
+    Create, list, update, assign, and bulk-import leads. Core of all CRM operations.
+  </Card>
+  <Card title="Site Visits" icon="map-pin" href="/api-reference/site-visits">
+    Schedule, update, and GPS-verify site visits linked to leads.
+  </Card>
+  <Card title="Follow-Ups" icon="calendar-clock" href="/api-reference/follow-ups">
+    Create and manage follow-up tasks for individual leads.
+  </Card>
+  <Card title="Negotiations" icon="scale-balanced" href="/api-reference/negotiations">
+    Submit and retrieve discount negotiation requests for a lead.
+  </Card>
+  <Card title="Bookings" icon="file-signature" href="/api-reference/bookings">
+    Create bookings, upload documents, manage loan cases, agreements, and handovers.
+  </Card>
+  <Card title="Inventory" icon="building-columns" href="/api-reference/inventory">
+    Manage projects, towers, units, and possession statuses.
+  </Card>
+  <Card title="Brokers (CP)" icon="handshake" href="/api-reference/brokers">
+    Create and manage the external Channel Partner broker network.
+  </Card>
+  <Card title="Approvals" icon="stamp" href="/api-reference/approvals">
+    Submit and manage discount approval requests and messages.
+  </Card>
+  <Card title="Marketing — Voice" icon="microphone-lines" href="/api-reference/marketing-voice">
+    Create and dispatch AI voice campaigns with full audience and analytics control.
+  </Card>
+  <Card title="Marketing — WhatsApp" icon="whatsapp" href="/api-reference/marketing-whatsapp">
+    Send broadcasts, manage conversations, flows, templates, and pipelines.
+  </Card>
+  <Card title="Marketing — SMS" icon="message" href="/api-reference/marketing-sms">
+    Run SMS campaigns, manage integrations, flows, and track delivery.
+  </Card>
+  <Card title="Marketing — Email" icon="envelope" href="/api-reference/marketing-email">
+    Send email campaigns, manage integrations, audience, templates, and analytics.
+  </Card>
+  <Card title="Users & System" icon="gear" href="/api-reference/users">
+    User location updates, push tokens, roles, sources, and project lookups.
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/api-reference/webhooks">
+    Inbound webhook endpoints for Meta WhatsApp, SMS gateways, and voice platforms.
+  </Card>
+</CardGroup>

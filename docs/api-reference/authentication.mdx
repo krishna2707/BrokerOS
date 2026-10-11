@@ -1,0 +1,121 @@
+---
+title: "Authentication"
+sidebarTitle: "Authentication"
+description: "How to authenticate with the BrokerOS API using Better Auth sessions."
+---
+
+## Overview
+
+BrokerOS uses **Better Auth** for all authentication. There are no custom JWT flows or API keys for regular users — authentication is session-based.
+
+Base auth path: `POST /api/auth/*`
+
+---
+
+## Sign In
+
+```http
+POST /api/auth/sign-in/email
+Content-Type: application/json
+```
+
+**Request body:**
+
+```json
+{
+  "email": "admin@demo.com",
+  "password": "Demo@1234"
+}
+```
+
+**Response:**
+
+```json
+{
+  "session": {
+    "id": "sess_xxx",
+    "token": "...",
+    "userId": "user_xxx",
+    "expiresAt": "2026-10-30T10:00:00.000Z"
+  },
+  "user": {
+    "id": "user_xxx",
+    "name": "Admin User",
+    "email": "admin@demo.com",
+    "roleId": "role_xxx"
+  }
+}
+```
+
+The response also sets a `better-auth.session_token` **HttpOnly cookie** automatically. Web browsers use this cookie for all subsequent requests.
+
+---
+
+## Sign Out
+
+```http
+DELETE /api/auth/session
+```
+
+Invalidates the current session on the server. Returns `200 OK` with no body.
+
+---
+
+## Get Current Session
+
+```http
+GET /api/auth/session
+```
+
+**Response:**
+
+```json
+{
+  "session": {
+    "id": "sess_xxx",
+    "userId": "user_xxx",
+    "expiresAt": "2026-10-30T10:00:00.000Z"
+  },
+  "user": {
+    "id": "user_xxx",
+    "name": "John Doe",
+    "email": "john@firm.com",
+    "roleId": "role_xxx"
+  }
+}
+```
+
+Returns `401` if no valid session exists.
+
+---
+
+## Using Sessions in API Calls
+
+### Browser / Web App
+The session cookie is set automatically. All `fetch` calls include it if you use `credentials: 'include'`:
+
+```ts
+const response = await fetch('http://localhost:3001/api/leads', {
+  credentials: 'include',
+});
+```
+
+### Mobile App (Expo)
+The Better Auth Expo plugin handles cookie storage in `expo-secure-store`. All API calls from `authClient.$fetch` are automatically authenticated.
+
+### Scripts & Backend-to-Backend
+Pass the session token in the `Authorization` header:
+
+```http
+GET /api/leads
+Authorization: Bearer sess_token_here
+```
+
+---
+
+## Errors
+
+| Status Code | Meaning |
+| :--- | :--- |
+| `401 Unauthorized` | No valid session — sign in first |
+| `403 Forbidden` | Session valid but role lacks permission for this endpoint |
