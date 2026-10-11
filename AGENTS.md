@@ -157,6 +157,19 @@ As BrokerOS grows to include background workers, 3rd-party integrations, and new
 
 ---
 
+## Documentation Law
+
+- **Documentation is code.** Whenever adding, refactoring, or modifying APIs, database models, frontend UI forms/modals, mobile features, background workers, or 3rd-party integrations, you **MUST** synchronize the corresponding documentation in `docs/` using the [doc-sync](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/.agents/skills/doc-sync/SKILL.md) skill.
+- **Documentation Standards:**
+  - **ZERO em dashes or en dashes** anywhere in titles, tables, or text.
+  - **ZERO graph diagrams** (e.g., `graph TD`, `graph LR`). All architectural diagrams must use clean Mermaid `sequenceDiagram` or `erDiagram` syntax.
+  - **ZERO rect rgb(...)** or opaque bounding boxes that obscure text in dark/light mode.
+  - **Exact In-App UI Paths**: Always document real UI navigation (e.g., `Dashboard -> Marketing -> [Channel] -> Settings`) and modal form fields, rather than raw `.env` edits.
+  - **docs.json Sync**: Any newly created `.mdx` doc must be registered in both `docs/docs.json` and root `docs.json`.
+  - **Clickable Links**: Use `file:///` links for all file and code references.
+
+---
+
 ## Map
 
 - API modules (`apps/api/src/`): `auth`, `leads`, `inventory`, `brokers`, `approvals`, `chat`, `notifications`, `dashboard`, `marketing` (whatsapp, voice, email, sms, ads sub-modules).
