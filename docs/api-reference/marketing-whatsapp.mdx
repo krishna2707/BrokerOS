@@ -1,0 +1,150 @@
+---
+title: "Marketing WhatsApp API"
+sidebarTitle: "Marketing (WhatsApp)"
+description: "Send WhatsApp template broadcasts, manage real-time team inbox conversations, and trigger chatbots."
+---
+
+The Marketing WhatsApp API integrates directly with Meta Cloud API. It powers two distinct flows:
+1. **Outbound Template Broadcasts** — Mass campaigns sent to leads or CSV audiences using pre-approved Meta message templates.
+2. **Team Inbox & Real-Time Chat** — 2-way conversations within Meta's 24-hour customer service window, with agent assignments, tags, and AI assistance.
+
+```http
+BASE URL: /api/marketing/whatsapp
+```
+
+---
+
+## Endpoints Summary
+
+### Team Inbox & Conversations
+
+| Method | Path | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/marketing/whatsapp/conversations` | List conversation threads with filtering | Authenticated |
+| `POST` | `/api/marketing/whatsapp/conversations` | Start a new conversation with a contact | Authenticated |
+| `GET` | `/api/marketing/whatsapp/conversations/:id` | Fetch conversation metadata and active status | Authenticated |
+| `GET` | `/api/marketing/whatsapp/conversations/:id/messages` | Paginated message thread history | Authenticated |
+| `POST` | `/api/marketing/whatsapp/conversations/:id/messages` | Send an outbound message (text, media, or template) | Authenticated |
+| `PATCH` | `/api/marketing/whatsapp/conversations/:id/status` | Update conversation status (`OPEN`, `RESOLVED`, `SNOOZED`) | Authenticated |
+| `PATCH` | `/api/marketing/whatsapp/conversations/:id/assign` | Assign conversation to a human agent | Authenticated |
+| `POST` | `/api/marketing/whatsapp/conversations/:id/read` | Mark all unread messages as read | Authenticated |
+
+### Broadcasts
+
+| Method | Path | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/marketing/whatsapp/broadcasts` | List broadcast campaigns | Authenticated |
+| `POST` | `/api/marketing/whatsapp/broadcasts` | Create a new broadcast draft | Authenticated |
+| `POST` | `/api/marketing/whatsapp/broadcasts/:id/dispatch` | Send broadcast immediately via BullMQ worker | Authenticated |
+| `POST` | `/api/marketing/whatsapp/broadcasts/:id/schedule` | Schedule broadcast for a future timestamp | Authenticated |
+| `POST` | `/api/marketing/whatsapp/broadcasts/:id/cancel` | Cancel a scheduled broadcast | Authenticated |
+
+---
+
+## 24-Hour Customer Service Window Rule
+
+```mermaid
+graph TD
+    A[Customer Sends Inbound Message] -->|24-Hour Timer Starts| B[Free-Form Messages Allowed]
+    B -->|Within 24 Hours| C[Send Plain Text, Images, PDF Brochures]
+    B -->|Timer Expires (24h+)| D[Free-Form Blocked by Meta]
+    D -->|Re-open Window| E[Must send Pre-Approved Meta Template Message]
+    E -->|Customer Replies| B
+```
+
+---
+
+## Send WhatsApp Message
+
+```http
+POST /api/marketing/whatsapp/conversations/:id/messages
+```
+
+Sends a message into an existing conversation. If outside the 24-hour window, you must supply a registered `templateName`.
+
+### Request Body (Free-Form Text)
+
+```json
+{
+  "type": "TEXT",
+  "text": "Hello Mr. Sharma, here is the updated floor plan and payment schedule for Tower B Unit 1204."
+}
+```
+
+### Request Body (Media Document)
+
+```json
+{
+  "type": "DOCUMENT",
+  "mediaUrl": "https://blob.vercel-storage.com/brochures/emerald-heights-tower-b.pdf",
+  "caption": "Emerald Heights - Tower B Official Brochure"
+}
+```
+
+### Request Body (Approved Template)
+
+```json
+{
+  "type": "TEMPLATE",
+  "templateName": "site_visit_reminder_v2",
+  "templateLanguage": "en",
+  "templateVariables": [
+    "Rahul Sharma",
+    "Saturday, 11:00 AM",
+    "Emerald Heights Site Office"
+  ]
+}
+```
+
+---
+
+## Create Broadcast
+
+```http
+POST /api/marketing/whatsapp/broadcasts
+```
+
+Creates a mass campaign. Recipients can be targeted from CRM leads by status/temperature, or from an uploaded audience CSV.
+
+### Request Body
+
+```json
+{
+  "name": "Festival Launch Offer - Whitefield",
+  "templateName": "festival_prelaunch_discount",
+  "templateLanguage": "en",
+  "projectId": "cm123proj001",
+  "targetCriteria": {
+    "leadStatuses": ["CONTACTED", "INTERESTED"],
+    "leadTemperatures": ["HOT", "WARM"],
+    "budgetMin": 12000000
+  },
+  "variableMapping": {
+    "1": "{{lead.firstName}}",
+    "2": "{{project.name}}",
+    "3": "₹5,00,000"
+  }
+}
+```
+
+---
+
+## Dispatch Broadcast
+
+```http
+POST /api/marketing/whatsapp/broadcasts/:id/dispatch
+```
+
+Transitions the broadcast to `RUNNING` and enqueues jobs into `marketing-whatsapp.processor.ts`. Rate limits are regulated automatically to prevent Meta phone number tier throttling.
+
+### Response Example
+
+```json
+{
+  "success": true,
+  "broadcastId": "cm123bc001",
+  "status": "PROCESSING",
+  "recipientCount": 850,
+  "queuedAt": "2026-10-01T08:16:30.000Z"
+}
+```
