@@ -1,0 +1,79 @@
+---
+title: "Brokerage Records & Commission Slabs"
+sidebarTitle: "Brokerage Records"
+description: "Automatic commission calculation, tier bonuses, split payouts, and the BrokerageRecord lifecycle."
+---
+
+When a Channel Partner booking is confirmed, BrokerOS automatically calculates the broker's commission and creates a **`BrokerageRecord`**. This ensures financial transparency, eliminates manual spreadsheet calculation errors, and establishes an immutable accounting trail.
+
+---
+
+## Commission Calculation Flow
+
+BrokerOS computes gross commission consideration, applies applicable tax withholdings, and instantiates the ledger record upon booking confirmation:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor CM as Closing Manager
+    participant Web as Booking Flow
+    participant Engine as Commission Engine
+    participant DB as PostgreSQL Database
+    actor Broker as External Broker
+
+    CM->>Web: Confirm Booking (Agreed Consideration: $850,000)
+    Web->>Engine: Calculate Brokerage (Broker ID: BRK-1042)
+    Engine->>DB: Query Broker Performance Tier (e.g. GOLD = 2.5%)
+    DB-->>Engine: Base Slab & Active Contest Boosters (+0.5%)
+    Engine->>Engine: Compute Gross Commission ($850,000 x 3.0% = $25,500)
+    Engine->>Engine: Deduct Statutory Tax Withholding (5% TDS = $1,275)
+    Engine->>DB: Create BrokerageRecord (Net Payable: $24,225, status: PENDING)
+    DB-->>Engine: Ledger Record Created
+    Engine-->>Web: Booking Confirmed with Attached Brokerage Record
+    Web-->>Broker: Dispatch WhatsApp Notification with Commission Summary
+```
+
+---
+
+## The Brokerage Record Entity
+
+Brokerage records track the commercial consideration and audit milestones for each confirmed transaction:
+
+| Field Attribute | Type | Description |
+| :--- | :--- | :--- |
+| **`bookingId`** | Reference | Linked confirmation record for the sold unit. |
+| **`brokerId`** | Reference | Referring external broker or agency. |
+| **`bookingValue`** | Decimal | Total agreed contract consideration for the property. |
+| **`brokeragePercent`** | Decimal | Contracted commission rate (for example, 2.5%). |
+| **`brokerageAmount`** | Decimal | Gross commission consideration prior to statutory deductions. |
+| **`tdsDeducted`** | Decimal | Statutory tax deduction withheld at source. |
+| **`netPayable`** | Decimal | Net liquid disbursement amount payable to the partner. |
+| **`status`** | Enum | Accounting lifecycle stage (`PENDING`, `APPROVED`, `PAID`, `DISPUTED`, `HELD`). |
+| **`paymentReference`** | String | Bank UTR, wire reference, or Vercel Blob payment advice receipt URL. |
+| **`approvedById`** | Reference | User ID of the Finance Manager authorizing the payout. |
+
+---
+
+## Lifecycle Stages of a Brokerage Record
+
+Every brokerage record progresses through standardized verification stages before funds are released:
+
+| Status | Stage Meaning | Prerequisite for Advancement |
+| :--- | :--- | :--- |
+| **`PENDING`** | Deal confirmed, but customer has not yet completed agreement execution. | Buyer must pay initial 10% deposit and sign the formal agreement. |
+| **`APPROVED`** | Milestone verified and broker tax invoice approved by Finance. | Finance Manager signs off on the disbursement batch. |
+| **`PAID`** | Bank wire transfer completed and payment advice slip attached. | Final terminal state. Broker notified with wire confirmation. |
+| **`DISPUTED`** | Attribution or commission percentage flagged for manual review. | Director or Channel Partner Head resolves commercial dispute. |
+| **`HELD`** | Administrative freeze applied due to compliance or KYC gaps. | Resolution of outstanding tax documents or buyer payment queries. |
+
+---
+
+## Split Commission Support
+
+On complex sales involving cross-functional teamwork, BrokerOS supports fractional commission splitting:
+
+- **External Broker**: 70% of total commission allocation.
+- **Sourcing Manager Incentive**: 15% internal performance bonus.
+- **Closing Manager Incentive**: 15% internal performance bonus.
+
+All fractional shares are computed concurrently upon booking confirmation, providing transparent visibility across both external partner accounts and internal incentive payrolls.
