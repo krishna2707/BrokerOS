@@ -1,0 +1,245 @@
+---
+title: "Mobile App Setup, Tooling & Build Guide"
+sidebarTitle: "Setup & Tooling"
+description: "Complete guide to setting up the Android development environment, configuring native Kotlin modules, Firebase push credentials, Google Maps, and compiling the app."
+---
+
+## Overview
+
+The BrokerOS mobile app is a native Android application built on **Expo 54**, **React Native 0.81**, and **Expo Router 6**. It includes custom native Kotlin modules for telephony automation and background audio handling.
+
+Because the app incorporates custom native code (the `auto-dialer` module), **it cannot run inside the standard Expo Go client from Google Play**. Developers and operators compile a custom development build using `npx expo run:android` or create standalone APK distributions using EAS (Expo Application Services).
+
+---
+
+## Tooling & System Prerequisites
+
+Before building or running the Android app, ensure your workstation meets the following requirements:
+
+| Tool / Requirement | Version / Specification | Purpose |
+| :--- | :--- | :--- |
+| **Operating System** | Windows 10/11, macOS 13+, or Linux | Host development environment. |
+| **Node.js** | `>= 22.x` | Runtime for Metro bundler and CLI tooling. |
+| **pnpm** | `>= 10.x` | Monorepo package manager (`@brokeros/mobile`). |
+| **Java Development Kit (JDK)** | **JDK 17** (or Android Studio JBR) | Required for Gradle 8+ and Kotlin native compilation. |
+| **Android Studio** | Latest Stable (Ladybug or newer) | Provides Android SDK, emulator (AVD), and platform tools. |
+| **Android SDK Platform** | API Level 34 / 35 (Android 14 / 15) | Build target platforms. Minimum supported: Android 8.0 (API 26). |
+| **Android SDK Build-Tools** | `35.0.0` or `34.0.0` | Compiles native DEX code and packaging. |
+| **Android NDK & CMake** | NDK 26.1+ / CMake 3.22.1+ | Compiles C++ and React Native New Architecture runtime. |
+| **ADB (Android Debug Bridge)** | Included with Platform Tools | Device communication and test automation. |
+| **Maestro CLI** | Latest (`v1.39+`) | Declarative native mobile E2E test runner. |
+
+---
+
+## Step 1: Install Dependencies
+
+From the repository root, install monorepo dependencies. The custom native `auto-dialer` package is linked locally via `"auto-dialer": "file:modules/auto-dialer"`:
+
+```bash
+# Run from repository root
+pnpm install
+```
+
+Do not run `npm install` inside `apps/mobile/modules/auto-dialer/` individually; pnpm manages the local workspace link automatically.
+
+---
+
+## Step 2: Configure Environment Variables
+
+Navigate to `apps/mobile/` and initialize your local environment configuration:
+
+```bash
+cd apps/mobile
+cp .env.example .env
+```
+
+Edit `apps/mobile/.env` to configure your API endpoint and API keys:
+
+```env
+# ── 1. Backend API URL (LAN IP or Emulator Alias) ──
+# Physical Android device on the same local Wi-Fi:
+EXPO_PUBLIC_API_URL="http://192.168.1.100:3000"
+
+# Android Studio Virtual Device (AVD Emulator ONLY):
+# 10.0.2.2 maps directly to the host machine's localhost
+# EXPO_PUBLIC_API_URL="http://10.0.2.2:3000"
+
+# ── 2. Google Maps Android API Key ──
+EXPO_PUBLIC_GOOGLE_MAPS_API_KEY="AIzaSyYourGoogleMapsApiKeyHere"
+```
+
+### Why `localhost` Does Not Work
+Android devices and emulators operate within their own virtual network namespaces. Navigating to `http://localhost:3000` from the phone attempts to connect to the phone itself, failing immediately. You must use:
+- **LAN IPv4 address** (e.g., `192.168.x.x:3000`) when testing on physical handsets connected via Wi-Fi or USB tethering.
+- **`10.0.2.2:3000`** when testing on the standard Android Studio emulator.
+
+To locate your host workstation IPv4 address:
+- **Windows (PowerShell)**: `ipconfig | findstr /i "ipv4"`
+- **macOS / Linux**: `ifconfig | grep "inet " | grep -v 127.0.0.1`
+
+---
+
+## Step 3: Google Maps SDK Configuration
+
+The mobile app relies on native Google Maps for GPS site visit verification, broker meeting logs, and sales executive tracking.
+
+1. Open the [Google Cloud Console](https://console.cloud.google.com/).
+2. Select or create your project and navigate to **APIs & Services -> Enabled APIs & Services**.
+3. Enable the **Maps SDK for Android**.
+4. Go to **Credentials**, click **Create Credentials -> API Key**, and restrict the key to the Maps SDK for Android.
+5. Paste the key into `apps/mobile/.env` under `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`.
+6. At compile time, [`apps/mobile/app.config.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/app.config.ts) injects this key directly into the native Android Manifest.
+
+---
+
+## Step 4: Firebase FCM Push Notifications Setup
+
+Background push notifications require Firebase Cloud Messaging (FCM) linked to your Expo project:
+
+<Steps>
+  <Step title="Create Project in Firebase Console">
+    Open the [Firebase Console](https://console.firebase.google.com/) and create a project for your brokerage.
+  </Step>
+
+  <Step title="Add Android Application">
+    Click **Add app -> Android**. Enter the exact package name declared in [`apps/mobile/app.json`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/app.json):
+    ```
+    com.anonymous.mobile
+    ```
+  </Step>
+
+  <Step title="Download google-services.json">
+    Download `google-services.json` and save it directly in the `apps/mobile/` root folder:
+    ```
+    apps/mobile/google-services.json
+    ```
+    *(This file is gitignored for security. Reference `apps/mobile/google-services.json.example` for structure).*
+  </Step>
+
+  <Step title="Generate Google Service Account Private Key">
+    In Firebase, navigate to **Project settings -> Service accounts**. Click **Generate new private key** and download the resulting JSON credentials file.
+  </Step>
+
+  <Step title="Link Key to Expo Dashboard (FCM v1)">
+    1. Log in via your terminal: `npx expo login`.
+    2. Open your [Expo Dashboard](https://expo.dev/) in a browser.
+    3. Navigate to your mobile project -> **Credentials -> Android -> Push Credentials**.
+    4. Click **Add FCM Server Key / Service Account Key** and upload the JSON private key file downloaded from Firebase.
+  </Step>
+</Steps>
+
+---
+
+## Step 5: Android Studio & Device Preparation
+
+### Option A: Running on the Android Emulator
+1. Launch Android Studio.
+2. Open the **Virtual Device Manager** (Device Manager).
+3. Create or start an Android Virtual Device (AVD) running **Android 13 (API 33)** or **Android 14 (API 34)** with Google APIs.
+4. Verify ADB sees the emulator:
+   ```bash
+   adb devices
+   ```
+
+### Option B: Running on a Physical Android Handset
+1. Open **Settings -> About phone** on your Android device.
+2. Tap **Build number** 7 times to enable **Developer options**.
+3. Under **Developer options**, enable:
+   - **USB debugging**
+   - **Install via USB**
+4. Connect the phone to your computer via USB cable. When prompted on the phone, check **Always allow from this computer** and tap **Allow**.
+5. Verify in your terminal:
+   ```bash
+   adb devices
+   # Output should display: <device-serial-id>    device
+   ```
+
+---
+
+## Step 6: Compiling and Launching the App
+
+### Windows Java Environment Setup
+On Windows, if Gradle throws a Java or JDK compilation error, point your shell to Android Studio's bundled Java runtime (JBR) before compiling:
+
+```powershell
+$env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"
+```
+
+### Run Native Android Compilation
+From the monorepo root or the `apps/mobile` directory, launch the build:
+
+```bash
+# From repository root
+pnpm --filter @brokeros/mobile android
+
+# Or directly from apps/mobile
+cd apps/mobile
+npx expo run:android
+```
+
+This command automatically:
+1. Generates the native Android project directory using prebuild plugins (including [`plugins/withCmakeShortPath.js`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/plugins/withCmakeShortPath.js)).
+2. Compiles native C++ and Kotlin dependencies (React Native New Architecture and `auto-dialer`).
+3. Installs the resulting development client APK onto your connected device or emulator.
+4. Starts the Metro bundler server on port 8081.
+
+---
+
+## Step 7: Storage Access Framework (SAF) Setup for Call Recording
+
+For the auto-dialer to access audio recordings captured by ODialer or stock recording apps without requiring root privileges:
+
+1. Install the approved call recording companion application (e.g., ODialer) on the Android device.
+2. In Android system settings, set ODialer as the default calling and recording app.
+3. Open the BrokerOS mobile app, sign in, and tap the settings icon in your workspace.
+4. Tap **Recording Storage Folder**.
+5. Android displays the system file picker via the Storage Access Framework (SAF). Navigate to the ODialer audio directory (usually `Internal Storage/ODialer` or `Internal Storage/Recordings/Call`).
+6. Tap **Use this folder** and confirm **Allow**.
+7. BrokerOS saves the persistent directory URI into Android `SharedPreferences`. The native background worker (`CallUploadWorker.kt`) will now scan this folder automatically after every completed call.
+
+---
+
+## Step 8: Running Maestro Native E2E Tests
+
+BrokerOS mobile flows are verified using **Maestro**, an automated native UI testing framework. Test specifications live in [`apps/mobile/e2e/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/e2e/):
+
+- `01-login-and-roles.yaml`: Multi-role login and adaptive bottom navigation tabs.
+- `02-lead-autodialer.yaml`: Lead queue loading, call initiation, and outcome logging.
+- `03-site-visit-verification.yaml`: GPS coordinate acquisition and selfie check-in.
+- `04-inventory-unit-booking.yaml`: Unit matrix filtering and booking creation.
+- `05-commissions.yaml`: Sourcing manager broker commission settlements.
+
+### Install Maestro CLI
+- **Windows (PowerShell)**:
+  ```powershell
+  Invoke-WebRequest -UseBasicParsing "https://get.maestro.mobile.dev" | Invoke-Expression
+  ```
+- **macOS / Linux**:
+  ```bash
+  curl -Ls "https://get.maestro.mobile.dev" | bash
+  ```
+
+### Execute Test Suite
+With an active Android device or emulator connected (`adb devices`):
+
+```bash
+# Run from repository root
+pnpm test:mobile:e2e
+```
+
+The runner executes [`scripts/test-mobile-e2e.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/scripts/test-mobile-e2e.ts), boots the flows sequentially, and asserts that all role workspaces and native intents execute without regression.
+
+---
+
+## Standalone APK Generation with EAS
+
+To generate standalone APK packages for sideloading or internal distribution to field agents:
+
+```bash
+cd apps/mobile
+
+# Build internal preview APK
+eas build --platform android --profile preview
+```
+
+The build is compiled on EAS infrastructure and generates a downloadable `.apk` file that can be distributed directly to sales teams without requiring Android Studio on employee devices.
