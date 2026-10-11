@@ -11,6 +11,8 @@ interface LeadSearchBarProps {
   selectedLeads: string[];
   leads: Lead[];
   startDialer: (leads: DialerLead[]) => void;
+  onExport?: () => void;
+  exportCount?: number;
 }
 
 export default function LeadSearchBar({
@@ -19,18 +21,33 @@ export default function LeadSearchBar({
   selectionMode,
   selectedLeads,
   leads,
-  startDialer
+  startDialer,
+  onExport,
+  exportCount,
 }: LeadSearchBarProps) {
   return (
     <View className="p-4">
-      <View className="flex-row items-center bg-white border border-gray-200 rounded-xl px-3 py-2 mb-2 shadow-sm">
-        <Feather name="search" size={18} color="#94a3b8" />
-        <TextInput
-          placeholder="Search leads..."
-          value={search}
-          onChangeText={setSearch}
-          className="flex-1 ml-2 text-base text-gray-900 h-8"
-        />
+      <View className="flex-row items-center gap-2 mb-2">
+        <View className="flex-1 flex-row items-center bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm">
+          <Feather name="search" size={18} color="#94a3b8" />
+          <TextInput
+            placeholder="Search leads..."
+            value={search}
+            onChangeText={setSearch}
+            className="flex-1 ml-2 text-base text-gray-900 h-8"
+          />
+        </View>
+        {onExport && (
+          <TouchableOpacity
+            onPress={onExport}
+            className="bg-emerald-50 border border-emerald-300 px-3 py-2.5 rounded-xl flex-row items-center gap-1.5 shadow-sm active:bg-emerald-100"
+          >
+            <Feather name="download" size={14} color="#059669" />
+            <Text className="text-emerald-700 font-bold text-xs">
+              CSV {exportCount !== undefined ? `(${exportCount})` : ""}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
       {selectionMode && (
         <View className="flex-row items-center justify-between bg-blue-100 px-4 py-2 rounded-lg mb-2">
