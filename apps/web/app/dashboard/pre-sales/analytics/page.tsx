@@ -19,6 +19,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { ExportAnalyticsReportButton } from "@/components/analytics/ExportAnalyticsReportButton";
 
 interface AnalyticsData {
   pipeline: {
@@ -133,37 +134,39 @@ export default function PreSalesAnalytics() {
     { id: "all-time", label: "All Time" },
   ];
 
-  const exportToCSV = () => {
-    if (!data) return;
-
-    const rows = [
-      ["Metric", "Value"],
-      ["Total Leads", data.pipeline.totalLeads],
-      ["New Leads", data.pipeline.newLeads],
-      ["Contacted", data.pipeline.contacted],
-      ["Interested", data.pipeline.interested],
-      ["Qualified", data.pipeline.qualified],
-      ["Site Visits", data.pipeline.siteVisits],
-      ["Booked", data.pipeline.booked],
-      ["Lost", data.pipeline.lost],
-      [""],
-      ["Calls Made", data.calls.made],
-      ["Calls Connected", data.calls.connected],
-      ["Connected Rate %", data.calls.connectedPercentage],
-      [""],
-      ["Follow-ups Done", data.followUps.completed],
-    ];
-
-    const csvContent =
-      "data:text/csv;charset=utf-8," + rows.map((e) => e.join(",")).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `presales_analytics_${timeRange}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const reportPayload = data
+    ? {
+        departmentName: "Pre-Sales Performance Analytics",
+        departmentCode: "PRE_SALES",
+        timeRange,
+        generatedAt: new Date().toLocaleString(),
+        summaryCards: [
+          { label: "Total Pipeline", value: data.pipeline.totalLeads, subtitle: "Total Leads" },
+          { label: "Calls Made", value: data.calls.made, subtitle: "Outbound dials" },
+          { label: "Connected Calls", value: data.calls.connected, change: `${data.calls.connectedPercentage}%`, subtitle: "Conversations" },
+          { label: "Follow-Ups Done", value: data.followUps.completed, subtitle: "Schedule compliance" },
+          { label: "Site Visits Scheduled", value: data.pipeline.siteVisits, change: `${data.conversions.leadToSiteVisitPercentage}%`, subtitle: "Qualification conversion" },
+          { label: "Deals Booked", value: data.pipeline.booked, subtitle: "Confirmed bookings" },
+        ],
+        funnelStages: [
+          { name: "Total Leads", count: data.pipeline.totalLeads, color: "#6366f1" },
+          { name: "Contacted", count: data.pipeline.contacted, color: "#818cf8" },
+          { name: "Interested", count: data.pipeline.interested, color: "#a855f7" },
+          { name: "Qualified", count: data.pipeline.qualified, color: "#fbbf24" },
+          { name: "Site Visits", count: data.pipeline.siteVisits, color: "#34d399" },
+          { name: "Booked", count: data.pipeline.booked, color: "#10b981" },
+          { name: "Lost", count: data.pipeline.lost, color: "#ef4444" },
+        ],
+        activityMetrics: [
+          { label: "Total Dials", value: data.calls.made },
+          { label: "Connected Calls", value: data.calls.connected },
+          { label: "Connection Percentage", value: `${data.calls.connectedPercentage}%` },
+          { label: "Avg Talk Time", value: `${Math.round(data.calls.avgTalkTimeSeconds || 0)}s` },
+          { label: "Follow-ups Completed", value: data.followUps.completed },
+          { label: "Lead-to-SV Rate", value: `${data.conversions.leadToSiteVisitPercentage}%` },
+        ],
+      }
+    : null;
 
   return (
     <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 animate-enter">
@@ -198,13 +201,10 @@ export default function PreSalesAnalytics() {
               </button>
             ))}
           </div>
-          <button
-            onClick={exportToCSV}
-            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all active:scale-[0.96] press-effect shadow-2xs flex items-center gap-1.5 cursor-pointer"
-          >
-            <Download size={13} />
-            <span>Export CSV</span>
-          </button>
+          <ExportAnalyticsReportButton
+            payload={reportPayload}
+            filenamePrefix="presales_analytics"
+          />
         </div>
       </div>
 
