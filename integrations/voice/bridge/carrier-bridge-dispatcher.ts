@@ -253,7 +253,18 @@ export async function tryCarrierBridgeDispatch(
         From: fromNum,
       };
 
-      const twiml = `<Response><Say voice="Polly.Aditi">${escapeXml(message)}</Say><Pause length="2"/><Hangup/></Response>`;
+      let twiml = '';
+      const plat = platform.toUpperCase();
+      if (plat === 'VAPI') {
+        const assistantId = options.assistantId || 'assistant';
+        twiml = `<Response><Dial><Sip>sip:${escapeXml(assistantId)}@sip.vapi.ai</Sip></Dial></Response>`;
+      } else if (plat === 'RETELL') {
+        const agentId = options.assistantId || 'agent';
+        twiml = `<Response><Dial><Sip>sip:${escapeXml(agentId)}@sip.retellai.com</Sip></Dial></Response>`;
+      } else {
+        const wsUrl = (publicUrl.replace(/^http/i, 'ws') + '/voice/stream').trim();
+        twiml = `<Response><Connect><Stream url="${escapeXml(wsUrl)}"><Parameter name="campaignId" value="${escapeXml(options.campaignId || 'direct_test')}"/><Parameter name="recipientId" value="${escapeXml(options.recipientId || '')}"/><Parameter name="agent" value="${escapeXml(plat)}"/><Parameter name="voiceId" value="${escapeXml(options.voiceId || 'alloy')}"/></Stream></Connect></Response>`;
+      }
       bodyParams.Twiml = twiml;
 
       const body = new URLSearchParams(bodyParams);
