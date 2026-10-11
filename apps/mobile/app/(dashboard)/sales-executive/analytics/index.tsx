@@ -7,6 +7,8 @@ import { TowerHeatmap } from './components/TowerHeatmap';
 import { ProjectAnalytics } from './components/ProjectAnalytics';
 import { SharedLeaderboard } from '@/components/shared/SharedLeaderboard';
 import { TrendingUp, Award } from 'lucide-react-native';
+import { Feather } from '@expo/vector-icons';
+import { exportAnalyticsHtmlMobile } from '@/lib/export-utils';
 
 const ranges = [
   { id: 'weekly', label: 'Weekly' },
@@ -68,6 +70,35 @@ export default function AnalyticsScreen() {
     );
   }
 
+  const handleExportReport = () => {
+    if (!analyticsData) return;
+    const payload = {
+      departmentName: 'Sales Executive Performance Analytics',
+      departmentCode: 'SALES_EXECUTIVE',
+      timeRange,
+      generatedAt: new Date().toLocaleString(),
+      summaryCards: [
+        { label: 'Total Sales Revenue', value: `₹${(analyticsData.financial?.totalRevenue || 0).toLocaleString()}`, subtitle: 'Booked Value' },
+        { label: 'Realized Commission', value: `₹${(analyticsData.financial?.realizedCommission || 0).toLocaleString()}`, subtitle: 'Earned' },
+        { label: 'Projected Commission', value: `₹${(analyticsData.financial?.projectedCommission || 0).toLocaleString()}`, subtitle: 'In-flight' },
+        { label: 'Units Sold', value: analyticsData.financial?.unitsSold ?? 0, subtitle: 'Closed bookings' },
+      ],
+      funnelStages: [
+        { name: 'Active Leads', count: analyticsData.funnel?.leads ?? 0, color: '#6366f1' },
+        { name: 'Site Visits Done', count: analyticsData.funnel?.siteVisits ?? 0, color: '#a855f7' },
+        { name: 'In Negotiation', count: analyticsData.funnel?.negotiations ?? 0, color: '#f59e0b' },
+        { name: 'Confirmed Bookings', count: analyticsData.funnel?.bookings ?? 0, color: '#10b981' },
+      ],
+      financialMetrics: [
+        { label: 'Total Booked Revenue', value: `₹${(analyticsData.financial?.totalRevenue || 0).toLocaleString()}` },
+        { label: 'Realized Commission Payout', value: `₹${(analyticsData.financial?.realizedCommission || 0).toLocaleString()}` },
+        { label: 'Pipeline Projected Commission', value: `₹${(analyticsData.financial?.projectedCommission || 0).toLocaleString()}` },
+        { label: 'Units Sold Count', value: analyticsData.financial?.unitsSold ?? 0 },
+      ],
+    };
+    exportAnalyticsHtmlMobile(payload, 'sales_exec_analytics');
+  };
+
   return (
     <ScrollView
       className="flex-1 bg-[#f8fafc]"
@@ -87,8 +118,8 @@ export default function AnalyticsScreen() {
         </Text>
       </View>
 
-      {/* Time Range Segmented Control */}
-      <View className="px-6 mb-4">
+      {/* Time Range Segmented Control & Export */}
+      <View className="px-6 mb-4 flex-row items-center justify-between flex-wrap gap-2">
         <View className="flex-row bg-slate-200 border-0 p-1.5 rounded-full self-start">
           {ranges.map(r => (
             <TouchableOpacity
@@ -106,6 +137,14 @@ export default function AnalyticsScreen() {
             </TouchableOpacity>
           ))}
         </View>
+
+        <TouchableOpacity
+          onPress={handleExportReport}
+          className="bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-full flex-row items-center gap-1.5 active:bg-indigo-100"
+        >
+          <Feather name="file-text" size={14} color="#4f46e5" />
+          <Text className="text-indigo-700 font-bold text-xs">Export Report</Text>
+        </TouchableOpacity>
       </View>
 
       {analyticsData && (
