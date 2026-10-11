@@ -1,5 +1,3 @@
-<!-- $env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr" -->
-
 # Demo User Credentials
 
 All users have the exact same password: **Demo@1234**
