@@ -52,6 +52,8 @@ function ClosingManagerLeadTableContent() {
         setFollowUpDate={setFollowUpDate}
         search={search}
         setSearch={setSearch}
+        leads={filteredLeads}
+        filenamePrefix="closing_manager_cp_deals"
       />
       <PostSalesTable
         filteredLeads={filteredLeads}

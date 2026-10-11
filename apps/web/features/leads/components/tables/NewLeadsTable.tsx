@@ -87,6 +87,7 @@ function NewLeadsContent() {
         subordinates={subordinates}
         onAssign={handleAssign}
         onUploadSuccess={fetchLeadsAndSubordinates}
+        leads={leads}
       />
       <NewLeadsGrid
         leads={leads}

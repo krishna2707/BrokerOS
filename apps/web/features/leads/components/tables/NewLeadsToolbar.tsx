@@ -2,12 +2,14 @@ import React, { useRef, useState } from "react";
 import { Upload, Users, Shuffle, CheckSquare, Loader2 } from "lucide-react";
 import Papa from "papaparse";
 import { toast } from "sonner";
+import { ExportLeadsButton } from "@/features/leads/components/ExportLeadsButton";
 
 interface NewLeadsToolbarProps {
   selectedLeadIds: Set<string>;
   subordinates: any[];
   onAssign: (leadIds: string[], targetUserId?: string, roundRobin?: boolean) => void;
   onUploadSuccess: () => void;
+  leads?: any[];
 }
 
 export function NewLeadsToolbar({
@@ -15,6 +17,7 @@ export function NewLeadsToolbar({
   subordinates,
   onAssign,
   onUploadSuccess,
+  leads,
 }: NewLeadsToolbarProps) {
   const [bulkAssignTarget, setBulkAssignTarget] = useState<string>("");
   const [uploading, setUploading] = useState(false);
@@ -125,8 +128,14 @@ export function NewLeadsToolbar({
         )}
       </div>
 
-      {/* Right: CSV Upload */}
-      <div>
+      {/* Right: Actions */}
+      <div className="flex items-center gap-2">
+        <ExportLeadsButton
+          leads={leads || []}
+          filenamePrefix="new_unassigned_leads"
+          activeStatus="NEW"
+        />
+
         <input
           type="file"
           accept=".csv"

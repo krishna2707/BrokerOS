@@ -1,5 +1,6 @@
 import React from "react";
 import { Search, SlidersHorizontal, X, Calendar } from "lucide-react";
+import { ExportLeadsButton } from "@/features/leads/components/ExportLeadsButton";
 
 const STATUS_GROUPS: { label: string; value: string; color: string }[] = [
   { label: "All", value: "", color: "var(--text-secondary)" },
@@ -25,6 +26,8 @@ interface LeadTableFiltersProps {
   setSiteVisitDate: (val: string) => void;
   search?: string;
   setSearch?: (val: string) => void;
+  leads?: any[];
+  filenamePrefix?: string;
 }
 
 export function LeadTableFilters({
@@ -39,6 +42,8 @@ export function LeadTableFilters({
   setSiteVisitDate,
   search = "",
   setSearch,
+  leads,
+  filenamePrefix,
 }: LeadTableFiltersProps) {
   const hasActive = status || scoreRange || followUpDate || siteVisitDate || search;
 
@@ -82,9 +87,8 @@ export function LeadTableFilters({
             value={followUpDate}
             onChange={(e) => setFollowUpDate(e.target.value)}
             title="Filter by Follow-up Date"
-            className={`w-full h-9 ps-8 pe-2 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-base sm:text-xs font-semibold outline-none transition-all focus:border-[var(--brand-600)] focus:ring-2 focus:ring-purple-500/15 cursor-pointer ${
-              followUpDate ? "text-[var(--brand-700)]" : "text-slate-400"
-            }`}
+            className={`w-full h-9 ps-8 pe-2 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-base sm:text-xs font-semibold outline-none transition-all focus:border-[var(--brand-600)] focus:ring-2 focus:ring-purple-500/15 cursor-pointer ${followUpDate ? "text-[var(--brand-700)]" : "text-slate-400"
+              }`}
           />
           {followUpDate && (
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-extrabold text-[var(--brand-700)] bg-purple-100 px-1.5 py-0.5 rounded">
@@ -104,9 +108,8 @@ export function LeadTableFilters({
             value={siteVisitDate}
             onChange={(e) => setSiteVisitDate(e.target.value)}
             title="Filter by Site Visit Date"
-            className={`w-full h-9 ps-8 pe-2 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-base sm:text-xs font-semibold outline-none transition-all focus:border-[var(--brand-600)] focus:ring-2 focus:ring-purple-500/15 cursor-pointer ${
-              siteVisitDate ? "text-purple-700" : "text-slate-400"
-            }`}
+            className={`w-full h-9 ps-8 pe-2 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-base sm:text-xs font-semibold outline-none transition-all focus:border-[var(--brand-600)] focus:ring-2 focus:ring-purple-500/15 cursor-pointer ${siteVisitDate ? "text-purple-700" : "text-slate-400"
+              }`}
           />
           {siteVisitDate && (
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-extrabold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">
@@ -125,9 +128,8 @@ export function LeadTableFilters({
             <select
               value={scoreRange}
               onChange={(e) => setScoreRange(e.target.value)}
-              className={`w-full h-9 ps-8 pe-3 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-base sm:text-xs font-semibold outline-none transition-all focus:border-[var(--brand-600)] focus:ring-2 focus:ring-purple-500/15 cursor-pointer appearance-none ${
-                scoreRange ? "text-[var(--text-primary)]" : "text-slate-400"
-              }`}
+              className={`w-full h-9 ps-8 pe-3 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-base sm:text-xs font-semibold outline-none transition-all focus:border-[var(--brand-600)] focus:ring-2 focus:ring-purple-500/15 cursor-pointer appearance-none ${scoreRange ? "text-[var(--text-primary)]" : "text-slate-400"
+                }`}
             >
               <option value="">All AI Scores</option>
               <option value="0-60">Low (0–60)</option>
@@ -147,6 +149,15 @@ export function LeadTableFilters({
             <span>Reset Filters</span>
           </button>
         )}
+
+        {/* Export CSV Button */}
+        <div className="ms-auto flex items-center">
+          <ExportLeadsButton
+            leads={leads || []}
+            filenamePrefix={filenamePrefix || "presales_leads"}
+            activeStatus={status}
+          />
+        </div>
       </div>
 
       {/* Status Pill Filters */}
@@ -157,11 +168,10 @@ export function LeadTableFilters({
             <button
               key={opt.value}
               onClick={() => setStatus(opt.value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.96] press-effect whitespace-nowrap cursor-pointer ${
-                active
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-150 active:scale-[0.96] press-effect whitespace-nowrap cursor-pointer ${active
                   ? "bg-[var(--brand-600)] text-white shadow-xs"
                   : "bg-slate-50 hover:bg-slate-100 text-[var(--text-secondary)] border border-slate-200/80"
-              }`}
+                }`}
             >
               {opt.label}
             </button>

@@ -1,5 +1,6 @@
 import React from "react";
 import { Search, Calendar, X } from "lucide-react";
+import { ExportLeadsButton } from "@/features/leads/components/ExportLeadsButton";
 
 const STATUS_OPTIONS = [
   { label: "All", value: "", color: "var(--text-secondary)" },
@@ -18,6 +19,8 @@ interface SalesExecTableFiltersProps {
   setSiteVisitDate: (v: string) => void;
   search: string;
   setSearch: (v: string) => void;
+  leads?: any[];
+  filenamePrefix?: string;
 }
 
 export function SalesExecTableFilters({
@@ -29,6 +32,8 @@ export function SalesExecTableFilters({
   setSiteVisitDate,
   search,
   setSearch,
+  leads,
+  filenamePrefix = "sales_pipeline_leads",
 }: SalesExecTableFiltersProps) {
   const hasActive = status || followUpDate || siteVisitDate || search;
 
@@ -107,6 +112,15 @@ export function SalesExecTableFilters({
             <span>Reset</span>
           </button>
         )}
+
+        {/* Export CSV Button */}
+        <div className="ms-auto flex items-center">
+          <ExportLeadsButton
+            leads={leads || []}
+            filenamePrefix={filenamePrefix}
+            activeStatus={status}
+          />
+        </div>
       </div>
 
       {/* Row 2: Status Pills */}
