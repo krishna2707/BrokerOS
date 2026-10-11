@@ -85,7 +85,8 @@
               "brokerage/leads/lifecycle",
               "brokerage/leads/sources-and-ingestion",
               "brokerage/leads/assignment-and-history",
-              "brokerage/leads/follow-ups"
+              "brokerage/leads/follow-ups",
+              "brokerage/leads/export-and-reports"
             ]
           },
           {

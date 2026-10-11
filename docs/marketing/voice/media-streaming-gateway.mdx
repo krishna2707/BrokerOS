@@ -6,7 +6,7 @@ description: "Full-duplex WebSocket server on /voice/stream with G.711 u-law and
 
 When connecting outbound PSTN phone calls to conversational AI engines over a carrier bridge, audio must travel bi-directionally with sub-second latency. Traditional HTTP polling or pre-recorded audio files cannot handle natural human conversations.
 
-BrokerOS operates a high-performance **WebSocket Media Streaming Gateway** (`VoiceMediaStreamGateway.ts`) on `/voice/stream`. It receives live audio packets from PSTN carriers, transcodes them in real time, streams them to the conversational model, and sends synthesized voice responses back to the consumer handset.
+BrokerOS operates a high-performance **Raw RFC 6455 WebSocket Media Streaming Gateway** ([`voice-raw-media.gateway.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/marketing/voice/gateway/voice-raw-media.gateway.ts)) on `/voice/stream`. It receives live audio packets from PSTN carriers, transcodes them in real time, streams them to the conversational model via [`VoiceAiAudioBridgeService`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/marketing/voice/gateway/voice-ai-audio-bridge.service.ts), and sends synthesized voice responses back to the consumer handset.
 
 ---
 
@@ -16,30 +16,28 @@ BrokerOS operates a high-performance **WebSocket Media Streaming Gateway** (`Voi
 sequenceDiagram
     autonumber
     actor Lead as Buyer Handset
-    participant Carrier as PSTN Carrier (Twilio / Telnyx)
-    participant Gateway as VoiceMediaStreamGateway (/voice/stream)
-    participant Transcoder as VoiceAudioTranscoder
-    participant TTS as Voice Audio Service (TTS)
-    participant AI as AI Voice Model (OpenAI / Anthropic)
+    participant Carrier as PSTN Carrier (Twilio / Telnyx / Vobiz)
+    participant RawGateway as VoiceRawMediaGateway (/voice/stream)
+    participant Bridge as VoiceAiAudioBridgeService
+    participant AI as Realtime AI Engine (OpenAI Realtime / Sarvam / ElevenLabs)
 
     Lead->>Carrier: Answers Phone Call
-    Carrier->>Gateway: WebSocket Connection Established (/voice/stream)
-    Carrier->>Gateway: Emit 'start' Event (streamSid, callSid, customParameters)
-    Gateway->>TTS: Synthesize First Message ("Hello Alice! Calling from Skyline...")
-    TTS-->>Gateway: Return 16-bit Linear PCM Audio Buffer
-    Gateway->>Transcoder: pcm16ToBase64Ulaw(pcmBuffer)
-    Transcoder-->>Gateway: Return Base64 G.711 u-law Payload
-    Gateway->>Carrier: Stream 160-byte Audio Packets (20ms frames)
+    Carrier->>RawGateway: Raw RFC 6455 WebSocket Established (/voice/stream)
+    Carrier->>RawGateway: Emit 'start' Event (streamSid, callSid, customParameters)
+    RawGateway->>Bridge: handleSessionStart(session)
+    Bridge->>AI: Connect Realtime WebSocket (wss://api.openai.com/v1/realtime)
+    AI-->>Bridge: G.711u Audio Delta (First Greeting)
+    Bridge-->>RawGateway: Send 160-byte G.711u Frames
+    RawGateway->>Carrier: Emit 'media' Event with Base64 Payload
     Carrier->>Lead: Buyer Hears Instant Warm Greeting
-    
-    Lead->>Carrier: Buyer Speaks: "What is the price for a 3BHK unit?"
-    Carrier->>Gateway: Emit 'media' Event (Base64 u-law payload)
-    Gateway->>Transcoder: base64UlawToPcm16(payload)
-    Transcoder-->>Gateway: Return 16-bit Linear PCM Buffer (8kHz)
-    Gateway->>AI: Stream PCM Audio to Speech-to-Text / LLM Engine
-    AI-->>Gateway: Return Synthesized Response Speech
-    Gateway->>Transcoder: Transcode to u-law & Emit 'media' Event
-    Carrier->>Lead: Deliver Agent Answer to Handset
+
+    Lead->>Carrier: Buyer Speaks: What is the price for a 3BHK unit?
+    Carrier->>RawGateway: Emit 'media' Event (Base64 G.711u payload)
+    RawGateway->>Bridge: handleInboundAudioChunk(streamSid, payload)
+    Bridge->>AI: Forward to AI Engine (input_audio_buffer.append)
+    AI-->>Bridge: Stream Generated Audio Deltas
+    Bridge-->>RawGateway: Send Audio Chunks
+    RawGateway->>Carrier: Deliver Agent Audio to Handset
 ```
 
 ---
