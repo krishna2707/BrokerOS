@@ -1,0 +1,72 @@
+---
+title: "Possession, Snagging & Key Handover"
+sidebarTitle: "Possession & Handover"
+description: "Occupancy certification, digital snag tracking, key handover execution, and automated inventory status locking."
+---
+
+Possession is the final milestone in the real estate customer journey. When regulatory bodies grant occupancy and completion certificates, BrokerOS coordinates pre-possession inspections, tracks snag resolution, manages utility meter transfers, and records the formal key handover.
+
+---
+
+## The Possession & Handover Workflow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Officer as Post-Sales / Facility Officer
+    actor Buyer as Home Buyer
+    participant CRM as BrokerOS API
+    participant Storage as Vercel Blob
+    participant DB as PostgreSQL (Prisma)
+
+    Officer->>Storage: Upload Occupancy & Completion Certificates
+    Officer->>CRM: Schedule Joint Pre-Possession Inspection
+    Officer->>Buyer: Conduct On-Site Walkthrough & Log Snags
+    Officer->>CRM: Save Snag List (snagList JSON, Status: READY)
+    Note over Officer,Buyer: Contractor Rectifies Inspection Items
+    Officer->>CRM: Mark Snags Cleared (snagResolved: true)
+    Officer->>CRM: Finalize Key Handover (keysHandedOver: true, Status: HANDED_OVER)
+    CRM->>DB: Update Unit Status to SOLD & Log UnitStatusHistory
+    CRM->>DB: Auto-Generate InboundCommission Record
+    CRM->>Officer: Dispatch Milestone & Recognition Notification
+```
+
+---
+
+## Possession Handover Data Model (`PossessionHandover`)
+
+Handover data is managed via `POST /api/leads/:id/booking/handover`:
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| **status** | PossessionStatus | Operational state: `NOT_READY`, `READY`, `SCHEDULED`, `HANDED_OVER`. |
+| **expectedDate** | DateTime | Contractual estimated completion date. |
+| **scheduledDate** | DateTime | Confirmed date for the joint handover walkthrough. |
+| **actualDate** | DateTime | Date when physical possession took place. |
+| **keysHandedOver** | Boolean | Confirmation that physical property keys were transferred. |
+| **keyHandoverDate** | DateTime | Official timestamp of key transfer. |
+| **handoverById** | String | User ID of the officer conducting the handover ceremony. |
+| **handoverNotes** | Text | General handover remarks and documentation notes. |
+| **customerFeedback** | Text | Client comments and satisfaction feedback. |
+
+---
+
+## Automated Side Effects on Handover Completion
+
+When an officer marks keys as handed over (`keysHandedOver: true` or `status: 'HANDED_OVER'`), BrokerOS executes automated backend operations:
+
+### Inventory Unit Locked to `SOLD`
+The associated unit status transitions from `RESERVED` to `SOLD` (`Unit.status = 'SOLD'`), permanently removing it from available inventory.
+
+### Status History Audit Trail
+A permanent entry is written to `UnitStatusHistory`:
+- `fromStatus`: `RESERVED`
+- `toStatus`: `SOLD`
+- `reason`: `Handover Completed`
+- `changedById`: Handover officer user ID
+
+### Inbound Commission Record Generated
+If the unit has developer commission configurations (`commissionAmount` or `commissionPercentage`), the system auto-creates an `InboundCommission` record in `PENDING` status, alerting the accounts team to bill the developer.
+
+### Officer Recognition & Milestone Achievements
+BrokerOS dispatches an in-app achievement notification congratulating the officer and evaluates organizational career milestones (such as 10, 25, 50, 100, or 250 completed handovers).
