@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { Loader2, TrendingUp, Users, Download } from "lucide-react";
+import { Loader2, TrendingUp, Users } from "lucide-react";
 
 import { FinancialOverview } from "../../sales-executive/analytics/components/FinancialOverview";
 import { ConversionFunnelChart } from "../../sales-executive/analytics/components/ConversionFunnelChart";
 import { TowerHeatmap } from "../../sales-executive/analytics/components/TowerHeatmap";
 import { Leaderboard } from "@/components/dashboard/Leaderboard";
 import { DetailedMetricsGrid } from "../_components/DetailedMetricsGrid";
+import { ExportAnalyticsReportButton } from "@/components/analytics/ExportAnalyticsReportButton";
 
 export default function SalesManagerAnalyticsPage() {
   const router = useRouter();
@@ -50,28 +51,34 @@ export default function SalesManagerAnalyticsPage() {
     }
   };
 
-  const handleExportCSV = () => {
-    if (!analyticsData) return;
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      "Metric,Value\n" +
-      `Time Range,${timeRange}\n` +
-      `Total Revenue,${analyticsData.financial?.totalRevenue || 0}\n` +
-      `Deals Closed,${analyticsData.financial?.dealsClosed || 0}\n` +
-      `Average Deal Size,${analyticsData.financial?.averageDealSize || 0}\n` +
-      `Pipeline Value,${analyticsData.financial?.pipelineValue || 0}\n`;
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute(
-      "download",
-      `sales-manager-analytics-${timeRange}-${new Date().toISOString().split("T")[0]}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const reportPayload = analyticsData
+    ? {
+      departmentName: "Sales Manager Team Analytics & Forecasting",
+      departmentCode: "SALES_MANAGER",
+      timeRange,
+      generatedAt: new Date().toLocaleString(),
+      summaryCards: [
+        { label: "Team Total Revenue", value: `₹${(analyticsData.financial?.totalRevenue || 0).toLocaleString()}`, subtitle: "Booked Gross Sales" },
+        { label: "Team Deals Closed", value: analyticsData.financial?.dealsClosed ?? 0, subtitle: "Confirmed bookings" },
+        { label: "Average Deal Size", value: `₹${(analyticsData.financial?.averageDealSize || 0).toLocaleString()}`, subtitle: "Per booking average" },
+        { label: "Pipeline Value", value: `₹${(analyticsData.financial?.pipelineValue || 0).toLocaleString()}`, subtitle: "Open negotiation value" },
+      ],
+      funnelStages: analyticsData.funnel
+        ? [
+          { name: "Team Leads", count: analyticsData.funnel.leads ?? 0, color: "#6366f1" },
+          { name: "Site Visits", count: analyticsData.funnel.siteVisits ?? 0, color: "#a855f7" },
+          { name: "Negotiations", count: analyticsData.funnel.negotiations ?? 0, color: "#f59e0b" },
+          { name: "Bookings", count: analyticsData.funnel.bookings ?? 0, color: "#10b981" },
+        ]
+        : undefined,
+      financialMetrics: [
+        { label: "Aggregate Team Revenue", value: `₹${(analyticsData.financial?.totalRevenue || 0).toLocaleString()}` },
+        { label: "Total Bookings Count", value: analyticsData.financial?.dealsClosed ?? 0 },
+        { label: "Mean Ticket Size", value: `₹${(analyticsData.financial?.averageDealSize || 0).toLocaleString()}` },
+        { label: "In-Flight Pipeline Value", value: `₹${(analyticsData.financial?.pipelineValue || 0).toLocaleString()}` },
+      ],
+    }
+    : null;
 
   if (error) {
     return (
@@ -111,24 +118,20 @@ export default function SalesManagerAnalyticsPage() {
               <button
                 key={r.id}
                 onClick={() => setTimeRange(r.id)}
-                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                  timeRange === r.id
-                    ? "bg-white text-[var(--text-primary)] shadow-xs"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${timeRange === r.id
+                  ? "bg-white text-[var(--text-primary)] shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
+                  }`}
               >
                 {r.label}
               </button>
             ))}
           </div>
 
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-[0.96] press-effect shadow-2xs cursor-pointer"
-          >
-            <Download size={13} />
-            <span>Export CSV</span>
-          </button>
+          <ExportAnalyticsReportButton
+            payload={reportPayload}
+            filenamePrefix="sales_manager_analytics"
+          />
         </div>
       </div>
 
