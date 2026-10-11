@@ -1,0 +1,386 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "BrokerOS",
+  "theme": "mint",
+  "styling": {
+    "eyebrows": "breadcrumbs"
+  },
+  "customCSS": "/custom.css",
+  "colors": {
+    "primary": "#4F46E5",
+    "light": "#818CF8",
+    "dark": "#3730A3"
+  },
+  "favicon": "/favicon.ico",
+  "navbar": {
+    "links": [
+      {
+        "label": "API Reference",
+        "href": "/api-reference/overview"
+      },
+      {
+        "label": "Support",
+        "href": "https://github.com/trybrokeros/BrokerOS/discussions"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Open CRM",
+      "href": "https://github.com/trybrokeros/BrokerOS"
+    }
+  },
+  "banner": {
+    "content": "🚀 **BrokerOS Enterprise CRM & AI Voice Engine** — Built for serious real estate brokerage firms. [Explore Guides →](/overview/introduction)",
+    "dismissible": true
+  },
+  "search": {
+    "prompt": "Search for Leads, Campaigns, Voice Agents, Site Visits, APIs..."
+  },
+  "thumbnails": {
+    "fonts": {
+      "family": "Geist"
+    }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "cursor",
+      "vscode"
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/trybrokeros/brokeros",
+      "linkedin": "https://linkedin.com/company/brokeros"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Overview",
+        "icon": "compass",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "overview/introduction",
+              "overview/how-it-works",
+              "overview/who-uses-brokeros",
+              "overview/local-setup"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Brokerage CRM",
+        "icon": "building",
+        "groups": [
+          {
+            "group": "Lead Management",
+            "pages": [
+              "brokerage/leads/lifecycle",
+              "brokerage/leads/sources-and-ingestion",
+              "brokerage/leads/assignment-and-history",
+              "brokerage/leads/follow-ups"
+            ]
+          },
+          {
+            "group": "Pre-Sales (Telecalling)",
+            "pages": [
+              "brokerage/pre-sales/cold-calling",
+              "brokerage/pre-sales/daily-tasks",
+              "brokerage/pre-sales/transcription"
+            ]
+          },
+          {
+            "group": "Sales & Site Visits",
+            "pages": [
+              "brokerage/sales/site-visits",
+              "brokerage/sales/gps-verification",
+              "brokerage/sales/negotiations",
+              "brokerage/sales/unit-holds"
+            ]
+          },
+          {
+            "group": "Bookings",
+            "pages": [
+              "brokerage/bookings/creation",
+              "brokerage/bookings/customer-conversion"
+            ]
+          },
+          {
+            "group": "Post-Sales",
+            "pages": [
+              "brokerage/post-sales/payment-schedules",
+              "brokerage/post-sales/loan-cases",
+              "brokerage/post-sales/agreements",
+              "brokerage/post-sales/possession-handover"
+            ]
+          },
+          {
+            "group": "Inventory & Property",
+            "pages": [
+              "brokerage/inventory/hierarchy",
+              "brokerage/inventory/unit-matrix",
+              "brokerage/inventory/pricing-and-plans",
+              "brokerage/inventory/media-and-docs"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Channel Partner (CP)",
+        "icon": "handshake",
+        "groups": [
+          {
+            "group": "The CP Network",
+            "pages": [
+              "channel-partner/overview",
+              "channel-partner/broker-management",
+              "channel-partner/kyc-verification",
+              "channel-partner/sourcing-managers",
+              "channel-partner/closing-managers"
+            ]
+          },
+          {
+            "group": "Commissions & Settlements",
+            "pages": [
+              "channel-partner/brokerage-records",
+              "channel-partner/inbound-commissions",
+              "channel-partner/settlements"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Marketing",
+        "icon": "bullhorn",
+        "groups": [
+          {
+            "group": "Marketing Suite",
+            "pages": [
+              "marketing/overview"
+            ]
+          },
+          {
+            "group": "SMS",
+            "pages": [
+              "marketing/sms/overview",
+              "marketing/sms/team-inbox",
+              "marketing/sms/sms-flows",
+              "marketing/sms/campaign-wizard",
+              "marketing/sms/preflight-and-sender-pools",
+              "marketing/sms/template-registry",
+              "marketing/sms/short-links",
+              "marketing/sms/ai-assistant-and-settings",
+              "marketing/sms/gateway-integrations",
+              "marketing/sms/inbound-conversations"
+            ]
+          },
+          {
+            "group": "Email",
+            "pages": [
+              "marketing/email/overview",
+              "marketing/email/team-inbox",
+              "marketing/email/email-flows",
+              "marketing/email/campaign-wizard",
+              "marketing/email/preflight-and-sender-pools",
+              "marketing/email/template-editor",
+              "marketing/email/ai-assistant-and-settings",
+              "marketing/email/provider-integrations",
+              "marketing/email/domain-verification",
+              "marketing/email/analytics"
+            ]
+          },
+          {
+            "group": "Ads",
+            "pages": [
+              "marketing/ads/overview",
+              "marketing/ads/comparison-and-ab-testing",
+              "marketing/ads/meta-lead-ads",
+              "marketing/ads/instagram-ads",
+              "marketing/ads/google-ads",
+              "marketing/ads/youtube-ads",
+              "marketing/ads/field-mapping"
+            ]
+          },
+          {
+            "group": "WhatsApp",
+            "pages": [
+              "marketing/whatsapp/overview",
+              "marketing/whatsapp/team-inbox",
+              "marketing/whatsapp/contacts",
+              "marketing/whatsapp/broadcasts",
+              "marketing/whatsapp/preflight-and-tiers",
+              "marketing/whatsapp/interactive-messages",
+              "marketing/whatsapp/chatbot-flows",
+              "marketing/whatsapp/drip-automations",
+              "marketing/whatsapp/pipelines",
+              "marketing/whatsapp/template-manager",
+              "marketing/whatsapp/ai-assistant-and-settings"
+            ]
+          },
+          {
+            "group": "AI Voice Campaigns",
+            "pages": [
+              "marketing/voice/overview",
+              "marketing/voice/composer",
+              "marketing/voice/campaign-wizard",
+              "marketing/voice/dual-mode-test-calling",
+              "marketing/voice/carrier-telephony",
+              "marketing/voice/media-streaming-gateway",
+              "marketing/voice/webhook-diagnostics",
+              "marketing/voice/analytics-and-logs"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Integrations",
+        "icon": "puzzle-piece",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "integrations/overview"
+            ]
+          },
+          {
+            "group": "Phone Carriers (PSTN)",
+            "pages": [
+              "integrations/telephony/overview",
+              "integrations/telephony/vobiz",
+              "integrations/telephony/exotel",
+              "integrations/telephony/twilio",
+              "integrations/telephony/telnyx"
+            ]
+          },
+          {
+            "group": "AI Voice Platforms",
+            "pages": [
+              "integrations/voice/overview",
+              "integrations/voice/vapi",
+              "integrations/voice/retell",
+              "integrations/voice/sarvam",
+              "integrations/voice/bolna",
+              "integrations/voice/elevenlabs",
+              "integrations/voice/livekit",
+              "integrations/voice/openai-realtime",
+              "integrations/voice/pipecat"
+            ]
+          },
+          {
+            "group": "WhatsApp",
+            "pages": [
+              "integrations/whatsapp/meta-cloud-api"
+            ]
+          },
+          {
+            "group": "SMS Gateways",
+            "pages": [
+              "integrations/sms/overview",
+              "integrations/sms/gupshup",
+              "integrations/sms/twilio",
+              "integrations/sms/sinch",
+              "integrations/sms/aws-sns",
+              "integrations/sms/plivo",
+              "integrations/sms/telnyx",
+              "integrations/sms/vonage",
+              "integrations/sms/infobip",
+              "integrations/sms/bird"
+            ]
+          },
+          {
+            "group": "Email Providers",
+            "pages": [
+              "integrations/mail/overview",
+              "integrations/mail/aws-ses",
+              "integrations/mail/sendgrid",
+              "integrations/mail/brevo",
+              "integrations/mail/mailchimp",
+              "integrations/mail/mailgun",
+              "integrations/mail/gmail",
+              "integrations/mail/outlook",
+              "integrations/mail/constant-contact"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Mobile App",
+        "icon": "mobile",
+        "groups": [
+          {
+            "group": "The App",
+            "pages": [
+              "mobile/overview",
+              "mobile/app/setup-and-tools",
+              "mobile/app/role-workspaces",
+              "mobile/app/chat",
+              "mobile/app/auth"
+            ]
+          },
+          {
+            "group": "Auto-Dialer (Telecalling)",
+            "pages": [
+              "mobile/auto-dialer/architecture",
+              "mobile/auto-dialer/calling-queue",
+              "mobile/auto-dialer/call-recording",
+              "mobile/auto-dialer/offline-mode"
+            ]
+          },
+          {
+            "group": "Field Operations",
+            "pages": [
+              "mobile/field/gps-tracking",
+              "mobile/field/site-verification",
+              "mobile/field/push-notifications"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Developer",
+        "icon": "code",
+        "groups": [
+          {
+            "group": "System Architecture",
+            "pages": [
+              "developer/monorepo",
+              "developer/packages",
+              "developer/database",
+              "developer/auth",
+              "developer/workers",
+              "developer/realtime"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "pages": [
+              "api-reference/overview",
+              "api-reference/authentication",
+              "api-reference/leads",
+              "api-reference/site-visits",
+              "api-reference/follow-ups",
+              "api-reference/negotiations",
+              "api-reference/bookings",
+              "api-reference/inventory",
+              "api-reference/brokers",
+              "api-reference/approvals",
+              "api-reference/marketing-voice",
+              "api-reference/marketing-whatsapp",
+              "api-reference/marketing-sms",
+              "api-reference/marketing-email",
+              "api-reference/users",
+              "api-reference/webhooks"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
