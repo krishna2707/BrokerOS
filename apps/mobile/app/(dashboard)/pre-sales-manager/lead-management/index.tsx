@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { authClient } from '../../../../lib/auth-client';
 import LeadFilters from '../../../../components/leads/list/LeadFilters';
+import { exportLeadsToCsvMobile } from '../../../../lib/export-utils';
 
 type Lead = {
   id: string;
@@ -116,6 +117,15 @@ export default function ManagerLeadManagementList() {
     <View className="flex-1 bg-[#f8fafc]">
       <View className="p-4 bg-white border-b border-gray-200 shadow-sm flex-row items-center justify-between z-10 pt-12">
         <Text className="text-xl font-bold text-gray-900">Team Leads</Text>
+        <TouchableOpacity
+          onPress={() => exportLeadsToCsvMobile(filteredLeads, 'presales_team_leads')}
+          className="bg-emerald-50 border border-emerald-300 px-3 py-1.5 rounded-lg flex-row items-center gap-1.5 active:bg-emerald-100"
+        >
+          <Feather name="download" size={14} color="#059669" />
+          <Text className="text-emerald-700 font-bold text-xs">
+            Export CSV ({filteredLeads.length})
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View className="px-4 py-2 bg-white">

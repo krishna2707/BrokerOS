@@ -11,6 +11,7 @@ import { NewLeadsHeader } from '../../../components/dashboards/pre-sales-manager
 import { SelectionActionBar } from '../../../components/dashboards/pre-sales-manager/lists/SelectionActionBar';
 import { LeadListItem } from '../../../components/dashboards/pre-sales-manager/lists/LeadListItem';
 import { AssignLeadsModal } from '../../../components/dashboards/pre-sales-manager/modals/AssignLeadsModal';
+import { exportLeadsToCsvMobile } from '@/lib/export-utils';
 
 interface Lead {
   id: string;
@@ -173,7 +174,12 @@ export default function MobileNewLeads() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      <NewLeadsHeader uploading={uploading} onUpload={handleUploadLeads} />
+      <NewLeadsHeader
+        uploading={uploading}
+        onUpload={handleUploadLeads}
+        onExport={() => exportLeadsToCsvMobile(leads, 'unassigned_new_leads')}
+        exportCount={leads.length}
+      />
 
       {selectedLeadIds.size > 0 && (
         <SelectionActionBar
