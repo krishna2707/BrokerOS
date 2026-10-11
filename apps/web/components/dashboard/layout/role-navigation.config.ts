@@ -113,7 +113,6 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
       { name: "Employees", href: "/dashboard/pre-sales-manager/employees", icon: Users, roles: ["PRE_SALES_MANAGER"] },
       { name: "New Leads", href: "/dashboard/pre-sales-manager/new-leads", icon: Star, roles: ["PRE_SALES_MANAGER"] },
       { name: "Lead Management", href: "/dashboard/pre-sales-manager/lead-management", icon: List, roles: ["PRE_SALES_MANAGER"] },
-      { name: "Marketing", href: "/dashboard/marketing", icon: Mail, roles: ["PRE_SALES_MANAGER"] },
       { name: "Analytics", href: "/dashboard/pre-sales-manager/analytics", icon: BarChart2, roles: ["PRE_SALES_MANAGER"] },
       { name: "Settings", href: "/dashboard/pre-sales-manager/settings", icon: Settings, roles: ["PRE_SALES_MANAGER"] },
     ];
@@ -139,7 +138,6 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
       { name: "Approval", href: "/dashboard/sales-manager/approval", icon: CheckSquare, roles: ["SALES_MANAGER"] },
       { name: "Inventory", href: "/dashboard/sales-manager/inventory", icon: Package, roles: ["SALES_MANAGER"] },
       { name: "Booking", href: "/dashboard/sales-manager/booking", icon: Calendar, roles: ["SALES_MANAGER"] },
-      { name: "Marketing", href: "/dashboard/marketing", icon: Mail, roles: ["SALES_MANAGER"] },
       { name: "Analytics", href: "/dashboard/sales-manager/analytics", icon: BarChart2, roles: ["SALES_MANAGER"] },
       { name: "Settings", href: "/dashboard/sales-manager/settings", icon: Settings, roles: ["SALES_MANAGER"] },
     ];
