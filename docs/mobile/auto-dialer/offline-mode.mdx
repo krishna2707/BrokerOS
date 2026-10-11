@@ -1,0 +1,59 @@
+---
+title: "Offline Operations & Queue Synchronization"
+sidebarTitle: "Offline Mode"
+description: "How the BrokerOS mobile application operates without cellular data, preserves call outcomes, and synchronizes data when connectivity resumes."
+---
+
+## Offline-First Design for Field Teams
+
+Real estate sales executives and telecallers frequently operate in basements, high-rise construction towers, or remote development corridors where cellular internet connectivity is degraded or unavailable.
+
+If an application requires constant real-time HTTP requests to log call outcomes or maintain calling momentum, field productivity stalls. BrokerOS implements an **offline-first architecture** across all mission-critical workflows: phone dialing, disposition logging, audio caching, and data reconciliation.
+
+---
+
+## Offline Feature Support Matrix
+
+| Mobile Feature | Offline Availability | Mechanism & Behavior |
+| :--- | :--- | :--- |
+| **Dialing Leads** | Full Support | Outgoing calls use Android's cellular telephony network directly via SIM card. |
+| **Call Audio Recording** | Full Support | Companion recording app writes `.mp3` files directly to local device storage. |
+| **Call Outcome Logging** | Full Support | Dispositions and notes are stored locally and queued for upload upon reconnection. |
+| **Scheduling Follow-Ups** | Full Support | Callbacks are written to local storage and merged with server records when online. |
+| **Lead Queue Access** | Partial Support | The active lead queue cached during morning boot remains fully accessible offline. |
+| **Lead Profile Viewing** | Partial Support | Cached contact details are readable; un-cached records require connection. |
+| **Site Visit Selfie Capture** | Partial Support | Photos and GPS coordinates are stored locally in cache and uploaded when online. |
+| **Team Chat Messaging** | Online Only | Socket.IO WebSockets require an active network socket connection. |
+| **Push Notifications** | Online Only | Firebase Cloud Messaging requires active internet connectivity. |
+
+---
+
+## Automatic Audio Sync & Exponential Backoff
+
+When a device goes offline during an active telecalling session:
+
+1. **Local Recording Retention**: Audio recordings remain safely stored inside the device's scoped Storage Access Framework directory.
+2. **WorkManager Job Persistence**: `CallUploadWorker.kt` jobs are queued inside Android's internal SQLite database managed by the Jetpack WorkManager framework.
+3. **Automatic Reconnection Trigger**: WorkManager registers a network constraint (`NetworkType.CONNECTED`). The moment Android detects an active internet connection (Wi-Fi or cellular data), the system automatically triggers the pending upload jobs.
+4. **Exponential Backoff**: If network requests encounter timeouts or server unavailability, WorkManager applies exponential backoff retries (e.g., 30s, 60s, 2m, 5m) until data transfer succeeds.
+5. **Zero Data Loss**: Even if the device battery dies or the phone reboots, WorkManager persists pending upload jobs across device restarts.
+
+---
+
+## Best Practices for Field Deployment
+
+To maximize productivity in low-connectivity areas:
+
+<Steps>
+  <Step title="Cache Queue During Morning Briefing">
+    Open the BrokerOS mobile app on high-speed office Wi-Fi before traveling into the field. This pre-caches the day's lead queue, contact profiles, and project collateral.
+  </Step>
+
+  <Step title="Ensure Recording Storage Permissions Are Active">
+    Verify that the Storage Access Framework (SAF) folder permission is configured in settings. This ensures all calls made in dead zones accumulate safely on the local disk.
+  </Step>
+
+  <Step title="Avoid Force-Closing the App">
+    Allow BrokerOS to remain in Android's background app stack so that background telephony receivers and WorkManager tasks execute without system interruption.
+  </Step>
+</Steps>
