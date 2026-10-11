@@ -6,6 +6,8 @@ import { PremiumProgressBar } from '../../../components/analytics/PremiumProgres
 import { PremiumBarChart } from '../../../components/analytics/PremiumBarChart';
 import { LeadSourceChart } from '../../../components/analytics/LeadSourceChart';
 import { ConnectionHeatmap } from '../../../components/analytics/ConnectionHeatmap';
+import { Feather } from '@expo/vector-icons';
+import { exportAnalyticsHtmlMobile } from '../../../lib/export-utils';
 
 interface ManagerAnalyticsData {
   pipeline: {
@@ -123,6 +125,39 @@ export default function ManagerAnalyticsScreen() {
     { id: 'all-time', label: 'All Time' },
   ];
 
+  const handleExportReport = () => {
+    if (!data) return;
+    const payload = {
+      departmentName: 'Pre-Sales Manager Team Performance & Intake Analytics',
+      departmentCode: 'PRE_SALES_MANAGER',
+      timeRange,
+      generatedAt: new Date().toLocaleString(),
+      summaryCards: [
+        { label: 'Team Pipeline Leads', value: data.pipeline?.totalLeads ?? 0, subtitle: 'Total Leads' },
+        { label: 'Team Calls Made', value: data.calls?.made ?? 0, subtitle: 'Outbound dials' },
+        { label: 'Calls Connected', value: data.calls?.connected ?? 0, change: `${data.calls?.connectedPercentage ?? 0}%`, subtitle: 'Conversations' },
+        { label: 'Site Visits', value: data.pipeline?.siteVisits ?? 0, subtitle: 'Total Visits' },
+        { label: 'Deals Booked', value: data.pipeline?.booked ?? 0, subtitle: 'Converted' },
+      ],
+      funnelStages: [
+        { name: 'Total Leads', count: data.pipeline?.totalLeads ?? 0, color: '#6366f1' },
+        { name: 'New Leads', count: data.pipeline?.newLeads ?? 0, color: '#818cf8' },
+        { name: 'Contacted', count: data.pipeline?.contacted ?? 0, color: '#a855f7' },
+        { name: 'Interested', count: data.pipeline?.interested ?? 0, color: '#fbbf24' },
+        { name: 'Qualified', count: data.pipeline?.qualified ?? 0, color: '#34d399' },
+        { name: 'Site Visits', count: data.pipeline?.siteVisits ?? 0, color: '#10b981' },
+        { name: 'Booked', count: data.pipeline?.booked ?? 0, color: '#059669' },
+        { name: 'Lost', count: data.pipeline?.lost ?? 0, color: '#ef4444' },
+      ],
+      activityMetrics: [
+        { label: 'Team Outbound Dials', value: data.calls?.made ?? 0 },
+        { label: 'Connected Conversations', value: data.calls?.connected ?? 0 },
+        { label: 'Connection Rate', value: `${data.calls?.connectedPercentage ?? 0}%` },
+      ],
+    };
+    exportAnalyticsHtmlMobile(payload, 'presales_team_analytics');
+  };
+
   const contactedDropoff = data.pipeline.newLeads > 0
     ? Math.round(((data.pipeline.newLeads - data.pipeline.contacted) / data.pipeline.newLeads) * 100) : 0;
 
@@ -143,22 +178,32 @@ export default function ManagerAnalyticsScreen() {
         </Text>
       </View>
 
-      <View className="flex-row bg-slate-200 border-0 p-1.5 rounded-full self-start mb-2">
-        {ranges.map(r => (
-          <TouchableOpacity
-            key={r.id}
-            onPress={() => setTimeRange(r.id)}
-          >
-            <View 
-              key={timeRange === r.id ? 'active' : 'inactive'}
-              className={`px-4 py-1.5 rounded-full ${timeRange === r.id ? 'bg-white shadow-sm' : ''}`}
+      <View className="flex-row items-center justify-between flex-wrap gap-2 mb-2">
+        <View className="flex-row bg-slate-200 border-0 p-1.5 rounded-full self-start">
+          {ranges.map(r => (
+            <TouchableOpacity
+              key={r.id}
+              onPress={() => setTimeRange(r.id)}
             >
-              <Text className={`text-sm font-bold ${timeRange === r.id ? 'text-slate-900' : 'text-slate-500'}`}>
-                {r.label}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+              <View 
+                key={timeRange === r.id ? 'active' : 'inactive'}
+                className={`px-4 py-1.5 rounded-full ${timeRange === r.id ? 'bg-white shadow-sm' : ''}`}
+              >
+                <Text className={`text-sm font-bold ${timeRange === r.id ? 'text-slate-900' : 'text-slate-500'}`}>
+                  {r.label}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <TouchableOpacity
+          onPress={handleExportReport}
+          className="bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-full flex-row items-center gap-1.5 active:bg-indigo-100"
+        >
+          <Feather name="file-text" size={14} color="#4f46e5" />
+          <Text className="text-indigo-700 font-bold text-xs">Export Report</Text>
+        </TouchableOpacity>
       </View>
 
       <Text className="text-xl font-bold text-slate-900 mt-2">Team Overview</Text>
