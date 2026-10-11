@@ -1,0 +1,170 @@
+---
+title: "Users & System API"
+sidebarTitle: "Users & System"
+description: "User profiles, mobile GPS live tracking, Expo push token registration, team hierarchy, and system metadata."
+---
+
+The Users & System API handles core platform operations, including real-time field executive GPS updates, mobile push notification tokens, role catalogs, project assignments, and manager-subordinate hierarchies.
+
+---
+
+## Endpoints Summary
+
+| Method | Path | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `PATCH` | `/api/users/:id/location` | Update user's current GPS coordinates (called by mobile background service) | Public / Mobile Token |
+| `GET` | `/api/users/:id/location` | Fetch user's last known coordinates and timestamp | Public / Authenticated |
+| `PATCH` | `/api/users/:id/push-token` | Register or update device Expo push notification token | Public / Authenticated |
+| `GET` | `/roles` | List all system user roles and permission codes | Public / Authenticated |
+| `GET` | `/sources` | List configured lead sources (Meta, Google, Portals, Referral) | Public / Authenticated |
+| `GET` | `/projects` | Lightweight list of projects with `isCpProject` flag | Public / Authenticated |
+| `GET` | `/users/subordinates` | List direct reports managed by the authenticated user | Authenticated |
+| `GET` | `/users/my-projects` | List projects assigned to the current user | Authenticated |
+
+---
+
+## Mobile GPS Location Tracking
+
+The BrokerOS mobile app runs an Android background task (`location-tracking.ts`) while sales executives and sourcing managers are on shift. Every 5 to 15 minutes, it posts updated coordinates.
+
+```http
+PATCH /api/users/:id/location
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `latitude` | `number` | **Yes** | Device latitude (decimal degrees) |
+| `longitude` | `number` | **Yes** | Device longitude (decimal degrees) |
+
+### Request Example
+
+```json
+{
+  "latitude": 12.9716,
+  "longitude": 77.5946
+}
+```
+
+### Response Example
+
+```json
+{
+  "id": "cm123user002",
+  "name": "Arjun Mehta",
+  "lastLatitude": 12.9716,
+  "lastLongitude": 77.5946,
+  "lastLocationAt": "2026-10-01T08:17:00.000Z"
+}
+```
+
+---
+
+## Register Push Notification Token
+
+```http
+PATCH /api/users/:id/push-token
+```
+
+Called immediately after mobile login to bind the device's Expo / Firebase Cloud Messaging (FCM) token to the user record for dispatching lead assignments and approval alerts.
+
+### Request Body
+
+```json
+{
+  "token": "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
+}
+```
+
+---
+
+## Get Subordinates (Team Hierarchy)
+
+```http
+GET /users/subordinates
+```
+
+Returns all active staff reporting directly to the authenticated manager (`where: { managerId: userId, status: 'ACTIVE' }`). Used by Pre-Sales Managers and Sales Managers to view executive workloads and assign daily call targets.
+
+### Response Example
+
+```json
+[
+  {
+    "id": "cm123user005",
+    "name": "Kavita Rao",
+    "username": "kavita.rao"
+  },
+  {
+    "id": "cm123user006",
+    "name": "Manish Sharma",
+    "username": "manish.s"
+  }
+]
+```
+
+---
+
+## Get My Assigned Projects
+
+```http
+GET /users/my-projects
+```
+
+Returns all projects mapped to the authenticated user via the `ProjectAssignment` table. This drives project dropdowns in the mobile app and web navigation.
+
+### Response Example
+
+```json
+[
+  {
+    "id": "cm123proj001",
+    "name": "Emerald Heights",
+    "slug": "emerald-heights",
+    "isCpProject": false
+  },
+  {
+    "id": "cm123proj002",
+    "name": "Skyline Grand",
+    "slug": "skyline-grand",
+    "isCpProject": true
+  }
+]
+```
+
+---
+
+## System Catalogs
+
+### List Roles
+
+```http
+GET /roles
+```
+
+```json
+[
+  { "id": "role_admin", "name": "Administrator", "code": "ADMIN" },
+  { "id": "role_sm", "name": "Sourcing Manager", "code": "SOURCING_MANAGER" },
+  { "id": "role_cm", "name": "Closing Manager", "code": "CLOSING_MANAGER" },
+  { "id": "role_se", "name": "Sales Executive", "code": "SALES_EXECUTIVE" },
+  { "id": "role_ps", "name": "Pre-Sales Executive", "code": "PRE_SALES" }
+]
+```
+
+### List Lead Sources
+
+```http
+GET /sources
+```
+
+```json
+[
+  { "id": "src_meta", "name": "Meta Ads (Facebook/Instagram)" },
+  { "id": "src_google", "name": "Google Search & Performance Max" },
+  { "id": "src_housing", "name": "Housing.com Portal" },
+  { "id": "src_referral", "name": "Customer Referral" },
+  { "id": "src_walkin", "name": "Direct Walk-In" }
+]
+```
