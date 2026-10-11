@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { DashboardPageWrapper } from "@/components/dashboard/DashboardPageWrapper";
 import { Calendar, PieChart as PieChartIcon } from "lucide-react";
+import { ExportAnalyticsReportButton } from "@/components/analytics/ExportAnalyticsReportButton";
 import {
   BarChart,
   Bar,
@@ -55,6 +56,55 @@ export default function BusinessManagerAnalytics() {
     }
     fetchData();
   }, [period]);
+
+  const reportPayload = data
+    ? {
+      departmentName: "Business Manager Enterprise Cross-Unit Analytics",
+      departmentCode: "BUSINESS_MANAGER",
+      timeRange: period,
+      generatedAt: new Date().toLocaleString(),
+      summaryCards: [
+        {
+          label: "Total Revenue Collected",
+          value: formatCurrency(data.paymentEfficiency?.totalCollected || 0),
+          subtitle: "Collections",
+        },
+        {
+          label: "Outstanding Receivables",
+          value: formatCurrency(data.paymentEfficiency?.outstanding || 0),
+          subtitle: "Pending payments",
+        },
+        {
+          label: "Brokerage Confirmed Deals",
+          value: data.bookingFunnel?.brokerage?.confirmed ?? 0,
+          subtitle: "Internal sales",
+        },
+        {
+          label: "CP Confirmed Deals",
+          value: data.bookingFunnel?.cp?.confirmed ?? 0,
+          subtitle: "Channel partner network",
+        },
+      ],
+      funnelStages: [
+        { name: "New Inquiries", count: (data.leadPipeline?.brokerage?.NEW || 0) + (data.leadPipeline?.cp?.NEW || 0), color: "#6366f1" },
+        { name: "Contacted Leads", count: (data.leadPipeline?.brokerage?.CONTACTED || 0) + (data.leadPipeline?.cp?.CONTACTED || 0), color: "#818cf8" },
+        { name: "Interested", count: (data.leadPipeline?.brokerage?.INTERESTED || 0) + (data.leadPipeline?.cp?.INTERESTED || 0), color: "#a855f7" },
+        { name: "Qualified", count: (data.leadPipeline?.brokerage?.QUALIFIED || 0) + (data.leadPipeline?.cp?.QUALIFIED || 0), color: "#fbbf24" },
+        { name: "Site Visits", count: (data.leadPipeline?.brokerage?.SITE_VISIT_SCHEDULED || 0) + (data.leadPipeline?.cp?.SITE_VISIT_SCHEDULED || 0), color: "#34d399" },
+        { name: "Confirmed Bookings", count: (data.bookingFunnel?.brokerage?.confirmed || 0) + (data.bookingFunnel?.cp?.confirmed || 0), color: "#10b981" },
+      ],
+      financialMetrics: [
+        { label: "Total Collected Capital", value: formatCurrency(data.paymentEfficiency?.totalCollected || 0) },
+        { label: "Total Outstanding Demands", value: formatCurrency(data.paymentEfficiency?.outstanding || 0) },
+      ],
+      activityMetrics: [
+        { label: "Brokerage Confirmed Bookings", value: data.bookingFunnel?.brokerage?.confirmed ?? 0 },
+        { label: "CP Confirmed Bookings", value: data.bookingFunnel?.cp?.confirmed ?? 0 },
+        { label: "Brokerage Handover Completed", value: data.bookingFunnel?.brokerage?.handover ?? 0 },
+        { label: "CP Handover Completed", value: data.bookingFunnel?.cp?.handover ?? 0 },
+      ],
+    }
+    : null;
 
   // Period selector
   const periodSelector = (
@@ -201,7 +251,15 @@ export default function BusinessManagerAnalytics() {
       error={status === "error" ? "Failed to load Analytics data." : null}
       title="Business Analytics"
       subtitle="Deep dive into cross-business operations and trends."
-      headerRight={periodSelector}
+      headerRight={
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {periodSelector}
+          <ExportAnalyticsReportButton
+            payload={reportPayload}
+            filenamePrefix="business_manager_analytics"
+          />
+        </div>
+      }
     >
       {data && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
