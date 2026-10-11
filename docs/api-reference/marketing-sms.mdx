@@ -1,0 +1,154 @@
+---
+title: "Marketing SMS API"
+sidebarTitle: "Marketing (SMS)"
+description: "Send high-volume promotional and transactional SMS campaigns with DLT compliance and short-link tracking."
+---
+
+The Marketing SMS API handles mass text campaigns through gateways such as Gupshup, Twilio, Sinch, and AWS SNS. It includes automated DLT template matching for India regulatory compliance, branded URL shortening, and click tracking.
+
+```http
+BASE URL: /api/marketing/sms
+```
+
+---
+
+## Endpoints Summary
+
+| Method | Path | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/marketing/sms/campaigns` | List SMS campaigns with status and search filters | Marketing / Admin |
+| `POST` | `/api/marketing/sms/campaigns` | Create and configure a new SMS campaign | Marketing / Admin |
+| `POST` | `/api/marketing/sms/campaigns/draft` | Save an in-progress draft campaign | Marketing / Admin |
+| `POST` | `/api/marketing/sms/audience-preview` | Calculate recipient count and suppress DND numbers | Marketing / Admin |
+| `POST` | `/api/marketing/sms/campaigns/cost-estimate` | Calculate SMS credit cost by segment length | Marketing / Admin |
+| `POST` | `/api/marketing/sms/campaigns/send-test` | Send a single test SMS to verify formatting | Marketing / Admin |
+| `GET` | `/api/marketing/sms/campaigns/:id` | Fetch campaign configuration and DLT attributes | Marketing / Admin |
+| `POST` | `/api/marketing/sms/campaigns/:id/dispatch` | Launch campaign via BullMQ worker | Marketing / Admin |
+| `GET` | `/api/marketing/sms/campaigns/:id/analytics` | Delivery rates, click counts, and CTR analytics | Marketing / Admin |
+| `GET` | `/api/marketing/sms/campaigns/:id/recipients` | Paginated recipient delivery and click log | Marketing / Admin |
+| `POST` | `/api/marketing/sms/recipients/:id/promote` | Promote high-engagement recipient to CRM Lead | Marketing / Admin |
+| `DELETE` | `/api/marketing/sms/campaigns/:id` | Delete an unsent campaign | Marketing / Admin |
+
+---
+
+## DLT Compliance & Segment Rules
+
+<Warning>
+  For Indian telecommunications traffic, all commercial SMS must include a registered **Entity ID**, **Header (Sender ID)**, and approved **DLT Template ID**. Unregistered messages will be rejected by telecom operators at the gateway.
+</Warning>
+
+- **GSM 7-bit Encoding**: 1 credit per 160 characters. Messages above 160 characters concatenate into 153-character segments.
+- **Unicode Encoding (Hindi/Regional)**: 1 credit per 70 characters. Messages above 70 characters concatenate into 67-character segments.
+
+---
+
+## Create SMS Campaign
+
+```http
+POST /api/marketing/sms/campaigns
+```
+
+### Request Body
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `name` | `string` | **Yes** | Campaign internal title |
+| `senderId` | `string` | **Yes** | Approved 6-character alphabetic Header (e.g. `BRKROS`) |
+| `dltTemplateId` | `string` | **Yes** | Telecom operator DLT Template ID |
+| `messageContent` | `string` | **Yes** | Approved template text with dynamic `{#var#}` tags |
+| `projectId` | `string` | No | Associated property project |
+| `audienceSource` | `string` | **Yes** | `CRM_LEADS` or `CSV_UPLOAD` |
+| `targetCriteria` | `object` | No | Filters for `CRM_LEADS` (statuses, budget, etc.) |
+| `shortUrlEnabled` | `boolean` | No | Automatically compress links to tracked short URLs |
+
+### Request Example
+
+```json
+{
+  "name": "Weekend Open House Invite - Whitefield",
+  "senderId": "BRKROS",
+  "dltTemplateId": "1407161234567890123",
+  "messageContent": "Hi {#var#}, visit Emerald Heights this Saturday for exclusive launch pricing starting at ₹1.25 Cr. Book your VIP slot here: {#var#}. - BrokerOS Realty",
+  "projectId": "cm123proj001",
+  "audienceSource": "CRM_LEADS",
+  "targetCriteria": {
+    "leadStatuses": ["NEW", "CONTACTED"],
+    "leadTemperatures": ["HOT"]
+  },
+  "shortUrlEnabled": true
+}
+```
+
+---
+
+## Calculate Cost Estimate
+
+```http
+POST /api/marketing/sms/campaigns/cost-estimate
+```
+
+Calculates required gateway credits and estimated billing based on message length and audience size.
+
+### Request Body
+
+```json
+{
+  "recipientCount": 5000,
+  "messageLength": 145,
+  "isUnicode": false,
+  "provider": "GUPSHUP"
+}
+```
+
+### Response Example
+
+```json
+{
+  "segmentCountPerRecipient": 1,
+  "totalCreditsRequired": 5000,
+  "currency": "INR",
+  "costPerCredit": 0.18,
+  "totalEstimatedCost": 900.00
+}
+```
+
+---
+
+## Dispatch Campaign
+
+```http
+POST /api/marketing/sms/campaigns/:id/dispatch
+```
+
+Transfers recipient batches into BullMQ for high-throughput gateway delivery.
+
+```json
+{
+  "success": true,
+  "campaignId": "cm123sms001",
+  "status": "PROCESSING",
+  "totalRecipients": 5000,
+  "dispatchedAt": "2026-10-01T08:16:45.000Z"
+}
+```
+
+---
+
+## Get Analytics & Click Tracking
+
+```http
+GET /api/marketing/sms/campaigns/:id/analytics
+```
+
+```json
+{
+  "campaignId": "cm123sms001",
+  "sent": 5000,
+  "delivered": 4820,
+  "failed": 180,
+  "deliveryRate": "96.4%",
+  "linkClicks": 742,
+  "uniqueClicks": 615,
+  "ctr": "12.7%"
+}
+```
