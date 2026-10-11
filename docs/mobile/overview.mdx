@@ -1,0 +1,95 @@
+---
+title: "BrokerOS Mobile App"
+sidebarTitle: "Overview"
+description: "The BrokerOS Android application is the primary work tool for real estate field teams, telecallers, sales executives, and channel partner managers."
+---
+
+## What is the Mobile App?
+
+The BrokerOS mobile app is an enterprise **native Android application** built with **Expo 54**, **React Native 0.81**, and **React 19**, with the React Native New Architecture enabled. It serves as the primary operational tool for real estate professionals working in the field or conducting high-velocity telecalling.
+
+While the Next.js web application is designed for management oversight and marketing campaign orchestration, **the Android mobile app is where field execution happens**:
+- Pre-sales agents call through daily queues using the native auto-dialer
+- Sales executives conduct GPS-verified site visits and submit on-site booking locks
+- Sourcing managers register new channel partners and verify RERA credentials
+- Closing managers negotiate unit discounts with buyers on-site
+- Post-sales executives track collection milestones and loan case approvals
+
+---
+
+## Technical Foundation
+
+| Layer | Technology | Key Capabilities |
+| :--- | :--- | :--- |
+| **Framework** | Expo 54 / React Native 0.81 | React 19 runtime, New Architecture enabled, TurboModules. |
+| **Routing** | Expo Router 6 | File-based typed routing (`app/` directory), deep linking. |
+| **Styling** | NativeWind v4 (Tailwind CSS v3) | Fast, utility-driven styling using `className` props. |
+| **Authentication** | Better Auth (`@better-auth/expo`) | Hardware-backed session persistence via `expo-secure-store`. |
+| **Native Module** | Custom Kotlin Auto-Dialer | Telephony broadcast receiver, Jetpack WorkManager background upload. |
+| **Realtime Engine** | Socket.IO Client (`socket.io-client`) | Bidirectional WebSocket communication for chat and notifications. |
+| **Location Engine** | `expo-location` + `expo-task-manager` | 1-minute background GPS tracking with persistent foreground notification. |
+| **Maps & Camera** | `react-native-maps` + `expo-image-picker` | Native Google Maps rendering and live selfie capture. |
+
+---
+
+## Who Uses the Mobile App?
+
+<CardGroup cols={2}>
+  <Card title="Pre-Sales Telecallers" icon="phone-volume">
+    Use the **Auto-Dialer** to dial leads sequentially. Calls are recorded via ODialer, uploaded automatically via WorkManager, and transcribed with AI.
+  </Card>
+  <Card title="Sales Executives" icon="briefcase">
+    Conduct GPS-verified site visits using live camera selfies and coordinate logging. Browse the live inventory unit matrix and submit discount negotiations.
+  </Card>
+  <Card title="Sourcing & Closing Managers" icon="handshake">
+    Recruit external brokers, review channel partner KYC documents, check arriving client appointments, and confirm CP unit bookings.
+  </Card>
+  <Card title="Post-Sales & Finance Agents" icon="file-check">
+    Monitor customer payment milestones, track document verification checklists, follow up on home loan cases, and approve financial releases.
+  </Card>
+</CardGroup>
+
+---
+
+## Core Mobile Subsystems
+
+<CardGroup cols={3}>
+  <Card title="Auto-Dialer Engine" icon="phone-arrow-up-right" href="/mobile/auto-dialer/architecture">
+    Custom Kotlin telephony module that automates consecutive lead dialing, detects call state transitions, and notifies managers of live on-call status.
+  </Card>
+  <Card title="Call Recording Sync" icon="microphone" href="/mobile/auto-dialer/call-recording">
+    Storage Access Framework (SAF) integration that automatically ingests audio recordings and uploads them in the background via Jetpack WorkManager.
+  </Card>
+  <Card title="Background GPS Tracking" icon="location-dot" href="/mobile/field/gps-tracking">
+    Continuous 1-minute interval background location updates powered by Expo TaskManager, feeding live manager maps with zero battery drain.
+  </Card>
+  <Card title="Site Visit Verification" icon="camera" href="/mobile/field/site-verification">
+    Anti-spoofing site visit verification combining live camera selfie captures with Haversine distance validation against project coordinates.
+  </Card>
+  <Card title="14 Role Workspaces" icon="user-gear" href="/mobile/app/role-workspaces">
+    Adaptive shell navigation that dynamically renders role-specific bottom tab bars and screens based on the authenticated employee role.
+  </Card>
+  <Card title="Real-Time Team Chat" icon="message-square" href="/mobile/app/chat">
+    Persistent WebSocket team messaging powered by Socket.IO, supporting direct messages, unread badges, and rich lead card sharing.
+  </Card>
+</CardGroup>
+
+---
+
+## Operating System & Device Target
+
+<Note>
+  The BrokerOS mobile application is strictly configured for **Android** (Android 8.0 / API 26 and above). There is no iOS build configuration. Real estate sales forces in this target enterprise market use Android handsets exclusively, enabling native telephony hooks, Storage Access Framework audio ingestion, and background location services that are restricted under iOS sandbox limitations.
+</Note>
+
+---
+
+## Development & Distribution Workflow
+
+Because the mobile application relies on custom native Kotlin code inside [`modules/auto-dialer/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/modules/auto-dialer/), it cannot be launched inside the generic Expo Go client from Google Play.
+
+1. **Local Development Builds**: Developers run `npx expo run:android` to compile a custom development APK directly onto a connected physical Android phone or Android Studio emulator.
+2. **Internal Distribution APK**: Built on EAS infrastructure (`eas build --platform android --profile preview`) and distributed directly to brokerage staff without Google Play Store delays.
+3. **Over-The-Air (OTA) Updates**: Routine JavaScript, styling, and business logic patches are delivered silently to employee devices via EAS Update, requiring zero manual APK reinstalls.
+
+For step-by-step workstation setup, Google Maps keys, Firebase configuration, and build instructions, visit the [Mobile Setup and Tooling Guide](/mobile/app/setup-and-tools).
