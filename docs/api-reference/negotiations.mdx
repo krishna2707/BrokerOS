@@ -1,0 +1,88 @@
+---
+title: "Negotiations API"
+sidebarTitle: "Negotiations"
+description: "Record pricing discussions, counter-offers, customer objections, and negotiation strategies."
+---
+
+Negotiations capture deal closing terms when a prospective buyer requests pricing discounts, waivers, or customized payment schedules. A recorded negotiation is required before creating a discounted booking.
+
+```http
+BASE URL: /api/leads/:leadId/negotiations
+```
+
+---
+
+## Endpoints Summary
+
+| Method | Path | Description | Allowed Roles |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/leads/:leadId/negotiations` | Retrieve all negotiation records for a lead | `ADMIN`, `SALES_MANAGER`, `SALES_EXECUTIVE`, `PRE_SALES`, `PRE_SALES_MANAGER`, `CLOSING_MANAGER`, `CHANNEL_PARTNER` |
+| `POST` | `/api/leads/:leadId/negotiations` | Log a new price negotiation session or counter-offer | `ADMIN`, `SALES_MANAGER`, `SALES_EXECUTIVE`, `CLOSING_MANAGER`, `CHANNEL_PARTNER` |
+
+---
+
+## Get Negotiations
+
+```http
+GET /api/leads/:leadId/negotiations
+```
+
+Returns the complete chronological history of price discussions, offers, and counter-offers for a lead.
+
+### Response Example
+
+```json
+[
+  {
+    "id": "cm123neg001",
+    "leadId": "cm123lead001",
+    "userId": "cm123user002",
+    "title": "Tower A - Unit 1402 Final Price Discussion",
+    "askingPrice": 14500000,
+    "offeredPrice": 13800000,
+    "objections": "Client found a competing project offering free club membership and no floor rise charges",
+    "strategy": "Offer waiver of club registration (approx ₹2.5L) if token is paid within 48 hours",
+    "nextStep": "Submit discount approval request to Sales Director",
+    "createdAt": "2026-09-30T16:00:00.000Z"
+  }
+]
+```
+
+---
+
+## Create Negotiation
+
+```http
+POST /api/leads/:leadId/negotiations
+```
+
+Records a new negotiation touchpoint. If `userId` is omitted from the request body, the server automatically attributes the record to the authenticated user's session ID.
+
+### Request Body
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `askingPrice` | `number` | No | Base or listed project price for the configuration |
+| `offeredPrice` | `number` | No | Target price offered or demanded by the client |
+| `title` | `string` | No | Summary title for the negotiation record |
+| `objections` | `string` | No | Specific client concerns (floor rise, parking, competitor offers) |
+| `strategy` | `string` | No | Proposed deal structure or closing levers |
+| `nextStep` | `string` | No | Agreed action item (e.g. submit approval, arrange director call) |
+| `userId` | `string` | No | Defaults to authenticated user if omitted |
+
+### Request Example
+
+```json
+{
+  "title": "3BHK Tower B Unit 1204 - Price Closure",
+  "askingPrice": 12800000,
+  "offeredPrice": 12250000,
+  "objections": "Wants parking on Basement 1 instead of Basement 2 and 4% discount on base rate",
+  "strategy": "Match 2.5% discount and assign B1 parking if booking token of ₹5L is swiped today",
+  "nextStep": "Draft approval ticket for Business Manager sign-off"
+}
+```
+
+<Note>
+  If the discount between `askingPrice` and `offeredPrice` exceeds the executive's authorized discount threshold (typically 2%), submit an approval request via the [Approvals API](/api-reference/approvals) before finalizing the booking.
+</Note>
