@@ -20,17 +20,21 @@ export class StreamSessionManager {
       streamSid,
       callSid,
       campaignId: customParams.campaignId,
-      agentPlatform: customParams.agentPlatform || 'SARVAM',
-      voiceId: customParams.voiceId || 'rahul',
-      voiceProvider: customParams.voiceProvider || 'sarvam',
+      recipientId: customParams.recipientId,
+      agentPlatform: (customParams.agentPlatform || customParams.agent || 'OPENAI_REALTIME').toUpperCase(),
+      voiceId: customParams.voiceId || customParams.voice || 'alloy',
+      voiceProvider: customParams.voiceProvider || 'openai',
       firstMessage:
         customParams.firstMessage ||
-        'Hello! Thank you for connecting with Skyline Realty. How may I assist your property search today?',
+        'Hello! Thank you for connecting with us. How may I assist your property search today?',
       scriptPrompt: customParams.scriptPrompt || '',
       socketId,
       startedAt: new Date(),
       audioPacketsReceived: 0,
       audioPacketsSent: 0,
+      apiKey: customParams.apiKey,
+      variables: customParams.variables,
+      isAiReady: false,
     };
 
     this.sessions.set(streamSid, session);

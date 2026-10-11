@@ -37,14 +37,39 @@ export class VoiceWebhooksController {
       res.type('text/xml');
     }
 
-    const greeting =
-      firstMessage ||
-      'Hello! Thank you for connecting with us from BrokerOS. Your voice session is active.';
+    const publicUrl = (process.env.API_PUBLIC_URL || '').replace(/\/$/, '');
+    const wsUrl = publicUrl.replace(/^http/i, 'ws') + '/voice/stream';
+    const plat = (agentPlatform || 'OPENAI_REALTIME').toUpperCase();
 
-    // Vobiz XML Response
+    if (plat === 'VAPI') {
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Dial>
+    <Sip>sip:assistant@sip.vapi.ai</Sip>
+  </Dial>
+</Response>`;
+    }
+
+    if (plat === 'RETELL') {
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Dial>
+    <Sip>sip:agent@sip.retellai.com</Sip>
+  </Dial>
+</Response>`;
+    }
+
+    // Vobiz Media Stream Response
     return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Speak>${greeting.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Speak>
+  <Connect>
+    <Stream url="${wsUrl}">
+      <Parameter name="campaignId" value="${campaignId || 'direct_test'}"/>
+      <Parameter name="recipientId" value="${recipientId || ''}"/>
+      <Parameter name="agent" value="${plat}"/>
+      <Parameter name="voiceId" value="${voiceId || 'alloy'}"/>
+    </Stream>
+  </Connect>
 </Response>`;
   }
 
@@ -63,15 +88,39 @@ export class VoiceWebhooksController {
       res.type('text/xml');
     }
 
-    const greeting =
-      firstMessage ||
-      'Hello! Thank you for connecting with us from BrokerOS. Your voice session is active.';
+    const publicUrl = (process.env.API_PUBLIC_URL || '').replace(/\/$/, '');
+    const wsUrl = publicUrl.replace(/^http/i, 'ws') + '/voice/stream';
+    const plat = (agentPlatform || 'OPENAI_REALTIME').toUpperCase();
 
-    // Twilio TwiML Response
+    if (plat === 'VAPI') {
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Dial>
+    <Sip>sip:assistant@sip.vapi.ai</Sip>
+  </Dial>
+</Response>`;
+    }
+
+    if (plat === 'RETELL') {
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Dial>
+    <Sip>sip:agent@sip.retellai.com</Sip>
+  </Dial>
+</Response>`;
+    }
+
+    // Twilio Bi-directional Media Stream Response
     return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Aditi">${greeting.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Say>
-  <Pause length="2"/>
+  <Connect>
+    <Stream url="${wsUrl}">
+      <Parameter name="campaignId" value="${campaignId || 'direct_test'}"/>
+      <Parameter name="recipientId" value="${recipientId || ''}"/>
+      <Parameter name="agent" value="${plat}"/>
+      <Parameter name="voiceId" value="${voiceId || 'alloy'}"/>
+    </Stream>
+  </Connect>
 </Response>`;
   }
 
@@ -86,11 +135,30 @@ export class VoiceWebhooksController {
     @Query('voice') voiceId?: string,
     @Res({ passthrough: true }) res?: Response,
   ): string {
-    const publicUrl = process.env.API_PUBLIC_URL || '';
-    const wsUrl = publicUrl.replace(/^http/, 'ws') + '/voice/stream';
+    const publicUrl = (process.env.API_PUBLIC_URL || '').replace(/\/$/, '');
+    const wsUrl = publicUrl.replace(/^http/i, 'ws') + '/voice/stream';
+    const plat = (agentPlatform || 'OPENAI_REALTIME').toUpperCase();
 
     if (res) {
       res.type('text/xml');
+    }
+
+    if (plat === 'VAPI') {
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Dial>
+    <Sip>sip:assistant@sip.vapi.ai</Sip>
+  </Dial>
+</Response>`;
+    }
+
+    if (plat === 'RETELL') {
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Dial>
+    <Sip>sip:agent@sip.retellai.com</Sip>
+  </Dial>
+</Response>`;
     }
 
     // Telnyx TeXML Media Stream
@@ -99,7 +167,9 @@ export class VoiceWebhooksController {
   <Connect>
     <Stream url="${wsUrl}">
       <Parameter name="campaignId" value="${campaignId || 'direct_call'}"/>
-      <Parameter name="agent" value="${agentPlatform || 'VAPI'}"/>
+      <Parameter name="recipientId" value="${recipientId || ''}"/>
+      <Parameter name="agent" value="${plat}"/>
+      <Parameter name="voiceId" value="${voiceId || 'alloy'}"/>
     </Stream>
   </Connect>
 </Response>`;

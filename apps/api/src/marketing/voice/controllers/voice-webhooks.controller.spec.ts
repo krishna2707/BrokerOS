@@ -35,7 +35,7 @@ describe('VoiceWebhooksController', () => {
   });
 
   describe('handleVobizAnswer', () => {
-    it('should generate valid Vobiz XML speak response', () => {
+    it('should generate valid Vobiz media stream response', () => {
       const xml = controller.handleVobizAnswer(
         'c-1',
         'r-1',
@@ -46,12 +46,27 @@ describe('VoiceWebhooksController', () => {
       );
 
       expect(mockRes.type).toHaveBeenCalledWith('text/xml');
-      expect(xml).toContain('<Speak>Hello from test &amp; BrokerOS</Speak>');
+      expect(xml).toContain('<Stream url="');
+      expect(xml).toContain('<Parameter name="campaignId" value="c-1"/>');
+    });
+
+    it('should generate SIP Dial response when agent is VAPI', () => {
+      const xml = controller.handleVobizAnswer(
+        'c-1',
+        'r-1',
+        undefined,
+        'VAPI',
+        undefined,
+        mockRes,
+      );
+
+      expect(xml).toContain('<Dial>');
+      expect(xml).toContain('<Sip>sip:assistant@sip.vapi.ai</Sip>');
     });
   });
 
   describe('handleTwilioAnswer', () => {
-    it('should generate valid Twilio TwiML say response', () => {
+    it('should generate valid Twilio TwiML media stream response', () => {
       const xml = controller.handleTwilioAnswer(
         'c-1',
         'r-1',
@@ -62,9 +77,22 @@ describe('VoiceWebhooksController', () => {
       );
 
       expect(mockRes.type).toHaveBeenCalledWith('text/xml');
-      expect(xml).toContain(
-        '<Say voice="Polly.Aditi">Welcome to BrokerOS</Say>',
+      expect(xml).toContain('<Stream url="');
+      expect(xml).toContain('<Parameter name="campaignId" value="c-1"/>');
+    });
+
+    it('should generate SIP Dial response when agent is RETELL', () => {
+      const xml = controller.handleTwilioAnswer(
+        'c-1',
+        'r-1',
+        undefined,
+        'RETELL',
+        undefined,
+        mockRes,
       );
+
+      expect(xml).toContain('<Dial>');
+      expect(xml).toContain('<Sip>sip:agent@sip.retellai.com</Sip>');
     });
   });
 
@@ -74,7 +102,7 @@ describe('VoiceWebhooksController', () => {
         'c-1',
         'r-1',
         undefined,
-        'VAPI',
+        'OPENAI_REALTIME',
         undefined,
         mockRes,
       );
@@ -90,26 +118,24 @@ describe('VoiceWebhooksController', () => {
       const res = await controller.handleWebhook(
         'twilio-answer',
         {},
-        { firstMessage: 'Twilio test greeting' },
+        { campaignId: 'c-test' },
         {},
         mockRes,
       );
 
-      expect(res).toContain(
-        '<Say voice="Polly.Aditi">Twilio test greeting</Say>',
-      );
+      expect(res).toContain('<Stream url="');
     });
 
     it('should route vobiz-answer provider to handleVobizAnswer', async () => {
       const res = await controller.handleWebhook(
         'vobiz-answer',
         {},
-        { firstMessage: 'Vobiz test greeting' },
+        { campaignId: 'c-test' },
         {},
         mockRes,
       );
 
-      expect(res).toContain('<Speak>Vobiz test greeting</Speak>');
+      expect(res).toContain('<Stream url="');
     });
 
     it('should route telnyx-answer provider to handleTelnyxAnswer', async () => {

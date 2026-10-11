@@ -51,6 +51,9 @@ import { VoiceTrackingService } from './voice/services/voice-tracking.service.js
 import { VoiceCampaignService } from './voice/services/voice-campaign.service.js';
 import { VoiceDispatcherService } from './voice/services/voice-dispatcher.service.js';
 import { VoiceMediaStreamGateway } from './voice/gateway/voice-media-stream.gateway.js';
+import { VoiceRawMediaGateway } from './voice/gateway/voice-raw-media.gateway.js';
+import { VoiceAiAudioBridgeService } from './voice/gateway/voice-ai-audio-bridge.service.js';
+import { StreamSessionManager } from './voice/gateway/voice-stream-session.js';
 import { VoiceCampaignsController } from './voice/controllers/voice-campaigns.controller.js';
 import { VoiceIntegrationsController } from './voice/controllers/voice-integrations.controller.js';
 import { VoiceAudioController } from './voice/controllers/voice-audio.controller.js';
@@ -157,6 +160,9 @@ import { WhatsAppModule } from './whatsapp/whatsapp.module.js';
     VoiceTrackingService,
     VoiceCampaignService,
     VoiceDispatcherService,
+    StreamSessionManager,
+    VoiceAiAudioBridgeService,
+    VoiceRawMediaGateway,
     VoiceMediaStreamGateway,
     VoiceService,
 
@@ -196,6 +202,9 @@ import { WhatsAppModule } from './whatsapp/whatsapp.module.js';
     VoiceTrackingService,
     VoiceCampaignService,
     VoiceDispatcherService,
+    StreamSessionManager,
+    VoiceAiAudioBridgeService,
+    VoiceRawMediaGateway,
     VoiceMediaStreamGateway,
 
     MetaAdsService,
