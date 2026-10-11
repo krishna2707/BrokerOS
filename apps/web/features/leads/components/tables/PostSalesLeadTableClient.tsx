@@ -28,6 +28,8 @@ function PostSalesLeadTableContent({ isManagerView, completedHandoversOnly }: { 
         search={search}
         setSearch={setSearch}
         completedHandoversOnly={completedHandoversOnly}
+        leads={filteredLeads}
+        filenamePrefix={isManagerView ? "postsales_manager_leads" : "postsales_leads"}
       />
       <PostSalesTable
         filteredLeads={filteredLeads}

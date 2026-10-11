@@ -52,6 +52,8 @@ function ChannelPartnerLeadTableContent() {
         setFollowUpDate={setFollowUpDate}
         search={search}
         setSearch={setSearch}
+        leads={filteredLeads}
+        filenamePrefix="cp_customers"
       />
       <PostSalesTable
         filteredLeads={filteredLeads}

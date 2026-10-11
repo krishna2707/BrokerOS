@@ -71,6 +71,8 @@ function LeadTableContent({ isManagerView }: { isManagerView?: boolean }) {
         setFollowUpDate={setFollowUpDate}
         siteVisitDate={siteVisitDate}
         setSiteVisitDate={setSiteVisitDate}
+        leads={leads}
+        filenamePrefix={isManagerView ? "presales_manager_leads" : "presales_leads"}
       />
 
       <LeadTableGrid

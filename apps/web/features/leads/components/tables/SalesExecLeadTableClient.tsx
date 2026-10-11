@@ -31,6 +31,8 @@ function SalesExecLeadTableContent({ isManagerView }: { isManagerView?: boolean 
         setSiteVisitDate={setSiteVisitDate}
         search={search}
         setSearch={setSearch}
+        leads={filteredLeads}
+        filenamePrefix={isManagerView ? "sales_manager_leads" : "sales_exec_leads"}
       />
       <SalesExecTable
         filteredLeads={filteredLeads}

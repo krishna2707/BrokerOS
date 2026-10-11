@@ -1,5 +1,6 @@
 import React from "react";
 import { Search, Calendar, X } from "lucide-react";
+import { ExportLeadsButton } from "@/features/leads/components/ExportLeadsButton";
 
 const POST_SALES_STATUS_OPTIONS = [
   {
@@ -22,6 +23,8 @@ interface PostSalesTableFiltersProps {
   search: string;
   setSearch: (v: string) => void;
   completedHandoversOnly?: boolean;
+  leads?: any[];
+  filenamePrefix?: string;
 }
 
 export function PostSalesTableFilters({
@@ -32,6 +35,8 @@ export function PostSalesTableFilters({
   search,
   setSearch,
   completedHandoversOnly,
+  leads,
+  filenamePrefix = "postsales_leads",
 }: PostSalesTableFiltersProps) {
   const hasActive =
     (status !== "BOOKING,DOCUMENT,LOAN,AGREEMENT,HANDOVER" && status !== "") ||
@@ -92,6 +97,15 @@ export function PostSalesTableFilters({
             <span>Reset</span>
           </button>
         )}
+
+        {/* Export CSV Button */}
+        <div className="ms-auto flex items-center">
+          <ExportLeadsButton
+            leads={leads || []}
+            filenamePrefix={filenamePrefix}
+            activeStatus={status}
+          />
+        </div>
       </div>
 
       {/* Row 2: Status Pills */}
