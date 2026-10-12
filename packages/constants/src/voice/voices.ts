@@ -22,10 +22,12 @@ export interface VoicePersonaRecord {
 
 export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   // ── Vapi Native Built-In Voices (Sub-120ms Zero-Hop Streaming) ──
+  // FIX #1088: These Deepgram Aura voices were previously labelled provider:"vapi" by
+  // mistake. They must use provider:"deepgram" so the TTS payload is built correctly.
   {
     "id": "asteria",
     "name": "Asteria - Clear & Engaging",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Female",
     "accent": "american",
     "language": "English",
@@ -36,7 +38,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "luna",
     "name": "Luna - Soft & Professional",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Female",
     "accent": "american",
     "language": "English",
@@ -47,7 +49,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "stella",
     "name": "Stella - Energetic & Polished",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Female",
     "accent": "american",
     "language": "English",
@@ -58,7 +60,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "athena",
     "name": "Athena - Authoritative & Crisp",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Female",
     "accent": "american",
     "language": "English",
@@ -69,7 +71,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "hera",
     "name": "Hera - Confident & Warm",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Female",
     "accent": "american",
     "language": "English",
@@ -80,7 +82,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "orion",
     "name": "Orion - Deep & Grounded",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Male",
     "accent": "american",
     "language": "English",
@@ -91,7 +93,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "apollo",
     "name": "Apollo - Bright & Articulate",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Male",
     "accent": "american",
     "language": "English",
@@ -102,7 +104,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "zeus",
     "name": "Zeus - Resonant & Executive",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Male",
     "accent": "american",
     "language": "English",
@@ -113,7 +115,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "perseus",
     "name": "Perseus - Direct & Courteous",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Male",
     "accent": "american",
     "language": "English",
@@ -124,7 +126,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "aurora",
     "name": "Aurora - Gentle & Reassuring",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Female",
     "accent": "american",
     "language": "English",
@@ -135,7 +137,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "celeste",
     "name": "Celeste - Smooth & Elegant",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Female",
     "accent": "american",
     "language": "English",
@@ -146,7 +148,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "diana",
     "name": "Diana - Sharp & Professional",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Female",
     "accent": "american",
     "language": "English",
@@ -157,7 +159,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "arcas",
     "name": "Arcas - Friendly & Conversational",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Male",
     "accent": "american",
     "language": "English",
@@ -168,7 +170,7 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
   {
     "id": "helios",
     "name": "Helios - Warm & Inviting",
-    "provider": "vapi",
+    "provider": "deepgram",
     "gender": "Male",
     "accent": "american",
     "language": "English",
@@ -176,7 +178,9 @@ export const VOICE_TTS_CATALOG: VoicePersonaRecord[] = [
     "previewText": "Good afternoon! I am Helios. Let me share the floor plans with you.",
     "description": "Sunny, warm, and inviting tone.",
   },
-  // ── ElevenLabs Voices ──
+  // ── Native Vapi v2 Voices (provider: "vapi") ──
+  // FIX #1088: These are the actual native Vapi voices (Elliot, Clara, etc.)
+  // that use provider:"vapi" in the TTS payload. Their IDs are PascalCase.
   {
     "id": "pNInz6obpgDQGcFmaJgB",
     "name": "Adam - Dominant, Firm",

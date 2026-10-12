@@ -167,15 +167,33 @@ export async function tryCarrierBridgeDispatch(
       };
     }
 
+    // FIX #1087: Exotel requires a public URL for the StatusCallback webhook so
+    // that it can POST call status events. Without this the call has no AI audio bridge.
+    if (!isPublicUrl) {
+      return {
+        handled: true,
+        result: {
+          success: false,
+          error: `Exotel API requires a public HTTP/HTTPS webhook URL. Current API_PUBLIC_URL is "${publicUrl || 'empty'}". Please configure a public domain or ngrok tunnel in your .env.`,
+        },
+      };
+    }
+
+    const exotelAnswerUrl = `${publicUrl}/api/marketing/voice/webhooks/exotel-answer?campaignId=${encodeURIComponent(options.campaignId || 'direct_test')}&agent=${encodeURIComponent(platform)}&voice=${encodeURIComponent(options.voiceId || '')}&recipientId=${encodeURIComponent(options.recipientId || '')}`;
+
     try {
       const authHeader = Buffer.from(`${k}:${tok}`).toString('base64');
+      // FIX #1087: Original code had From/To swapped — it connected cleanTo (customer)
+      // to cleanFrom (virtual number), which is a loopback with no AI audio source.
+      // Correct Exotel Calls/connect.json: From = caller (virtual number), To = recipient (customer).
       const body = new URLSearchParams({
-        From: cleanTo,
-        To: cleanFrom,
+        From: cleanFrom,       // Exotel virtual number (outbound caller ID)
+        To: cleanTo,           // Customer phone being dialled
         CallerId: cleanFrom,
         CallType: 'trans',
-        TimeLimit: '60',
+        TimeLimit: '600',
         TimeOut: '30',
+        StatusCallback: exotelAnswerUrl,  // Webhook for call status and AI bridging
       });
 
       const res = await fetch(`https://${domain}/v1/Accounts/${sid}/Calls/connect.json`, {
@@ -246,6 +264,21 @@ export async function tryCarrierBridgeDispatch(
       };
     }
 
+    // FIX #1087: Twilio SIP Routing — The old code used sip:assistant@sip.vapi.ai which
+    // does NOT exist unless the user has configured a BYO SIP trunk in their Vapi org.
+    // The correct approach for Twilio + Vapi is to use the WebSocket bidirectional
+    // media stream (<Connect><Stream>) which bridges raw audio to our voice gateway.
+    // For Retell, same pattern — use their official WebSocket stream URL.
+    if (!isPublicUrl) {
+      return {
+        handled: true,
+        result: {
+          success: false,
+          error: `Twilio carrier bridge requires a public HTTP/HTTPS webhook URL. Current API_PUBLIC_URL is "${publicUrl || 'empty'}". Please configure a public domain or ngrok tunnel in your .env (e.g., API_PUBLIC_URL="https://your-domain.ngrok-free.app").`,
+        },
+      };
+    }
+
     try {
       const authHeader = Buffer.from(`${sid}:${token}`).toString('base64');
       const bodyParams: Record<string, string> = {
@@ -253,19 +286,26 @@ export async function tryCarrierBridgeDispatch(
         From: fromNum,
       };
 
-      let twiml = '';
       const plat = platform.toUpperCase();
-      if (plat === 'VAPI') {
-        const assistantId = options.assistantId || 'assistant';
-        twiml = `<Response><Dial><Sip>sip:${escapeXml(assistantId)}@sip.vapi.ai</Sip></Dial></Response>`;
-      } else if (plat === 'RETELL') {
-        const agentId = options.assistantId || 'agent';
-        twiml = `<Response><Dial><Sip>sip:${escapeXml(agentId)}@sip.retellai.com</Sip></Dial></Response>`;
+      let twiml = '';
+
+      if (plat === 'VAPI' || plat === 'RETELL') {
+        // Use WebSocket media stream to bridge Twilio audio to the AI voice engine.
+        // The voice gateway at /voice/stream handles the bidirectional audio relay.
+        // NOTE: sip:assistant@sip.vapi.ai is NOT valid without a Vapi BYO SIP trunk.
+        const wsUrl = (publicUrl.replace(/^http/i, 'ws') + '/voice/stream').trim();
+        const answerUrl = `${publicUrl}/api/marketing/voice/webhooks/twilio-answer?campaignId=${encodeURIComponent(options.campaignId || 'direct_test')}&agent=${encodeURIComponent(platform)}&voice=${encodeURIComponent(options.voiceId || '')}&recipientId=${encodeURIComponent(options.recipientId || '')}`;
+        // Use TwiML Bin URL so Twilio fetches the XML on answer (not inline TwiML which has size limits)
+        twiml = `<Response><Connect><Stream url="${escapeXml(wsUrl)}"><Parameter name="campaignId" value="${escapeXml(options.campaignId || 'direct_test')}"/><Parameter name="recipientId" value="${escapeXml(options.recipientId || '')}"/><Parameter name="agent" value="${escapeXml(plat)}"/><Parameter name="voiceId" value="${escapeXml(options.voiceId || 'alloy')}"/></Stream></Connect></Response>`;
+        // Prefer a webhook URL so Twilio can fetch instructions after the call is answered
+        bodyParams.Url = answerUrl;
+        bodyParams.Method = 'POST';
       } else {
+        // For other AI platforms, use bidirectional WebSocket stream directly
         const wsUrl = (publicUrl.replace(/^http/i, 'ws') + '/voice/stream').trim();
         twiml = `<Response><Connect><Stream url="${escapeXml(wsUrl)}"><Parameter name="campaignId" value="${escapeXml(options.campaignId || 'direct_test')}"/><Parameter name="recipientId" value="${escapeXml(options.recipientId || '')}"/><Parameter name="agent" value="${escapeXml(plat)}"/><Parameter name="voiceId" value="${escapeXml(options.voiceId || 'alloy')}"/></Stream></Connect></Response>`;
+        bodyParams.Twiml = twiml;
       }
-      bodyParams.Twiml = twiml;
 
       const body = new URLSearchParams(bodyParams);
 

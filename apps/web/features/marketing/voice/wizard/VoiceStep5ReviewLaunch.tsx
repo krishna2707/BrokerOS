@@ -119,6 +119,21 @@ export function VoiceStep5ReviewLaunch({
           : undefined
       );
 
+      // FIX #1090: Determine the test call routing mode before dispatch.
+      // Without an explicit testMode, voice-dispatcher.service.ts silently routes
+      // ALL test calls through tryCarrierBridgeDispatch when telephonyId is present,
+      // triggering the SIP routing failures described in issue #1087.
+      //
+      // Routing rules:
+      //   telephonyId configured → "carrier-bridge"  (use CRM PSTN carrier)
+      //   Retell agent platform  → "retell-direct"   (Retell outbound API)
+      //   everything else        → "vapi-direct"     (Vapi POST /call directly)
+      const resolvedTestMode = formData.telephonyId
+        ? "carrier-bridge"
+        : selectedAgent?.platform === "RETELL"
+          ? "retell-direct"
+          : "vapi-direct";
+
       const res = await fetch(`${apiBaseUrl}/api/marketing/voice/test/ai-call`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -149,15 +164,23 @@ export function VoiceStep5ReviewLaunch({
           retellLanguage: formData.retellLanguage,
           retellBackchannel: formData.retellBackchannel,
           retellReminderMs: formData.retellReminderMs,
+          // FIX #1090: Explicit testMode prevents silent carrier-bridge fallback
+          testMode: resolvedTestMode,
         }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.success) {
+        const modeLabel =
+          formData.telephonyId
+            ? `via ${selectedTelephony?.name || "CRM Carrier"}`
+            : selectedAgent?.platform === "RETELL"
+              ? "via Retell Direct"
+              : "via Vapi Direct PSTN";
         setTestAiResult({
           success: true,
-          message: `AI Voice agent dispatched successfully (Call ID: ${data.providerCallId || "live"}). Your phone will ring in a few seconds! Answer to speak with the AI.`,
+          message: `AI Voice agent dispatched ${modeLabel} (Call ID: ${data.providerCallId || "live"}). Your phone will ring in a few seconds! Answer to speak with the AI.`,
         });
       } else {
         setTestAiResult({
@@ -327,7 +350,7 @@ export function VoiceStep5ReviewLaunch({
           <Button
             type="button"
             onClick={handleTestAiCall}
-            disabled={testingAiCall || !formData.telephonyId || !testPhone.trim()}
+            disabled={testingAiCall || !testPhone.trim()}
             className="w-full sm:w-auto font-extrabold text-xs"
           >
             {testingAiCall ? (

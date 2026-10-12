@@ -37,29 +37,16 @@ export class VoiceWebhooksController {
       res.type('text/xml');
     }
 
+    // FIX #1087: Vobiz streams raw audio via a webhook URL that returns XML.
+    // The old code dialled sip:assistant@sip.vapi.ai which fails unless the user
+    // has configured a BYO SIP trunk in their Vapi organisation (almost never done).
+    // Now we always use the bidirectional WebSocket media-stream bridge for ALL
+    // AI platforms (Vapi, Retell, and generic) so audio actually flows to the engine.
     const publicUrl = (process.env.API_PUBLIC_URL || '').replace(/\/$/, '');
     const wsUrl = publicUrl.replace(/^http/i, 'ws') + '/voice/stream';
     const plat = (agentPlatform || 'OPENAI_REALTIME').toUpperCase();
 
-    if (plat === 'VAPI') {
-      return `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Dial>
-    <Sip>sip:assistant@sip.vapi.ai</Sip>
-  </Dial>
-</Response>`;
-    }
-
-    if (plat === 'RETELL') {
-      return `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Dial>
-    <Sip>sip:agent@sip.retellai.com</Sip>
-  </Dial>
-</Response>`;
-    }
-
-    // Vobiz Media Stream Response
+    // Vobiz / generic carrier — bidirectional WebSocket media stream to voice gateway
     return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Connect>
@@ -88,29 +75,15 @@ export class VoiceWebhooksController {
       res.type('text/xml');
     }
 
+    // FIX #1087: Twilio answer webhook — same fix as Vobiz. The SIP dial approach
+    // (sip:assistant@sip.vapi.ai) fails with SIP 404/403 unless the user has
+    // manually imported a BYO SIP trunk into their Vapi workspace. Using the
+    // WebSocket media stream is the officially supported integration path.
     const publicUrl = (process.env.API_PUBLIC_URL || '').replace(/\/$/, '');
     const wsUrl = publicUrl.replace(/^http/i, 'ws') + '/voice/stream';
     const plat = (agentPlatform || 'OPENAI_REALTIME').toUpperCase();
 
-    if (plat === 'VAPI') {
-      return `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Dial>
-    <Sip>sip:assistant@sip.vapi.ai</Sip>
-  </Dial>
-</Response>`;
-    }
-
-    if (plat === 'RETELL') {
-      return `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Dial>
-    <Sip>sip:agent@sip.retellai.com</Sip>
-  </Dial>
-</Response>`;
-    }
-
-    // Twilio Bi-directional Media Stream Response
+    // Twilio Bi-directional Media Stream Response (valid for all AI platforms)
     return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Connect>
@@ -135,6 +108,8 @@ export class VoiceWebhooksController {
     @Query('voice') voiceId?: string,
     @Res({ passthrough: true }) res?: Response,
   ): string {
+    // FIX #1087: Telnyx answer webhook — same SIP fix as Vobiz/Twilio.
+    // Telnyx TeXML supports <Connect><Stream> for bidirectional audio; use it.
     const publicUrl = (process.env.API_PUBLIC_URL || '').replace(/\/$/, '');
     const wsUrl = publicUrl.replace(/^http/i, 'ws') + '/voice/stream';
     const plat = (agentPlatform || 'OPENAI_REALTIME').toUpperCase();
@@ -143,25 +118,40 @@ export class VoiceWebhooksController {
       res.type('text/xml');
     }
 
-    if (plat === 'VAPI') {
-      return `<?xml version="1.0" encoding="UTF-8"?>
+    // Telnyx TeXML bidirectional media stream — valid for all AI platforms
+    return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Dial>
-    <Sip>sip:assistant@sip.vapi.ai</Sip>
-  </Dial>
+  <Connect>
+    <Stream url="${wsUrl}">
+      <Parameter name="campaignId" value="${campaignId || 'direct_call'}"/>
+      <Parameter name="recipientId" value="${recipientId || ''}"/>
+      <Parameter name="agent" value="${plat}"/>
+      <Parameter name="voiceId" value="${voiceId || 'alloy'}"/>
+    </Stream>
+  </Connect>
 </Response>`;
-    }
+  }
 
-    if (plat === 'RETELL') {
-      return `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Dial>
-    <Sip>sip:agent@sip.retellai.com</Sip>
-  </Dial>
-</Response>`;
+  // FIX #1087: Added Exotel answer webhook. Exotel delivers a StatusCallback POST;
+  // we respond with XML that bridges audio to the voice gateway WebSocket stream.
+  @Get('exotel-answer')
+  @Post('exotel-answer')
+  @Header('Content-Type', 'text/xml')
+  handleExotelAnswer(
+    @Query('campaignId') campaignId?: string,
+    @Query('recipientId') recipientId?: string,
+    @Query('agent') agentPlatform?: string,
+    @Query('voice') voiceId?: string,
+    @Res({ passthrough: true }) res?: Response,
+  ): string {
+    if (res) {
+      res.type('text/xml');
     }
+    const publicUrl = (process.env.API_PUBLIC_URL || '').replace(/\/$/, '');
+    const wsUrl = publicUrl.replace(/^http/i, 'ws') + '/voice/stream';
+    const plat = (agentPlatform || 'OPENAI_REALTIME').toUpperCase();
 
-    // Telnyx TeXML Media Stream
+    // Exotel "Say" + "Stream" combo: greet, then stream audio to AI gateway
     return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Connect>
