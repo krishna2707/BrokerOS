@@ -256,19 +256,38 @@ export class MarketingVoiceProcessor implements OnModuleInit, OnModuleDestroy {
           try {
             let result: SendVoiceResult;
 
+            // FIX #1091 (idempotency): If this recipient was already dispatched
+            // (providerCallId set by a previous worker run or retry), skip re-dispatch
+            // to prevent duplicate calls from BullMQ retries or double worker triggers.
+            if (recipient.providerCallId) {
+              this.logger.warn(
+                `Recipient ${recipient.phone} already has providerCallId ${recipient.providerCallId}. Skipping re-dispatch to prevent duplicate call.`,
+              );
+              return;
+            }
+
             if (campaign.telephonyId) {
-              // Option B: CRM Telephony Carrier Bridge
+              // FIX #1091 — CRM Telephony Carrier Bridge path.
+              // The old code silently returned { handled: false } on unsupported carriers
+              // without recording a FAILED status, leaving recipients stuck as QUEUED.
+              // Now we always produce an explicit result (success or failure).
               const carrierBridge = await tryCarrierBridgeDispatch(platform, sendOptions);
               if (carrierBridge.handled && carrierBridge.result) {
                 result = carrierBridge.result;
               } else {
+                // FIX #1091: Carrier bridge did not handle the call (e.g. unsupported
+                // provider enum, missing credentials, or non-public API_PUBLIC_URL).
+                // Record a clear FAILED status so operators can diagnose the issue.
                 result = {
                   success: false,
-                  error: `Carrier line for ${campaign.telephony?.provider || 'selected carrier'} could not be dispatched.`,
+                  error:
+                    `Carrier bridge for "${campaign.telephony?.provider || 'selected carrier'}" could not dispatch the call. ` +
+                    `Verify carrier credentials, fromNumbers, and API_PUBLIC_URL in Voice Settings.`,
                 };
               }
             } else {
-              // Option A: Direct PSTN via AI Agent Platform
+              // FIX #1091 — Direct PSTN via AI Agent Platform (Vapi / Retell / etc.)
+              // Used when no carrier is configured; AI engine dials directly.
               result = await voiceAgentProvider.dispatchOutboundCall(sendOptions, agentCreds);
             }
 
@@ -282,7 +301,9 @@ export class MarketingVoiceProcessor implements OnModuleInit, OnModuleDestroy {
                 },
               });
 
-              // Create audit log
+              // FIX #1091: Include providerCallId in VoiceCallLog so incoming
+              // webhook callbacks (call-end events from Vapi/Retell) can reconcile
+              // the final disposition (COMPLETED, BUSY, NO_ANSWER) against this record.
               await this.prisma.voiceCallLog.create({
                 data: {
                   campaignId,

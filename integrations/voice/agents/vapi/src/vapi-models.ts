@@ -99,7 +99,19 @@ export async function fetchVapiAccountAssistants(apiKey: string): Promise<any[]>
   return [];
 }
 
+// FIX #1088: The original list contained Deepgram Aura names (asteria, luna, stella, etc.)
+// which are NOT native Vapi voices — they use provider:"deepgram". The voices below are
+// the actual native Vapi v2 voices that use provider:"vapi" in the TTS payload.
 export const VAPI_BUILTIN_VOICES = [
+  // Core native Vapi v2 voices (provider: "vapi")
+  'Elliot', 'Clara', 'Savannah', 'Nico', 'Emma', 'Godfrey', 'Layla', 'Sid',
+  'Kai', 'Sagar', 'Neil', 'Naina', 'Rohan', 'Dan', 'Gustavo', 'Jess',
+  'Leah', 'Leo', 'Mia', 'Tara', 'Zac', 'Zoe',
+] as const;
+
+// Deepgram Aura voices that use provider:"deepgram" in the TTS payload
+// FIX #1088: These were previously (incorrectly) inside VAPI_BUILTIN_VOICES
+export const DEEPGRAM_AURA_VOICES = [
   'asteria', 'luna', 'stella', 'athena', 'hera', 'orion', 'arcas', 'perseus',
   'angus', 'orpheus', 'helios', 'zeus', 'thalia', 'andromeda', 'helena', 'apollo',
   'aries', 'amalthea', 'atlas', 'aurora', 'callista', 'cora', 'cordelia', 'delia',
@@ -107,10 +119,14 @@ export const VAPI_BUILTIN_VOICES = [
   'jupiter', 'mars', 'minerva', 'neptune', 'odysseus', 'ophelia', 'pandora', 'phoebe',
   'pluto', 'saturn', 'selene', 'theia', 'vesta', 'celeste', 'estrella', 'nestor',
   'sirio', 'carina', 'alvaro', 'diana', 'aquila', 'selena', 'javier', 'viktoria',
-  'kara', 'fabian', 'julius', 'lara', 'elara', 'aurelia'
+  'kara', 'fabian', 'julius', 'lara', 'elara', 'aurelia',
 ] as const;
 
+// FIX #1088: VAPI_BUILTIN_SET now contains only the lowercase native Vapi voice IDs
 const VAPI_BUILTIN_SET = new Set<string>(VAPI_BUILTIN_VOICES.map((v) => v.toLowerCase()));
+
+// FIX #1088: Separate set for Deepgram Aura voice names (provider:"deepgram")
+const DEEPGRAM_AURA_SET = new Set<string>(DEEPGRAM_AURA_VOICES.map((v) => v.toLowerCase()));
 
 const OPENAI_VOICES_SET = new Set(['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer', 'ash', 'ballad', 'coral', 'sage', 'verse']);
 
@@ -122,11 +138,15 @@ export function buildVapiVoicePayload(config: any): any {
   let cleanVoiceId = rawVoiceId.replace(/^11labs[-_]/i, '');
   const lowerVoiceId = cleanVoiceId.toLowerCase();
 
-  // Auto-detect provider routing if mismatch exists
+  // FIX #1088: Auto-detect provider routing — check native Vapi voices first, then Deepgram
   if (VAPI_BUILTIN_SET.has(lowerVoiceId)) {
-    if (provider !== 'deepgram') {
-      provider = 'vapi';
-    }
+    // This is a native Vapi v2 voice; always use provider:"vapi"
+    provider = 'vapi';
+    cleanVoiceId = cleanVoiceId; // preserve original casing (Elliot, Clara, etc.)
+  } else if (DEEPGRAM_AURA_SET.has(lowerVoiceId)) {
+    // FIX #1088: Deepgram Aura voices were previously routed as "vapi" by mistake.
+    // These must use provider:"deepgram" to work correctly.
+    provider = 'deepgram';
     cleanVoiceId = lowerVoiceId;
   } else if (OPENAI_VOICES_SET.has(lowerVoiceId)) {
     provider = 'openai';
@@ -134,20 +154,29 @@ export function buildVapiVoicePayload(config: any): any {
   } else if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanVoiceId)) {
     provider = 'cartesia';
   } else if (provider === 'vapi') {
-    // voiceId is not a native Vapi voice - check if it's an ElevenLabs ID
+    // FIX #1088: Unknown voice claimed as "vapi" — check if it looks like an ElevenLabs ID
     if (cleanVoiceId.length >= 15 || rawVoiceId.startsWith('11labs-')) {
       provider = '11labs';
     } else {
-      cleanVoiceId = 'asteria';
+      // FIX #1088: Old code fell back silently to 'asteria' (a Deepgram voice) which
+      // caused the Vapi TTS to fail or produce the wrong voice. Now we raise a clear
+      // error so the caller gets an actionable message instead of a silent crash.
+      throw new Error(
+        `Voice ID "${rawVoiceId}" is not a recognised native Vapi voice, Deepgram Aura voice, or ElevenLabs voice ID. ` +
+        `Valid native Vapi voices: ${VAPI_BUILTIN_VOICES.join(', ')}. ` +
+        `For Deepgram Aura, use: ${DEEPGRAM_AURA_VOICES.slice(0, 6).join(', ')}, etc.`,
+      );
     }
   }
 
   switch (provider) {
     case 'deepgram': {
+      // FIX #1088: Deepgram Aura voices must be lowercase and stripped of prefixes.
+      // The VAPI_BUILTIN_SET check now uses the correct DEEPGRAM_AURA_SET.
       const dgClean = cleanVoiceId.toLowerCase().replace(/^(deepgram|aura)[-_]/i, '').replace(/[-_]en$/, '').trim();
       return {
         provider: 'deepgram',
-        voiceId: VAPI_BUILTIN_SET.has(dgClean) ? dgClean : 'asteria',
+        voiceId: DEEPGRAM_AURA_SET.has(dgClean) ? dgClean : 'asteria',
         model: config.voiceModel || config.voice?.model || 'aura-2',
       };
     }
@@ -187,9 +216,12 @@ export function buildVapiVoicePayload(config: any): any {
       };
 
     case 'vapi':
+      // FIX #1088: Only use VAPI_BUILTIN_SET (native Vapi voices). No more silent
+      // fallback to 'asteria' (which is a Deepgram name, not a Vapi voice name).
+      // If the voiceId is not a valid native Vapi voice, use the first available one.
       return {
         provider: 'vapi',
-        voiceId: VAPI_BUILTIN_SET.has(lowerVoiceId) ? lowerVoiceId : 'asteria',
+        voiceId: VAPI_BUILTIN_SET.has(lowerVoiceId) ? cleanVoiceId : 'Elliot',
         speed: config.voiceSpeed ?? config.voice?.speed ?? 1.0,
         version: config.voiceVersion || config.voice?.version || '2',
       };
