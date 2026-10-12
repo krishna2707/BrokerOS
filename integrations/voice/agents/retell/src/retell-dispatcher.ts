@@ -72,6 +72,24 @@ export async function dispatchRetellOutboundCall(
 
   const agentOverrideProps: Record<string, any> = {};
 
+  // FIX #1092: Retell Voice Override — pass voice_id and voice_temperature to agentOverrideProps.
+  // Retell create-phone-call expects agent_override.agent to dynamically override agent persona settings.
+  // Without voice_id, Retell AI ignores the selected voice persona (e.g. 11labs, cartesia, retell)
+  // and falls back to whatever default voice was saved on the agent in the Retell dashboard.
+  if (
+    options.voiceId &&
+    options.voiceId.trim().length > 0 &&
+    !options.voiceId.startsWith('agent_') &&
+    options.voiceId !== targetAgentId
+  ) {
+    agentOverrideProps.voice_id = options.voiceId.trim();
+  }
+
+  const voiceTemp = options.voiceTemperature ?? options.retellVoiceTemperature ?? options.studioSettings?.voiceTemperature;
+  if (voiceTemp !== undefined) {
+    agentOverrideProps.voice_temperature = voiceTemp;
+  }
+
   const voiceModel = options.retellVoiceModel || options.voiceModel;
   if (voiceModel) agentOverrideProps.voice_model = voiceModel;
 

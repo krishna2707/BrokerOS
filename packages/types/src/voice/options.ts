@@ -42,6 +42,7 @@ export interface SendVoiceOptions {
   transcriberLanguage?: string;
   maxTurnSilenceMs?: number;
   voiceSpeed?: number;
+  voiceTemperature?: number;
   firstMessageMode?: string;
   voicemailDetection?: string;
   backgroundSound?: string;
@@ -54,6 +55,7 @@ export interface SendVoiceOptions {
   retellLanguage?: string;
   retellBackchannel?: boolean;
   retellReminderMs?: number;
+  retellVoiceTemperature?: number;
 
   // Legacy / Direct Option Aliases
   voiceModel?: string;
