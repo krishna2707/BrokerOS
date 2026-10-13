@@ -93,6 +93,7 @@
             "group": "Pre-Sales (Telecalling)",
             "pages": [
               "brokerage/pre-sales/cold-calling",
+              "brokerage/pre-sales/softphone",
               "brokerage/pre-sales/daily-tasks",
               "brokerage/pre-sales/transcription"
             ]
@@ -214,6 +215,7 @@
             "pages": [
               "marketing/whatsapp/overview",
               "marketing/whatsapp/team-inbox",
+              "marketing/whatsapp/departmental-inbox",
               "marketing/whatsapp/contacts",
               "marketing/whatsapp/broadcasts",
               "marketing/whatsapp/preflight-and-tiers",
@@ -376,6 +378,7 @@
               "api-reference/marketing-whatsapp",
               "api-reference/marketing-sms",
               "api-reference/marketing-email",
+              "api-reference/crm-telephony",
               "api-reference/users",
               "api-reference/webhooks"
             ]
