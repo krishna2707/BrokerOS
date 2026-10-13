@@ -58,6 +58,36 @@ export interface WhatsAppConversation {
     email: string;
   } | null;
   contact?: WhatsAppContact | null;
+  leadId?: string | null;
+  lead?: {
+    id: string;
+    firstName: string;
+    lastName?: string | null;
+    phone: string;
+    status: string;
+    temperature?: string | null;
+    score?: number | null;
+    assignedUserId?: string | null;
+    interestedProject?: {
+      id: string;
+      name: string;
+    } | null;
+  } | null;
+  customerId?: string | null;
+  customer?: {
+    id: string;
+    firstName: string;
+    lastName?: string | null;
+    phone: string;
+  } | null;
+  brokerId?: string | null;
+  broker?: {
+    id: string;
+    name: string;
+    phone: string;
+    companyName?: string | null;
+    reraNumber?: string | null;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }

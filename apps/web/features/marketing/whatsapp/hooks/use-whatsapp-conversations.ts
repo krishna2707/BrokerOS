@@ -5,7 +5,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { WhatsAppConversation } from '../types';
 
-export function useWhatsAppConversations(initialAccountId?: string) {
+export interface UseWhatsAppConversationsOptions {
+  department?: string;
+  scope?: 'my' | 'team' | 'all';
+  agentId?: string;
+  leadId?: string;
+  brokerId?: string;
+  customerId?: string;
+}
+
+export function useWhatsAppConversations(
+  initialAccountId?: string,
+  options?: UseWhatsAppConversationsOptions,
+) {
   const [conversations, setConversations] = useState<WhatsAppConversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -21,6 +33,12 @@ export function useWhatsAppConversations(initialAccountId?: string) {
       if (accountId) params.set('accountId', accountId);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (search.trim()) params.set('search', search.trim());
+      if (options?.department) params.set('department', options.department);
+      if (options?.scope) params.set('scope', options.scope);
+      if (options?.agentId) params.set('agentId', options.agentId);
+      if (options?.leadId) params.set('leadId', options.leadId);
+      if (options?.brokerId) params.set('brokerId', options.brokerId);
+      if (options?.customerId) params.set('customerId', options.customerId);
 
       const res = await fetch(`${baseUrl}/api/marketing/whatsapp/conversations?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to load conversations');
@@ -31,7 +49,18 @@ export function useWhatsAppConversations(initialAccountId?: string) {
     } finally {
       setLoading(false);
     }
-  }, [baseUrl, accountId, statusFilter, search]);
+  }, [
+    baseUrl,
+    accountId,
+    statusFilter,
+    search,
+    options?.department,
+    options?.scope,
+    options?.agentId,
+    options?.leadId,
+    options?.brokerId,
+    options?.customerId,
+  ]);
 
   useEffect(() => {
     loadConversations();
