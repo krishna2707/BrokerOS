@@ -60,7 +60,24 @@ BrokerOS automates this setup in `TelnyxTelephonyClient`:
 
 ---
 
-## Configuration Steps
+---
+
+## CRM Telephony PSTN Bridging Setup
+
+To use Telnyx as the organization-wide carrier for human telecalling:
+
+1. Navigate to **Dashboard -> Admin -> Settings -> CRM Telephony & WebRTC** (`/dashboard/admin/settings`).
+2. Select the **Telnyx** carrier card.
+3. Enter the following parameters:
+   - **Telnyx API Key**: Your Telnyx V2 API Key (starts with `KEY...`).
+   - **Call Control Application ID**: Your Call Control application ID or TeXML connection ID.
+   - **Caller ID / Outbound DID**: Your purchased Telnyx number in E.164 format (e.g., `+12025550188`).
+4. Click **Save & Activate Carrier**.
+5. During calls, BrokerOS dispatches TeXML bridge calls to `/api/crm/telephony/webhooks/telnyx-voice` with automated dual-channel call recording and Groq Whisper transcription.
+
+---
+
+## Marketing AI Voice Configuration Steps
 
 <Steps>
   <Step title="Generate an API Key in Telnyx Portal">

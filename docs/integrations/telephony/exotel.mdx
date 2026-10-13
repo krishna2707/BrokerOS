@@ -68,7 +68,24 @@ The BrokerOS `ExotelTelephonyClient` automatically reformats international E.164
 
 ---
 
-## Configuration Steps
+## CRM Telephony PSTN Bridging Setup
+
+To use Exotel as the primary company-wide carrier for human telecalling:
+
+1. Navigate to **Dashboard -> Admin -> Settings -> CRM Telephony & WebRTC** (`/dashboard/admin/settings`).
+2. Select the **Exotel Cloud Telephony** card.
+3. Enter the following parameters:
+   - **API Key**: Your Exotel API Key.
+   - **API Token**: Secret API token.
+   - **Account SID**: Your Exotel Account SID.
+   - **API Subdomain**: Default is `api.exotel.com`.
+   - **ExoPhone Virtual Number**: Your registered ExoPhone number (e.g., `080xxxxxxxx`).
+4. Click **Save & Activate Carrier**.
+5. When an agent clicks **Direct Call** on a lead profile, Exotel connects the agent's verified mobile phone to the lead, streams call events to `/api/crm/telephony/webhooks/exotel-status`, and uploads the audio recording to Vercel Blob storage.
+
+---
+
+## Marketing AI Voice Configuration Steps
 
 <Steps>
   <Step title="Retrieve API Credentials from Exotel">

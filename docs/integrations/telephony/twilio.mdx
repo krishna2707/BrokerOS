@@ -1,90 +1,109 @@
 ---
-title: "Connect Twilio (Global Voice & SIP)"
+title: "Connect Twilio (Global Voice, WebRTC & SIP)"
 sidebarTitle: "Twilio"
-description: "Configure Twilio Programmable Voice as your telecom carrier with international caller IDs, TwiML callbacks, and WebSocket Media Streams."
+description: "Configure Twilio Programmable Voice for in-browser WebRTC softphone calling, auto-provisioned API keys, TwiML applications, and marketing voice broadcasts."
 ---
 
-**Twilio** is the industry standard for programmable cloud communications, providing outbound telephone calling in more than 180 countries. For international real estate brokerages targeting Non-Resident Indian (NRI) buyers, high-net-worth investors in Dubai, Singapore, the United States, and the United Kingdom, Twilio provides reliable caller ID presentation and global PSTN termination.
+**Twilio** is the industry standard for programmable cloud communications, providing telephone termination in more than 180 countries. In BrokerOS, Twilio powers two key communication layers:
 
-The BrokerOS integration (`integrations/voice/telephony/twilio/`) utilizes Twilio Programmable Voice REST APIs, dynamic TwiML orchestration, and bidirectional WebSocket Media Streams.
-
----
-
-## Twilio Calling Pipeline
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Worker as BullMQ Voice Processor
-    participant Dispatcher as Carrier Bridge Dispatcher
-    participant TwilioAPI as Twilio REST API (api.twilio.com)
-    actor Lead as Buyer Handset
-    participant WebhookAPI as Voice Webhooks Controller (/twilio-answer)
-    participant StreamGW as WebSocket Media Gateway (/voice/stream)
-    participant AI as AI Voice Persona
-
-    Worker->>Dispatcher: tryCarrierBridgeDispatch('TWILIO', sendOptions)
-    Dispatcher->>TwilioAPI: POST /2010-04-01/Accounts/{sid}/Calls.json
-    TwilioAPI->>Lead: Outbound Phone Rings with International E.164 Caller ID
-    Lead->>TwilioAPI: Customer Answers Handset
-    TwilioAPI->>WebhookAPI: GET /api/marketing/voice/webhooks/twilio-answer
-    WebhookAPI-->>TwilioAPI: Return TwiML <Connect><Stream url="wss://.../voice/stream"/></Connect>
-    TwilioAPI->>StreamGW: Establish Bidirectional Media Stream (G.711 u-law)
-    StreamGW->>AI: Stream Audio Frames to Voice Model
-    AI-->>StreamGW: Return Synthesized Speech Frames
-    StreamGW-->>TwilioAPI: Stream Audio Packets to Handset
-```
+1. **In-Browser WebRTC Softphone**: Enables sales and pre-sales agents to dial leads directly from the browser with two-way headset audio via the Twilio Voice SDK.
+2. **AI Voice Broadcast Campaigns**: Automated outbound voice calling driven by background BullMQ workers and AI conversational personas.
 
 ---
 
-## Required Credentials
+## 1. CRM In-Browser WebRTC Softphone Setup
 
-To connect Twilio, retrieve the following credentials from your Twilio Console:
+To connect Twilio as the organization-wide softphone carrier:
 
-| Credential Field | Parameter in BrokerOS | Requirements & Format |
+### Navigation Path
+Navigate to **Dashboard -> Admin -> Settings -> CRM Telephony & WebRTC** (`/dashboard/admin/settings`).
+
+### Modal Form Fields
+
+| Field Name | Status | Description & Example |
 | :--- | :--- | :--- |
-| **Account SID** | `Account SID` | String starting with `AC` (exactly 34 characters). |
-| **Auth Token** | `Auth Token` | Primary API authentication secret (32+ characters). |
-| **From Numbers** | `From Numbers` | Verified Twilio phone number in international E.164 format (e.g., `+14155550199` or `+911140001234`). |
+| **Account SID (Required)** | Required | Your Twilio Account SID starting with `AC` (e.g., `ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`). |
+| **Auth Token (Required)** | Required | Primary API authentication secret (32+ characters). |
+| **Registered Caller ID (From)** | Required | Verified Twilio phone number in international E.164 format (e.g., `+12025550199`). |
+| **API Key SID (Optional)** | Optional | Dedicated Twilio API Key starting with `SK`. Auto-generated if left blank. |
+| **API Key Secret (Optional)** | Optional | API Key secret pairing. Auto-generated if left blank. |
+| **TwiML Application SID (Optional)** | Optional | TwiML Voice Application starting with `AP`. Auto-generated if left blank. |
+
+### Zero-Config Auto-Provisioning
+Twilio Voice WebRTC SDK v2 requires a dedicated API Key SID (`SK...`) and a TwiML Voice Application (`AP...`) configured with outbound voice webhook URLs.
+
+If you leave the API Key and TwiML Application fields blank, BrokerOS automatically connects to the Twilio REST API during connection and auto-provisions:
+1. **Twilio API Key**: Provisions `BrokerOS_CRM_WebRTC_Voice` and saves the secret pair.
+2. **TwiML Voice Application**: Creates `BrokerOS CRM Outbound Voice App` pointing its `VoiceUrl` to `/api/crm/telephony/webhooks/twilio-voice` and its `StatusCallback` to `/api/crm/telephony/webhooks/twilio-status`.
+
+### Verification Test Call
+Once saved, click **Verify Carrier** in the admin header:
+1. Enter your personal phone number in international E.164 format.
+2. Click **Place Verification Call**.
+3. Twilio dials your handset and speaks a verification confirmation message to ensure outbound trunk authorization.
 
 ---
 
-## Configuration Steps
+## 2. Marketing AI Voice Broadcast Setup
+
+To use Twilio for marketing AI voice campaigns:
 
 <Steps>
-  <Step title="Retrieve Credentials from Twilio Console">
-    Open the [Twilio Console](https://console.twilio.com). Under **Account Info**, copy your **Account SID** and **Auth Token**.
+  <Step title="Navigate to Voice Settings">
+    In the BrokerOS sidebar, navigate to **Dashboard -> Marketing -> Voice -> Settings**.
   </Step>
 
-  <Step title="Acquire or Provision Outbound Phone Numbers">
-    Navigate to **Phone Numbers -> Manage -> Active Numbers**. Ensure you have at least one voice-enabled telephone number matching your target campaign country.
+  <Step title="Open Telephony Gateways Tab">
+    Select the **Gateways & Voice Platforms** tab, switch to the **Telephony Gateways** sub-tab, click **Add Carrier**, and choose **TWILIO**.
   </Step>
 
-  <Step title="Add Carrier in BrokerOS Settings">
-    In the BrokerOS dashboard:
-    1. Navigate to **Dashboard -> Marketing -> Voice -> Settings**.
-    2. Select the **Gateways & Voice Platforms** tab (`/dashboard/marketing/voice/settings?tab=providers`).
-    3. Under the **Telephony Gateways** sub-tab, click **Add Carrier** and select **TWILIO**.
-    4. Enter an **Engine Label / Name** (e.g. `Twilio Global Production Trunk`).
-    5. Fill in **Account SID** and **Auth Token**.
-    6. Enter your purchased phone number in **From Numbers**.
-    7. Click **Save & Verify Carrier**. Credentials are encrypted with AES-256-GCM and stored in `VoiceTelephonyIntegration`.
+  <Step title="Configure Trunk Parameters">
+    Enter an **Engine Label / Name** (e.g., `Twilio Global Production Trunk`), fill in **Account SID**, **Auth Token**, and add your purchased number to **From Numbers**.
   </Step>
 
-  <Step title="Verify Carrier Credentials">
-    Click **Verify Carrier**. BrokerOS queries `https://api.twilio.com/2010-04-01/Accounts/${accountSid}.json`, confirms that account status is `active`, and measures network latency.
-  </Step>
-
-  <Step title="Test Outbound Cellular Call">
-    Launch a test call using the **Dual-Mode Test Call Modal** to confirm your phone rings and connects properly.
+  <Step title="Verify Carrier Trunk">
+    Click **Save & Verify Carrier**. BrokerOS tests credentials against `https://api.twilio.com/2010-04-01/Accounts/${accountSid}.json` and measures round-trip API network latency.
   </Step>
 </Steps>
 
 ---
 
-## Twilio Media Streams (WebSocket Integration)
+## WebRTC In-Browser Dialing Pipeline
 
-When running low-latency conversational agents (such as OpenAI Realtime or Pipecat), BrokerOS utilizes **Twilio Media Streams**:
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Agent as Pre-Sales Agent (Browser)
+    participant UI as ActiveCallWidget ([ActiveCallWidget.tsx](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/web/features/telephony/components/ActiveCallWidget.tsx))
+    participant API as CrmTelephonyService ([crm-telephony.service.ts](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/crm-telephony/crm-telephony.service.ts))
+    participant TwilioVoice as Twilio Voice SDK (Browser WebRTC)
+    participant TwilioCloud as Twilio Cloud Network
+    actor Lead as Buyer Mobile Handset
+    participant Blob as Vercel Blob Storage
+    participant Groq as Groq Whisper AI
+
+    Agent->>UI: Click Direct Call on Lead Profile
+    UI->>API: POST /api/crm/telephony/call
+    API->>API: Mint JWT Access Token with VoiceGrant
+    API-->>UI: Return ephemeral WebRTC token
+    UI->>TwilioVoice: Device.connect({ params: { To: leadPhone } })
+    TwilioVoice->>TwilioCloud: SIP WebRTC Signaling
+    TwilioCloud->>API: POST /api/crm/telephony/webhooks/twilio-voice
+    API-->>TwilioCloud: Return TwiML <Dial callerId="..." record="record-from-answer-dual">
+    TwilioCloud->>Lead: Outbound Phone Rings Customer Mobile
+    Lead-->>TwilioCloud: Customer Answers
+    TwilioCloud-->>TwilioVoice: Establish Full-Duplex Two-Way Audio
+    Agent->>UI: End Call
+    TwilioCloud->>API: POST /api/crm/telephony/webhooks/twilio-recording (Audio MP3)
+    API->>Blob: Stream Audio to Vercel Blob
+    API->>Groq: Transcribe Audio & Summarize Conversation
+```
+
+---
+
+## Twilio Media Streams (Marketing WebSocket Integration)
+
+When running low-latency conversational AI agents (such as OpenAI Realtime or Pipecat), BrokerOS utilizes **Twilio Media Streams**:
 
 1. Twilio executes the TwiML response returned by `/api/marketing/voice/webhooks/twilio-answer`:
    ```xml
@@ -99,20 +118,12 @@ When running low-latency conversational agents (such as OpenAI Realtime or Pipec
    </Response>
    ```
 2. Twilio opens a WebSocket connection to BrokerOS on `/voice/stream`.
-3. Audio packets are exchanged using 8-bit G.711 u-law companded frames at 8kHz, transcoded in real time by `VoiceAudioTranscoder.ts`.
+3. Audio packets are exchanged using 8-bit G.711 u-law companded frames at 8kHz, transcoded in real time.
 
 ---
 
-## TwiML Test Voice Prompts
+## Related Guides
 
-When running single verification test calls from the carrier management tab, BrokerOS instructs Twilio using native Amazon Polly speech synthesis embedded in TwiML:
-
-```xml
-<Response>
-  <Say voice="Polly.Aditi">
-    Hello! This is a carrier verification test call from BrokerOS. Your Twilio telephony connection is fully active and verified.
-  </Say>
-  <Pause length="1"/>
-  <Hangup/>
-</Response>
-```
+- [In-Browser WebRTC Softphone Guide](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/brokerage/pre-sales/softphone.mdx)
+- [Phone Carriers (PSTN) Overview](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/integrations/telephony/overview.mdx)
+- [CRM Telephony API Reference](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/api-reference/crm-telephony.mdx)

@@ -47,7 +47,24 @@ To connect Vobiz to BrokerOS, obtain the following credentials from your Vobiz a
 
 ---
 
-## Configuration Steps
+---
+
+## CRM Telephony PSTN Bridging Setup
+
+To use Vobiz as the organization-wide carrier for human telecalling:
+
+1. Navigate to **Dashboard -> Admin -> Settings -> CRM Telephony & WebRTC** (`/dashboard/admin/settings`).
+2. Select the **Vobiz Telephony** carrier card.
+3. Enter the following parameters:
+   - **Auth ID (X-Auth-ID)**: Your Vobiz Auth ID string.
+   - **Auth Token (X-Auth-Token)**: Secret Vobiz auth token.
+   - **Registered Caller ID**: Your verified Indian mobile or landline number (e.g., `+919876543210`).
+4. Click **Save & Activate Carrier**.
+5. When calls are placed, Vobiz triggers `/api/crm/telephony/webhooks/vobiz-answer` to bridge the agent and lead phones, and delivers audio recordings to `/api/crm/telephony/webhooks/vobiz-recording`.
+
+---
+
+## Marketing AI Voice Configuration Steps
 
 <Steps>
   <Step title="Retrieve Credentials from Vobiz Portal">
