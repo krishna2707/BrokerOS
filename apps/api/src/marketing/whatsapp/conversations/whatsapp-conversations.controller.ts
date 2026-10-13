@@ -31,8 +31,15 @@ export class WhatsAppConversationsController {
   ) {}
 
   @Get()
-  async listConversations(@Query() query: ListWhatsAppConversationsQueryDto) {
-    return this.conversationsService.listConversations(query);
+  async listConversations(
+    @Query() query: ListWhatsAppConversationsQueryDto,
+    @Req() req: any,
+  ) {
+    return this.conversationsService.listConversations(
+      query,
+      undefined,
+      req?.user,
+    );
   }
 
   @Post()
