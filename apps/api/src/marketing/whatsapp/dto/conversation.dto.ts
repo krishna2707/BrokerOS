@@ -21,6 +21,30 @@ export class ListWhatsAppConversationsQueryDto {
   @IsOptional()
   accountId?: string;
 
+  @IsString()
+  @IsOptional()
+  department?: string;
+
+  @IsString()
+  @IsOptional()
+  scope?: 'my' | 'team' | 'all';
+
+  @IsString()
+  @IsOptional()
+  leadId?: string;
+
+  @IsString()
+  @IsOptional()
+  brokerId?: string;
+
+  @IsString()
+  @IsOptional()
+  customerId?: string;
+
+  @IsString()
+  @IsOptional()
+  assignedUserId?: string;
+
   @IsOptional()
   page?: string | number;
 
