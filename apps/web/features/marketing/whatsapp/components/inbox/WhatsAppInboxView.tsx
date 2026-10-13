@@ -19,21 +19,57 @@ import type { WhatsAppConversation, WhatsAppTemplate } from '../../types';
 
 interface WhatsAppInboxViewProps {
   initialAccountId?: string;
+  department?: string;
+  scope?: 'my' | 'team' | 'all';
+  initialLeadId?: string;
+  initialBrokerId?: string;
+  initialCustomerId?: string;
+  showManagerFilter?: boolean;
 }
 
 export const WhatsAppInboxView: React.FC<WhatsAppInboxViewProps> = ({
   initialAccountId,
+  department,
+  scope,
+  initialLeadId,
+  initialBrokerId,
+  initialCustomerId,
+  showManagerFilter = false,
 }) => {
   const [activeConversation, setActiveConversation] = useState<WhatsAppConversation | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>('');
+  const [agents, setAgents] = useState<Array<{ id: string; name: string }>>([]);
 
   const { data: session } = authClient.useSession();
   const searchParams = useSearchParams();
   const deepLinkConvId = searchParams.get('conversationId') || searchParams.get('c');
+  const queryLeadId = initialLeadId || searchParams.get('leadId') || undefined;
+  const queryBrokerId = initialBrokerId || searchParams.get('brokerId') || undefined;
+  const queryCustomerId = initialCustomerId || searchParams.get('customerId') || undefined;
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
-  // Conversations query & state
+  // Fetch team agents if manager filter is enabled
+  useEffect(() => {
+    if (showManagerFilter) {
+      fetch(`${baseUrl}/api/dashboard/employees`)
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setAgents(
+              data.map((u: any) => ({
+                id: u.id,
+                name: u.name || u.displayUsername || u.username || 'Agent',
+              })),
+            );
+          }
+        })
+        .catch(() => null);
+    }
+  }, [showManagerFilter, baseUrl]);
+
+  // Conversations query & state with scoping
   const {
     conversations,
     loading: conversationsLoading,
@@ -47,7 +83,14 @@ export const WhatsAppInboxView: React.FC<WhatsAppInboxViewProps> = ({
     updateStatus,
     assignAgent,
     markAsRead,
-  } = useWhatsAppConversations(initialAccountId);
+  } = useWhatsAppConversations(initialAccountId, {
+    department,
+    scope,
+    agentId: selectedAgentId || undefined,
+    leadId: queryLeadId,
+    brokerId: queryBrokerId,
+    customerId: queryCustomerId,
+  });
 
   // Active message thread
   const {
@@ -59,7 +102,7 @@ export const WhatsAppInboxView: React.FC<WhatsAppInboxViewProps> = ({
     handleStatusUpdate,
   } = useWhatsAppMessages(activeConversation?.id || null);
 
-  // Auto-select deep-linked conversation or first conversation if only 1 exists
+  // Auto-select deep-linked conversation, lead, broker, customer, or first conversation if only 1 exists
   useEffect(() => {
     if (conversations.length === 0) return;
 
@@ -74,14 +117,47 @@ export const WhatsAppInboxView: React.FC<WhatsAppInboxViewProps> = ({
       }
     }
 
-    // If only 1 conversation exists (e.g. sumama khan) and none selected yet, auto-select it
+    if (queryLeadId) {
+      const target = conversations.find((c) => c.leadId === queryLeadId);
+      if (target) {
+        if (activeConversation?.id !== target.id) {
+          setActiveConversation(target);
+          if (target.unreadCount > 0) markAsRead(target.id);
+        }
+        return;
+      }
+    }
+
+    if (queryBrokerId) {
+      const target = conversations.find((c) => c.brokerId === queryBrokerId);
+      if (target) {
+        if (activeConversation?.id !== target.id) {
+          setActiveConversation(target);
+          if (target.unreadCount > 0) markAsRead(target.id);
+        }
+        return;
+      }
+    }
+
+    if (queryCustomerId) {
+      const target = conversations.find((c) => c.customerId === queryCustomerId);
+      if (target) {
+        if (activeConversation?.id !== target.id) {
+          setActiveConversation(target);
+          if (target.unreadCount > 0) markAsRead(target.id);
+        }
+        return;
+      }
+    }
+
+    // If only 1 conversation exists and none selected yet, auto-select it
     if (!activeConversation && conversations.length === 1) {
       setActiveConversation(conversations[0]);
       if (conversations[0].unreadCount > 0) {
         markAsRead(conversations[0].id);
       }
     }
-  }, [deepLinkConvId, conversations, activeConversation, markAsRead]);
+  }, [deepLinkConvId, queryLeadId, queryBrokerId, queryCustomerId, conversations, activeConversation, markAsRead]);
 
   // If deepLinkConvId is not in the loaded list, fetch it directly
   useEffect(() => {
@@ -141,6 +217,10 @@ export const WhatsAppInboxView: React.FC<WhatsAppInboxViewProps> = ({
         onStatusFilterChange={setStatusFilter}
         loading={conversationsLoading}
         accountId={accountId}
+        showManagerFilter={showManagerFilter}
+        selectedAgentId={selectedAgentId}
+        onAgentChange={setSelectedAgentId}
+        agents={agents}
       />
 
       {/* 2. Middle Panel: Conversation Thread & Message Composer */}
