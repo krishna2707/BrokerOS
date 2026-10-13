@@ -6,7 +6,7 @@ description: "European-hosted email delivery platform with robust transactional 
 
 ## Overview
 
-Brevo (formerly Sendinblue) provides European-hosted email delivery infrastructure engineered for enterprise compliance with GDPR and international data sovereignty standards. In BrokerOS, the Brevo integration lives as a self-contained TypeScript package in [`integrations/mail/brevo/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/mail/brevo/src/index.ts) under the Turborepo workspace package `@brokeros/int-mail-brevo`.
+Brevo (formerly Sendinblue) provides European-hosted email delivery infrastructure engineered for enterprise compliance with GDPR and international data sovereignty standards. In BrokerOS, the Brevo integration lives as a self-contained TypeScript package in [`integrations/mail/brevo/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/mail/brevo/src/index.ts) under the Turborepo workspace package `@brokeros/int-mail-brevo`.
 
 BrokerOS administrators configure and manage Brevo directly through the Web UI at **Dashboard -> Marketing -> Email -> Settings**. Credentials are encrypted using AES-256-GCM and stored in the database (`MarketingIntegration`), requiring zero server restarts or `.env` modifications.
 
@@ -14,7 +14,7 @@ BrokerOS administrators configure and manage Brevo directly through the Web UI a
 
 ## Architecture and Dispatch Sequence
 
-The Brevo integration implements the `IEmailMarketingProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types). During campaign execution, worker jobs stream batches through `BrevoClient` without blocking API request threads.
+The Brevo integration implements the `IEmailMarketingProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types). During campaign execution, worker jobs stream batches through `BrevoClient` without blocking API request threads.
 
 ```mermaid
 sequenceDiagram
@@ -102,7 +102,7 @@ To capture real-time opens, clicks, and bounce suppression events:
 
 ## Integration Implementation Details
 
-The Brevo integration source code is maintained in [`integrations/mail/brevo/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/mail/brevo/src/index.ts).
+The Brevo integration source code is maintained in [`integrations/mail/brevo/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/mail/brevo/src/index.ts).
 
 ### Live Account Verification
 

@@ -159,7 +159,7 @@ As BrokerOS grows to include background workers, 3rd-party integrations, and new
 
 ## Documentation Law
 
-- **Documentation is code.** Whenever adding, refactoring, or modifying APIs, database models, frontend UI forms/modals, mobile features, background workers, or 3rd-party integrations, you **MUST** synchronize the corresponding documentation in `docs/` using the [doc-sync](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/.agents/skills/doc-sync/SKILL.md) skill.
+- **Documentation is code.** Whenever adding, refactoring, or modifying APIs, database models, frontend UI forms/modals, mobile features, background workers, or 3rd-party integrations, you **MUST** synchronize the corresponding documentation in `docs/` using the [doc-sync](https://github.com/trybrokeros/BrokerOS/blob/main/.agents/skills/doc-sync/SKILL.md) skill.
 - **Documentation Standards:**
   - **ZERO em dashes or en dashes** anywhere in titles, tables, or text.
   - **ZERO graph diagrams** (e.g., `graph TD`, `graph LR`). All architectural diagrams must use clean Mermaid `sequenceDiagram` or `erDiagram` syntax.

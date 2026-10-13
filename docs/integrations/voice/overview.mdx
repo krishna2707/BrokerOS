@@ -45,7 +45,7 @@ sequenceDiagram
 
 ## Universal Engine Registry
 
-BrokerOS registers all supported voice platforms in [`integrations/voice/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/index.ts) under the central `VOICE_AGENT_REGISTRY`:
+BrokerOS registers all supported voice platforms in [`integrations/voice/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/index.ts) under the central `VOICE_AGENT_REGISTRY`:
 
 | Platform | Display Name | Category | Native PSTN | Carrier Bridge | Indic Voices | Avg Latency | Target Real Estate Use Cases |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -62,7 +62,7 @@ BrokerOS registers all supported voice platforms in [`integrations/voice/index.t
 
 ## The IVoiceAgentProvider Contract
 
-All voice agent adapters implement the unified `IVoiceAgentProvider` interface from [`packages/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types):
+All voice agent adapters implement the unified `IVoiceAgentProvider` interface from [`packages/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types):
 
 ```typescript
 export interface IVoiceAgentProvider {
@@ -93,7 +93,7 @@ export interface IVoiceAgentProvider {
 
 ## Carrier Bridge Dispatcher Logic
 
-When a voice campaign starts, [`tryCarrierBridgeDispatch`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/index.ts) evaluates whether PSTN carrier credentials (Vobiz, Exotel, Twilio, or Telnyx) are present. If configured, the call is placed through the carrier's PSTN trunk, and an `answer_url` webhook is passed to connect the answered call directly to the chosen AI agent:
+When a voice campaign starts, [`tryCarrierBridgeDispatch`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/index.ts) evaluates whether PSTN carrier credentials (Vobiz, Exotel, Twilio, or Telnyx) are present. If configured, the call is placed through the carrier's PSTN trunk, and an `answer_url` webhook is passed to connect the answered call directly to the chosen AI agent:
 
 ```typescript
 export async function tryCarrierBridgeDispatch(
@@ -117,15 +117,15 @@ export async function tryCarrierBridgeDispatch(
 
 Voice integrations live within self-contained packages in the monorepo root:
 
-- **Aggregator Module**: [`integrations/voice/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/index.ts)
-- **Vapi**: [`integrations/voice/agents/vapi/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/vapi/src/index.ts) (`@brokeros/int-agent-vapi`)
-- **Retell AI**: [`integrations/voice/agents/retell/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/retell/src/index.ts) (`@brokeros/int-agent-retell`)
-- **Sarvam AI**: [`integrations/voice/agents/sarvam/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/sarvam/src/index.ts) (`@brokeros/int-agent-sarvam`)
-- **Bolna**: [`integrations/voice/agents/bolna/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/bolna/src/index.ts) (`@brokeros/int-agent-bolna`)
-- **ElevenLabs**: [`integrations/voice/agents/elevenlabs/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/elevenlabs/src/index.ts) (`@brokeros/int-agent-elevenlabs`)
-- **LiveKit**: [`integrations/voice/agents/livekit/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/livekit/src/index.ts) (`@brokeros/int-agent-livekit`)
-- **OpenAI Realtime**: [`integrations/voice/agents/openai-realtime/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/openai-realtime/src/index.ts) (`@brokeros/int-agent-openai-realtime`)
-- **Pipecat**: [`integrations/voice/agents/pipecat/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/pipecat/src/index.ts) (`@brokeros/int-agent-pipecat`)
+- **Aggregator Module**: [`integrations/voice/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/index.ts)
+- **Vapi**: [`integrations/voice/agents/vapi/`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/vapi/src/index.ts) (`@brokeros/int-agent-vapi`)
+- **Retell AI**: [`integrations/voice/agents/retell/`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/retell/src/index.ts) (`@brokeros/int-agent-retell`)
+- **Sarvam AI**: [`integrations/voice/agents/sarvam/`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/sarvam/src/index.ts) (`@brokeros/int-agent-sarvam`)
+- **Bolna**: [`integrations/voice/agents/bolna/`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/bolna/src/index.ts) (`@brokeros/int-agent-bolna`)
+- **ElevenLabs**: [`integrations/voice/agents/elevenlabs/`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/elevenlabs/src/index.ts) (`@brokeros/int-agent-elevenlabs`)
+- **LiveKit**: [`integrations/voice/agents/livekit/`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/livekit/src/index.ts) (`@brokeros/int-agent-livekit`)
+- **OpenAI Realtime**: [`integrations/voice/agents/openai-realtime/`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/openai-realtime/src/index.ts) (`@brokeros/int-agent-openai-realtime`)
+- **Pipecat**: [`integrations/voice/agents/pipecat/`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/pipecat/src/index.ts) (`@brokeros/int-agent-pipecat`)
 
 ---
 

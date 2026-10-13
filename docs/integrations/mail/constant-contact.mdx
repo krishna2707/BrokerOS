@@ -6,7 +6,7 @@ description: "Synchronize property expo leads, manage subscriber lists, and disp
 
 ## Overview
 
-Constant Contact is widely used by real estate firms for organizing developer launches, property expos, and high-volume subscriber newsletters. In BrokerOS, the Constant Contact integration lives in [`integrations/mail/constant-contact/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/mail/constant-contact/src/index.ts) under the Turborepo workspace package `@brokeros/int-mail-constant-contact`.
+Constant Contact is widely used by real estate firms for organizing developer launches, property expos, and high-volume subscriber newsletters. In BrokerOS, the Constant Contact integration lives in [`integrations/mail/constant-contact/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/mail/constant-contact/src/index.ts) under the Turborepo workspace package `@brokeros/int-mail-constant-contact`.
 
 BrokerOS administrators configure Constant Contact accounts through the Web UI at **Dashboard -> Marketing -> Email -> Settings**. Tokens are encrypted using AES-256-GCM and stored in PostgreSQL (`MarketingIntegration`).
 
@@ -14,7 +14,7 @@ BrokerOS administrators configure Constant Contact accounts through the Web UI a
 
 ## Architecture and Dispatch Sequence
 
-The Constant Contact integration implements the `IEmailMarketingProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types).
+The Constant Contact integration implements the `IEmailMarketingProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types).
 
 ```mermaid
 sequenceDiagram
@@ -91,7 +91,7 @@ To capture delivery events and unsubscribes:
 
 ## Integration Implementation Details
 
-The integration logic is located in [`integrations/mail/constant-contact/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/mail/constant-contact/src/index.ts).
+The integration logic is located in [`integrations/mail/constant-contact/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/mail/constant-contact/src/index.ts).
 
 ### OAuth Token Refresh
 

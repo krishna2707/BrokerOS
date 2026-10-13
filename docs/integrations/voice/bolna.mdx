@@ -6,7 +6,7 @@ description: "Deploy Hinglish and regional Indian language voice agents with nat
 
 ## Overview
 
-Bolna is an open-source voice AI framework and cloud platform designed for Indian linguistic environments, code-switching (*Hinglish*), and regional real estate terminology (*Crores, Lakhs, Vastu, BDA Katha, Possession*). In BrokerOS, the Bolna integration is implemented in [`integrations/voice/agents/bolna/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/bolna/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-bolna`.
+Bolna is an open-source voice AI framework and cloud platform designed for Indian linguistic environments, code-switching (*Hinglish*), and regional real estate terminology (*Crores, Lakhs, Vastu, BDA Katha, Possession*). In BrokerOS, the Bolna integration is implemented in [`integrations/voice/agents/bolna/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/bolna/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-bolna`.
 
 BrokerOS administrators configure Bolna directly within the Web UI at **Dashboard -> Marketing -> Voice -> Settings**. All credentials are encrypted with AES-256-GCM and stored in PostgreSQL (`VoiceAgentIntegration`). Bolna functions both as an API-managed service and as a self-hosted private container within your own cloud infrastructure (AWS VPC or GCP) for strict data sovereignty.
 
@@ -14,7 +14,7 @@ BrokerOS administrators configure Bolna directly within the Web UI at **Dashboar
 
 ## Architecture and Dispatch Sequence
 
-The Bolna integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types).
+The Bolna integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types).
 
 ```mermaid
 sequenceDiagram
@@ -78,7 +78,7 @@ In your BrokerOS dashboard:
 
 ## Integration Implementation Details
 
-The Bolna client and dispatcher are located in [`integrations/voice/agents/bolna/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/bolna/src/index.ts) and [`integrations/voice/agents/bolna/src/bolna-dispatcher.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/bolna/src/bolna-dispatcher.ts).
+The Bolna client and dispatcher are located in [`integrations/voice/agents/bolna/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/bolna/src/index.ts) and [`integrations/voice/agents/bolna/src/bolna-dispatcher.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/bolna/src/bolna-dispatcher.ts).
 
 ### Live Verification Engine
 

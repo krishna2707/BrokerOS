@@ -14,10 +14,10 @@ The BrokerOS In-Browser WebRTC Softphone enables pre-sales agents, sales executi
 sequenceDiagram
     autonumber
     actor Agent as Pre-Sales Agent (Browser)
-    participant LeadHeader as Lead Profile Header ([LeadHeaderDetails.tsx](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/web/features/leads/components/profile/LeadHeaderDetails.tsx))
-    participant Context as TelephonyContext ([TelephonyContext.tsx](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/web/features/telephony/context/TelephonyContext.tsx))
-    participant Widget as ActiveCallWidget ([ActiveCallWidget.tsx](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/web/features/telephony/components/ActiveCallWidget.tsx))
-    participant API as CrmTelephonyController ([crm-telephony.controller.ts](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/crm-telephony/crm-telephony.controller.ts))
+    participant LeadHeader as Lead Profile Header ([LeadHeaderDetails.tsx](https://github.com/trybrokeros/BrokerOS/blob/main/apps/web/features/leads/components/profile/LeadHeaderDetails.tsx))
+    participant Context as TelephonyContext ([TelephonyContext.tsx](https://github.com/trybrokeros/BrokerOS/blob/main/apps/web/features/telephony/context/TelephonyContext.tsx))
+    participant Widget as ActiveCallWidget ([ActiveCallWidget.tsx](https://github.com/trybrokeros/BrokerOS/blob/main/apps/web/features/telephony/components/ActiveCallWidget.tsx))
+    participant API as CrmTelephonyController ([crm-telephony.controller.ts](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/crm-telephony/crm-telephony.controller.ts))
     participant DB as PostgreSQL (Prisma)
     participant Carrier as Telecom Carrier (Twilio / Exotel / Telnyx / Vobiz)
     actor Lead as Buyer Mobile Handset
@@ -35,7 +35,7 @@ sequenceDiagram
     Carrier->>Lead: Outbound Call Rings Customer Mobile
     Lead-->>Carrier: Customer Answers
     Context->>Widget: Transition to CONNECTED (Start Elapsed Timer)
-    Agent->>Widget: Type Call Notes & Save ([POST /api/leads/:id/notes](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/leads/leads.controller.ts))
+    Agent->>Widget: Type Call Notes & Save ([POST /api/leads/:id/notes](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/leads/leads.controller.ts))
     Agent->>Widget: Click End Call
     Widget->>API: POST /api/crm/telephony/hangup
     API->>DB: Set User.isOnCall = false & Update CallRecord.duration
@@ -52,13 +52,13 @@ sequenceDiagram
 Agents can trigger outbound softphone calls from two core CRM profile headers:
 
 ### 1. Lead Profile Header
-Located in [`LeadHeaderDetails.tsx`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/web/features/leads/components/profile/LeadHeaderDetails.tsx), the **Direct Call** button inspects the lead's phone number and initiates an outbound session:
+Located in [`LeadHeaderDetails.tsx`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/web/features/leads/components/profile/LeadHeaderDetails.tsx), the **Direct Call** button inspects the lead's phone number and initiates an outbound session:
 - **Button State**: Displays an animated pulse icon when an outbound call is connecting or active for the lead.
 - **Payload**: Passes `id`, `name`, `phone`, and `temperature` into `useTelephony().initiateCall`.
 - **Keyboard & Screen Reader Accessibility**: Includes `aria-label="Call {name} directly via telephony carrier"` and `focus-visible` styling.
 
 ### 2. Broker Profile Header (CP Network)
-Located in [`BrokerHeaderDetails.tsx`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/web/features/brokers/components/profile/BrokerHeaderDetails.tsx), Sourcing Managers can call registered Channel Partners directly from their partner profile:
+Located in [`BrokerHeaderDetails.tsx`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/web/features/brokers/components/profile/BrokerHeaderDetails.tsx), Sourcing Managers can call registered Channel Partners directly from their partner profile:
 - **Button State**: Disables during active calls to prevent accidental concurrent dialing.
 - **Tracking**: Links the resulting `CallRecord` directly to `brokerId`.
 
@@ -66,7 +66,7 @@ Located in [`BrokerHeaderDetails.tsx`](file:///c:/Users/Sumama/Desktop/enterpris
 
 ## Floating Active Call Widget
 
-The [`ActiveCallWidget`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/web/features/telephony/components/ActiveCallWidget.tsx) is rendered globally in [`apps/web/app/dashboard/layout.tsx`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/web/app/dashboard/layout.tsx). When an agent initiates a call, the widget floats in the bottom-right corner of the viewport and persists across page transitions without interrupting the audio stream.
+The [`ActiveCallWidget`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/web/features/telephony/components/ActiveCallWidget.tsx) is rendered globally in [`apps/web/app/dashboard/layout.tsx`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/web/app/dashboard/layout.tsx). When an agent initiates a call, the widget floats in the bottom-right corner of the viewport and persists across page transitions without interrupting the audio stream.
 
 ### Call States
 The softphone lifecycle transitions through the following explicit states:
@@ -94,7 +94,7 @@ The softphone automatically adapts based on the active company carrier configure
 ### 1. In-Browser WebRTC (Twilio Voice SDK)
 - **Carrier**: Twilio.
 - **Audio Routing**: Two-way audio runs directly through the agent's computer headset or microphone.
-- **Token Minting**: The backend mints an ephemeral JWT Access Token with `VoiceGrant` via [`CrmTelephonyService.generateAgentToken`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/crm-telephony/crm-telephony.service.ts).
+- **Token Minting**: The backend mints an ephemeral JWT Access Token with `VoiceGrant` via [`CrmTelephonyService.generateAgentToken`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/crm-telephony/crm-telephony.service.ts).
 - **Auto-Provisioning**: If Twilio credentials lack a dedicated API Key (`SK...`) or TwiML Application (`AP...`), BrokerOS auto-provisions them programmatically via the Twilio REST API.
 
 ### 2. PSTN Bridged Calling (Exotel / Vobiz / Telnyx)
@@ -112,9 +112,9 @@ The softphone automatically adapts based on the active company carrier configure
 
 When the call concludes, the carrier delivers the recording to the BrokerOS webhook:
 
-1. **Carrier Recording Callback**: Handled by [`CrmTelephonyWebhooksController`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/crm-telephony/crm-telephony-webhooks.controller.ts).
+1. **Carrier Recording Callback**: Handled by [`CrmTelephonyWebhooksController`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/crm-telephony/crm-telephony-webhooks.controller.ts).
 2. **Vercel Blob Upload**: The server downloads the MP3 audio buffer and streams it to Vercel Blob Storage under `calls/:targetId-:timestamp-:callRecordId.mp3`.
-3. **Queue-Based Whisper Transcription**: [`CallRecordsService.enqueueAudioTranscription`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/leads/call-records/call-records.service.ts) transcribes the conversation with Groq Whisper Large v3.
+3. **Queue-Based Whisper Transcription**: [`CallRecordsService.enqueueAudioTranscription`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/leads/call-records/call-records.service.ts) transcribes the conversation with Groq Whisper Large v3.
 4. **Structured Intelligence Extraction**:
    - Call Summary: 2 to 3 sentence recap saved to `CallRecord.aiSummary`.
    - Next Step Suggestion: Saved to `Lead.aiNextStepSuggestion`.

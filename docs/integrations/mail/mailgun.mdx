@@ -6,7 +6,7 @@ description: "High-performance email sending, multi-region routing (US and EU), 
 
 ## Overview
 
-Mailgun (by Sinch) is an enterprise developer-centric email API engineered for high-throughput transactional and broadcast delivery. In BrokerOS, the Mailgun integration lives in [`integrations/mail/mailgun/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/mail/mailgun/src/index.ts) under the Turborepo workspace package `@brokeros/int-mail-mailgun`.
+Mailgun (by Sinch) is an enterprise developer-centric email API engineered for high-throughput transactional and broadcast delivery. In BrokerOS, the Mailgun integration lives in [`integrations/mail/mailgun/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/mail/mailgun/src/index.ts) under the Turborepo workspace package `@brokeros/int-mail-mailgun`.
 
 BrokerOS administrators configure Mailgun entirely within the Web UI at **Dashboard -> Marketing -> Email -> Settings**. All API credentials are encrypted with AES-256-GCM and stored in PostgreSQL (`MarketingIntegration`).
 
@@ -14,7 +14,7 @@ BrokerOS administrators configure Mailgun entirely within the Web UI at **Dashbo
 
 ## Architecture and Dispatch Sequence
 
-The Mailgun integration implements the `IEmailMarketingProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types). Outbound marketing and transactional emails submit form-encoded MIME requests to Mailgun's v3 endpoint.
+The Mailgun integration implements the `IEmailMarketingProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types). Outbound marketing and transactional emails submit form-encoded MIME requests to Mailgun's v3 endpoint.
 
 ```mermaid
 sequenceDiagram
@@ -103,7 +103,7 @@ To stream live bounce, open, and click metrics into BrokerOS:
 
 ## Integration Implementation Details
 
-The Mailgun integration source code is located in [`integrations/mail/mailgun/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/mail/mailgun/src/index.ts).
+The Mailgun integration source code is located in [`integrations/mail/mailgun/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/mail/mailgun/src/index.ts).
 
 ### Multi-Region Resolution
 

@@ -6,7 +6,7 @@ description: "Sync real estate subscriber lists, trigger newsletter campaigns, a
 
 ## Overview
 
-Mailchimp (by Intuit) combines list marketing with Mandrill, its developer-focused transactional email infrastructure. In BrokerOS, the Mailchimp integration is implemented in [`integrations/mail/mailchimp/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/mail/mailchimp/src/index.ts) under the Turborepo workspace package `@brokeros/int-mail-mailchimp`.
+Mailchimp (by Intuit) combines list marketing with Mandrill, its developer-focused transactional email infrastructure. In BrokerOS, the Mailchimp integration is implemented in [`integrations/mail/mailchimp/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/mail/mailchimp/src/index.ts) under the Turborepo workspace package `@brokeros/int-mail-mailchimp`.
 
 Administrators connect Mailchimp and Mandrill directly in the BrokerOS Web UI at **Dashboard -> Marketing -> Email -> Settings**. All API tokens are encrypted with AES-256-GCM and stored in the database (`MarketingIntegration`).
 
@@ -14,7 +14,7 @@ Administrators connect Mailchimp and Mandrill directly in the BrokerOS Web UI at
 
 ## Architecture and Dispatch Sequence
 
-The Mailchimp integration implements the `IEmailMarketingProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types). Outbound marketing and transactional emails route directly to the Mandrill API endpoint.
+The Mailchimp integration implements the `IEmailMarketingProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types). Outbound marketing and transactional emails route directly to the Mandrill API endpoint.
 
 ```mermaid
 sequenceDiagram
@@ -99,7 +99,7 @@ To automate bounce suppression and unsubscribe management:
 
 ## Integration Implementation Details
 
-The core client logic lives in [`integrations/mail/mailchimp/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/mail/mailchimp/src/index.ts).
+The core client logic lives in [`integrations/mail/mailchimp/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/mail/mailchimp/src/index.ts).
 
 ### Live Validation Check
 

@@ -6,7 +6,7 @@ description: "Send direct, high-deliverability sales emails from corporate Googl
 
 ## Overview
 
-Bulk broadcast engines are designed for mass newsletters, but closing high-value real estate transactions requires direct, 1-on-1 sales outreach from personal corporate email accounts (`executive@yourfirm.com`). The Gmail and Google Workspace integration lives in [`integrations/mail/gmail/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/mail/gmail/src/index.ts) under the Turborepo workspace package `@brokeros/int-mail-gmail`.
+Bulk broadcast engines are designed for mass newsletters, but closing high-value real estate transactions requires direct, 1-on-1 sales outreach from personal corporate email accounts (`executive@yourfirm.com`). The Gmail and Google Workspace integration lives in [`integrations/mail/gmail/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/mail/gmail/src/index.ts) under the Turborepo workspace package `@brokeros/int-mail-gmail`.
 
 BrokerOS administrators and sales executives configure their Gmail connections directly through the Web UI at **Dashboard -> Marketing -> Email -> Settings**. Credentials are encrypted with AES-256-GCM and stored in PostgreSQL (`MarketingIntegration`).
 
@@ -14,7 +14,7 @@ BrokerOS administrators and sales executives configure their Gmail connections d
 
 ## Architecture and Dispatch Sequence
 
-The Gmail integration implements the `IEmailMarketingProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types). Outgoing emails land in the recipient's Primary Inbox because they originate from verified Google corporate infrastructure.
+The Gmail integration implements the `IEmailMarketingProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types). Outgoing emails land in the recipient's Primary Inbox because they originate from verified Google corporate infrastructure.
 
 ```mermaid
 sequenceDiagram
@@ -84,7 +84,7 @@ In your BrokerOS dashboard:
 
 ## Integration Implementation Details
 
-The Gmail integration source code is located in [`integrations/mail/gmail/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/mail/gmail/src/index.ts).
+The Gmail integration source code is located in [`integrations/mail/gmail/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/mail/gmail/src/index.ts).
 
 ### Dual Validation Engine
 

@@ -11,20 +11,20 @@ In BrokerOS, telephony serves two distinct operational channels:
 1. **AI Voice Marketing Campaigns**: Automated outbound voice broadcasts executed by background BullMQ workers and AI conversational personas, configured at `Dashboard -> Marketing -> Voice -> Settings`.
 2. **Company-Wide Human CRM Softphone**: In-browser WebRTC and bridged PSTN telecalling used by pre-sales agents and sales executives, configured by administrators at `Dashboard -> Admin -> Settings -> CRM Telephony & WebRTC`.
 
-BrokerOS integrates four enterprise carriers through unified provider adapters located in [`integrations/voice/telephony/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/).
+BrokerOS integrates four enterprise carriers through unified provider adapters located in [`integrations/voice/telephony/`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/).
 
 ---
 
 ## Two Telephony Architectures
 
 ### 1. In-Browser CRM WebRTC Softphone
-For direct human agent calling from Lead and Broker profiles, BrokerOS utilizes [`CrmTelephonyModule`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/crm-telephony/crm-telephony.module.ts):
+For direct human agent calling from Lead and Broker profiles, BrokerOS utilizes [`CrmTelephonyModule`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/crm-telephony/crm-telephony.module.ts):
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Agent as Pre-Sales Agent (Browser)
-    participant UI as ActiveCallWidget ([ActiveCallWidget.tsx](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/web/features/telephony/components/ActiveCallWidget.tsx))
+    participant UI as ActiveCallWidget ([ActiveCallWidget.tsx](https://github.com/trybrokeros/BrokerOS/blob/main/apps/web/features/telephony/components/ActiveCallWidget.tsx))
     participant API as CRM Telephony Controller (/api/crm/telephony)
     participant Carrier as Telecom Carrier (Twilio WebRTC / Exotel / Telnyx / Vobiz)
     actor Lead as Buyer Mobile Handset
@@ -43,7 +43,7 @@ sequenceDiagram
 ```
 
 ### 2. Marketing AI Voice Broadcasts
-For high-volume AI voice broadcasts, BrokerOS uses the **Carrier Bridge Dispatcher** ([`tryCarrierBridgeDispatch`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/bridge/carrier-bridge-dispatcher.ts)):
+For high-volume AI voice broadcasts, BrokerOS uses the **Carrier Bridge Dispatcher** ([`tryCarrierBridgeDispatch`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/bridge/carrier-bridge-dispatcher.ts)):
 
 ```mermaid
 sequenceDiagram
@@ -71,7 +71,7 @@ sequenceDiagram
 
 ## The `IVoiceTelephonyProvider` Contract
 
-Every carrier adapter inside [`integrations/voice/telephony/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/) implements the standard TypeScript interface defined in `@brokeros/types`:
+Every carrier adapter inside [`integrations/voice/telephony/`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/) implements the standard TypeScript interface defined in `@brokeros/types`:
 
 ```typescript
 export interface IVoiceTelephonyProvider {
@@ -141,7 +141,7 @@ Depending on the operational use case, configure your carrier in the correspondi
 
 ### 1. CRM Telephony & WebRTC Softphone (Company-Wide)
 - **Path**: `Dashboard -> Admin -> Settings -> CRM Telephony & WebRTC` (`/dashboard/admin/settings`).
-- **Target Table**: [`CrmTelephonyConfig`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/prisma/schema.prisma).
+- **Target Table**: [`CrmTelephonyConfig`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/prisma/schema.prisma).
 - **Scope**: Single active company-wide carrier for all browser telecalling, direct lead profile calls, and call recording uploads.
 - **Verification**: Built-in test call verification modal (`POST /api/crm/telephony/verify`).
 
@@ -155,9 +155,9 @@ Depending on the operational use case, configure your carrier in the correspondi
 
 ## Related Guides
 
-- [In-Browser WebRTC Softphone Guide](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/brokerage/pre-sales/softphone.mdx)
-- [Connect Twilio](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/integrations/telephony/twilio.mdx)
-- [Connect Telnyx](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/integrations/telephony/telnyx.mdx)
-- [Connect Exotel](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/integrations/telephony/exotel.mdx)
-- [Connect Vobiz](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/integrations/telephony/vobiz.mdx)
-- [CRM Telephony API Reference](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/api-reference/crm-telephony.mdx)
+- [In-Browser WebRTC Softphone Guide](https://brokeros.mintlify.site//docs/brokerage/pre-sales/softphone.mdx)
+- [Connect Twilio](https://brokeros.mintlify.site//docs/integrations/telephony/twilio.mdx)
+- [Connect Telnyx](https://brokeros.mintlify.site//docs/integrations/telephony/telnyx.mdx)
+- [Connect Exotel](https://brokeros.mintlify.site//docs/integrations/telephony/exotel.mdx)
+- [Connect Vobiz](https://brokeros.mintlify.site//docs/integrations/telephony/vobiz.mdx)
+- [CRM Telephony API Reference](https://brokeros.mintlify.site//docs/api-reference/crm-telephony.mdx)

@@ -6,7 +6,7 @@ description: "Configure Vapi as your primary AI voice platform for automated lea
 
 ## Overview
 
-Vapi is an AI voice platform that orchestrates real-time speech recognition, LLM reasoning, and neural text-to-speech synthesis into conversational voice agents. In BrokerOS, the Vapi integration is implemented in [`integrations/voice/agents/vapi/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/vapi/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-vapi`.
+Vapi is an AI voice platform that orchestrates real-time speech recognition, LLM reasoning, and neural text-to-speech synthesis into conversational voice agents. In BrokerOS, the Vapi integration is implemented in [`integrations/voice/agents/vapi/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/vapi/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-vapi`.
 
 BrokerOS administrators configure and manage Vapi directly inside the Web UI at **Dashboard -> Marketing -> Voice -> Settings**. All API credentials are encrypted with AES-256-GCM and stored in PostgreSQL (`VoiceAgentIntegration`), requiring zero server restarts or `.env` modifications.
 
@@ -14,7 +14,7 @@ BrokerOS administrators configure and manage Vapi directly inside the Web UI at 
 
 ## Architecture and Dispatch Sequence
 
-The Vapi integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types). Outbound calls can be dispatched either directly via Vapi's telephone infrastructure or coupled with custom Twilio SIP credentials.
+The Vapi integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types). Outbound calls can be dispatched either directly via Vapi's telephone infrastructure or coupled with custom Twilio SIP credentials.
 
 ```mermaid
 sequenceDiagram
@@ -98,7 +98,7 @@ The BrokerOS `parseVapiWebhookEvent` parser automatically extracts:
 
 ## Integration Implementation Details
 
-The Vapi integration logic is maintained in [`integrations/voice/agents/vapi/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/vapi/src/index.ts) and [`integrations/voice/agents/vapi/src/vapi-dispatcher.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/vapi/src/vapi-dispatcher.ts).
+The Vapi integration logic is maintained in [`integrations/voice/agents/vapi/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/vapi/src/index.ts) and [`integrations/voice/agents/vapi/src/vapi-dispatcher.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/vapi/src/vapi-dispatcher.ts).
 
 ### Live Verification Engine
 

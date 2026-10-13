@@ -8,7 +8,7 @@ description: "Deploy native multimodal speech-to-speech agents powered by GPT-4o
 
 Traditional voice AI systems stitch together three sequential technologies: Speech-to-Text (STT), a Large Language Model (LLM), and Text-to-Speech (TTS). Each handoff adds 150ms to 400ms of lag, resulting in noticeable latency and stripped vocal inflections.
 
-The **OpenAI Realtime API** (`gpt-4o-realtime-preview`) processes speech natively from audio input to audio output over a bidirectional WebSocket. In BrokerOS, the OpenAI Realtime integration is implemented in [`integrations/voice/agents/openai-realtime/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/openai-realtime/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-openai-realtime`.
+The **OpenAI Realtime API** (`gpt-4o-realtime-preview`) processes speech natively from audio input to audio output over a bidirectional WebSocket. In BrokerOS, the OpenAI Realtime integration is implemented in [`integrations/voice/agents/openai-realtime/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/openai-realtime/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-openai-realtime`.
 
 BrokerOS administrators configure the OpenAI Realtime engine directly within the Web UI at **Dashboard -> Marketing -> Voice -> Settings**. All API keys are encrypted with AES-256-GCM and stored in PostgreSQL (`VoiceAgentIntegration`).
 
@@ -16,7 +16,7 @@ BrokerOS administrators configure the OpenAI Realtime engine directly within the
 
 ## Architecture and Dispatch Sequence
 
-The OpenAI Realtime integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types). Audio streams over a full-duplex WebSocket connection between OpenAI and the BrokerOS Media Gateway.
+The OpenAI Realtime integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types). Audio streams over a full-duplex WebSocket connection between OpenAI and the BrokerOS Media Gateway.
 
 ```mermaid
 sequenceDiagram
@@ -94,7 +94,7 @@ The integration exposes OpenAI's eight native neural voice personas in the Agent
 
 ## Integration Implementation Details
 
-The OpenAI Realtime client is defined in [`integrations/voice/agents/openai-realtime/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/openai-realtime/src/index.ts).
+The OpenAI Realtime client is defined in [`integrations/voice/agents/openai-realtime/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/openai-realtime/src/index.ts).
 
 ### Live Verification Engine
 
