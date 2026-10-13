@@ -150,11 +150,22 @@ export class WhatsAppMessagesService {
         if (dto.type === 'text') {
           if (!dto.text)
             throw new BadRequestException('Text message body is required');
+
+          // Append agent signature header for central company number attribution
+          let outgoingText = dto.text;
+          if (
+            senderUser?.name &&
+            !outgoingText.startsWith(`*${senderUser.name}*`) &&
+            !outgoingText.startsWith(`[${senderUser.name}]`)
+          ) {
+            outgoingText = `*${senderUser.name}*: ${outgoingText}`;
+          }
+
           metaResult = await sendTextMessage({
             phoneNumberId: account.phoneNumberId,
             accessToken: account.accessToken,
             to: variant,
-            text: dto.text,
+            text: outgoingText,
             contextMessageId: dto.contextMessageId,
           });
         } else if (dto.type === 'media') {
@@ -250,7 +261,14 @@ export class WhatsAppMessagesService {
     }
 
     // Resolve template or media body
-    let resolvedBody = dto.text || null;
+    let resolvedBody =
+      dto.type === 'text' &&
+      senderUser?.name &&
+      dto.text &&
+      !dto.text.startsWith(`*${senderUser.name}*`) &&
+      !dto.text.startsWith(`[${senderUser.name}]`)
+        ? `*${senderUser.name}*: ${dto.text}`
+        : dto.text || null;
     let templateId: string | null = null;
 
     if (dto.type === 'template' && dto.templateName) {
@@ -346,6 +364,7 @@ export class WhatsAppMessagesService {
       data: {
         lastMessageText: previewText,
         lastMessageAt: messageRow.sentAt,
+        ...(senderUser?.id ? { agentUserId: senderUser.id } : {}),
       },
     });
 
