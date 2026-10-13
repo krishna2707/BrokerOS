@@ -1059,6 +1059,10 @@ model CallRecord {
   aiSentiment     String?
   aiExtractedData Json?
 
+  provider              VoiceTelephonyType?
+  providerCallId        String?
+  agentBrowserSessionId String?
+
   createdAt DateTime @default(now())
 
   @@index([leadId])
@@ -1066,7 +1070,31 @@ model CallRecord {
   @@index([userId])
   @@index([startedAt])
   @@index([direction])
+  @@index([providerCallId])
   @@map("call_record")
+}
+
+model CrmTelephonyConfig {
+  id             String             @id @default(uuid())
+  provider       VoiceTelephonyType
+  name           String
+  isActive       Boolean            @default(true)
+
+  accountSid     String?
+  authToken      String?
+  apiKey         String?
+  apiToken       String?
+  subdomain      String? // e.g. api.exotel.com for Exotel
+  sipDomain      String? // e.g. brokeros.pstn.twilio.com
+  fromNumbers    String[] // Array of caller IDs / virtual numbers
+  applicationSid String? // TwiML App SID or Telnyx App ID for browser WebRTC
+
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([provider])
+  @@index([isActive])
+  @@map("crm_telephony_config")
 }
 
 model WhatsAppBusinessAccount {
