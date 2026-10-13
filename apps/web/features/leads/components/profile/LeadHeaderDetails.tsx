@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Phone,
   Mail,
@@ -11,6 +12,7 @@ import {
   MessageSquare,
   ChevronDown,
 } from "lucide-react";
+import { useTelephony } from "@/features/telephony/context/TelephonyContext";
 
 interface LeadHeaderDetailsProps {
   lead: any;
@@ -79,6 +81,11 @@ export function LeadHeaderDetails({
   handleAiAutoAdvance,
   isAiAdvancing,
 }: LeadHeaderDetailsProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { initiateCall, callState, activeLead } = useTelephony();
+  const isThisLeadOnCall = callState !== "IDLE" && activeLead?.id === lead.id;
+
   const currentTemp = lead.temperature as string;
   const tempConf = TEMP_CONFIG[currentTemp] || {
     bg: "bg-slate-50",
@@ -277,22 +284,45 @@ export function LeadHeaderDetails({
         {/* Call */}
         <button
           onClick={() => {
-            if (lead.phone) window.open(`tel:${lead.phone}`, "_self");
+            if (lead.phone) {
+              initiateCall({
+                id: lead.id,
+                name: displayName,
+                phone: lead.phone,
+                temperature: lead.temperature,
+              });
+            }
           }}
-          className="h-8 px-3.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold inline-flex items-center gap-1.5 transition-all active:scale-[0.96] press-effect shadow-2xs cursor-pointer"
+          disabled={callState !== "IDLE" && activeLead?.id === lead.id}
+          aria-label={
+            callState !== "IDLE" && activeLead?.id === lead.id
+              ? `Calling ${displayName}`
+              : `Call ${displayName} directly via telephony carrier`
+          }
+          className="h-8 px-3.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold inline-flex items-center gap-1.5 transition-colors duration-150 active:scale-[0.96] transition-transform shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
         >
-          <Phone className="w-3.5 h-3.5" />
-          <span>Direct Call</span>
+          <Phone className={`w-3.5 h-3.5 shrink-0 ${callState !== "IDLE" && activeLead?.id === lead.id ? "animate-pulse text-emerald-600" : ""}`} />
+          <span>
+            {callState !== "IDLE" && activeLead?.id === lead.id
+              ? "Calling..."
+              : "Direct Call"}
+          </span>
         </button>
 
         {/* WhatsApp */}
         <button
-          onClick={() => {
-            if (lead.phone) {
+          onClick={(e) => {
+            if (e.altKey && lead.phone) {
               const cleanPhone = lead.phone.replace(/[^0-9]/g, "");
               window.open(`https://wa.me/${cleanPhone}`, "_blank");
+              return;
             }
+            // Navigate directly to in-app departmental WhatsApp Inbox
+            const match = pathname ? pathname.match(/^\/dashboard\/([^/]+)/) : null;
+            const roleSlug = match ? match[1] : (isPreSales ? "pre-sales" : isPostSales ? "post-sales" : "sales-executive");
+            router.push(`/dashboard/${roleSlug}/whatsapp?leadId=${lead.id}`);
           }}
+          title="Open in WhatsApp Inbox (Alt+Click for external web)"
           className="h-8 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all active:scale-[0.96] press-effect shadow-xs cursor-pointer"
         >
           <MessageSquare className="w-3.5 h-3.5" />
