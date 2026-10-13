@@ -224,7 +224,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         type: 'media',
         mediaUrl: data.url,
         mediaKind,
-        caption: text.trim() || file.name,
+        caption: text.trim() || (mediaKind === 'document' ? file.name : undefined),
       });
       setText('');
     } catch (err) {
