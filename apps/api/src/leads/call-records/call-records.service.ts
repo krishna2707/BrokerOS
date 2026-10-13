@@ -328,4 +328,94 @@ export class CallRecordsService {
 
     return { success: true, callRecord };
   }
+
+  /**
+   * Enqueues background Groq Whisper transcription, summarization, and lead score updates
+   * for an already-created CallRecord.
+   */
+  async enqueueAudioTranscription(callRecordId: string, audioBuffer: Buffer) {
+    this.transcriptionQueue.add(async () => {
+      const tempFilePath = path.join(
+        os.tmpdir(),
+        `call-record-${callRecordId}.mp3`,
+      );
+      try {
+        console.log(`[Queue] Starting transcription for CallRecord ${callRecordId}`);
+        fs.writeFileSync(tempFilePath, audioBuffer);
+
+        const transcript = await this.transcriptionService.transcribeAudio(tempFilePath);
+        let summary: string | null = null;
+        let nextStepSuggestion: string | null = null;
+
+        const callRecord = await this.prisma.callRecord.findUnique({
+          where: { id: callRecordId },
+        });
+
+        if (!callRecord) return;
+
+        let leadData: any = null;
+        if (callRecord.leadId) {
+          leadData = await this.prisma.lead.findUnique({
+            where: { id: callRecord.leadId },
+            include: { _count: { select: { callRecords: true } } },
+          });
+        }
+
+        if (transcript && transcript.length > 10) {
+          const availableProjects = await this.prisma.project.findMany({
+            where: { isActive: true },
+            select: { id: true, name: true },
+          });
+
+          const summaryResult = await this.transcriptionService.summarizeCall(
+            transcript,
+            leadData?.status,
+            availableProjects,
+          );
+
+          if (typeof summaryResult === 'string') {
+            summary = summaryResult;
+          } else {
+            summary = summaryResult.summary;
+            nextStepSuggestion = summaryResult.nextStepSuggestion;
+
+            if (leadData) {
+              const updateData: any = {};
+              if (nextStepSuggestion) {
+                updateData.aiNextStepSuggestion = nextStepSuggestion;
+              }
+              if (!leadData.budget && summaryResult.extractedBudget) {
+                updateData.budget = summaryResult.extractedBudget;
+              }
+              if (!leadData.interestedProjectId && summaryResult.extractedProjectId) {
+                updateData.interestedProjectId = summaryResult.extractedProjectId;
+              }
+              if (Object.keys(updateData).length > 0) {
+                await this.prisma.lead.update({
+                  where: { id: leadData.id },
+                  data: updateData,
+                });
+              }
+            }
+          }
+        }
+
+        await this.prisma.callRecord.update({
+          where: { id: callRecordId },
+          data: {
+            aiTranscript: transcript,
+            aiSummary: summary,
+          },
+        });
+
+        console.log(`[Queue] Successfully transcribed and processed CallRecord: ${callRecordId}`);
+      } catch (error) {
+        console.error(`[Queue] Error transcribing CallRecord ${callRecordId}:`, error);
+      } finally {
+        if (fs.existsSync(tempFilePath)) {
+          fs.unlinkSync(tempFilePath);
+        }
+      }
+    });
+  }
 }
