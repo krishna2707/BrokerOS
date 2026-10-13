@@ -13,6 +13,10 @@ interface ConversationListProps {
   onStatusFilterChange: (val: 'all' | 'open' | 'pending' | 'closed') => void;
   loading?: boolean;
   accountId?: string;
+  showManagerFilter?: boolean;
+  selectedAgentId?: string;
+  onAgentChange?: (agentId: string) => void;
+  agents?: Array<{ id: string; name: string }>;
 }
 
 export const ConversationList: React.FC<ConversationListProps> = ({
@@ -25,6 +29,10 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   onStatusFilterChange,
   loading = false,
   accountId,
+  showManagerFilter = false,
+  selectedAgentId = '',
+  onAgentChange,
+  agents = [],
 }) => {
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
 
@@ -46,7 +54,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
     }
   };
 
-  const formatMessagePreview = (text?: string | null, maxChars = 40) => {
+  const formatMessagePreview = (text?: string | null, maxChars = 38) => {
     if (!text) return 'No messages yet';
     const clean = text.replace(/\s+/g, ' ').trim();
     if (!clean) return 'No messages yet';
@@ -55,8 +63,27 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
   return (
     <div className="flex flex-col h-full bg-bg-surface border-r border-border-default w-full md:w-80 lg:w-96 shrink-0">
-      {/* Search & New Chat Header */}
-      <div className="p-3.5 border-b border-border-default space-y-3">
+      {/* Search & Header */}
+      <div className="p-3.5 border-b border-border-default space-y-2.5">
+        {/* Manager Team Oversight Filter Dropdown */}
+        {showManagerFilter && agents.length > 0 && onAgentChange && (
+          <div className="flex items-center gap-2 bg-bg-base border border-border-default rounded-xl px-2.5 py-1.5">
+            <Filter className="w-3.5 h-3.5 text-text-tertiary shrink-0" />
+            <select
+              value={selectedAgentId}
+              onChange={(e) => onAgentChange(e.target.value)}
+              className="bg-transparent text-xs text-text-primary font-semibold w-full focus:outline-none cursor-pointer"
+            >
+              <option value="">All Team Leads & Reps</option>
+              {agents.map((ag) => (
+                <option key={ag.id} value={ag.id}>
+                  Filter: {ag.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-text-tertiary absolute left-3 top-2.5" />
@@ -85,10 +112,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
               key={filter}
               type="button"
               onClick={() => onStatusFilterChange(filter)}
-              className={`px-3 py-1 rounded-lg text-xs font-medium capitalize transition-colors shrink-0 ${statusFilter === filter
-                ? 'bg-brand-600 text-white shadow-2xs'
-                : 'bg-bg-subtle text-text-secondary hover:bg-bg-muted hover:text-text-primary'
-                }`}
+              className={`px-3 py-1 rounded-lg text-xs font-medium capitalize transition-colors shrink-0 ${
+                statusFilter === filter
+                  ? 'bg-brand-600 text-white shadow-2xs'
+                  : 'bg-bg-subtle text-text-secondary hover:bg-bg-muted hover:text-text-primary'
+              }`}
             >
               {filter}
             </button>
@@ -153,20 +181,62 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     </span>
                   </div>
 
+                  {/* CRM Context Badges */}
+                  <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                    {(!conv.lastMessageText || conv.lastMessageText === 'No messages yet') && (
+                      <span className="px-1.5 py-0.2 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold">
+                        New • Uncontacted
+                      </span>
+                    )}
+                    {conv.lead && (
+                      <>
+                        {conv.lead.temperature && (
+                          <span
+                            className={`px-1.5 py-0.2 rounded-md text-[9px] font-bold ${
+                              conv.lead.temperature === 'HOT'
+                                ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                : conv.lead.temperature === 'WARM'
+                                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                  : 'bg-blue-50 text-blue-700 border border-blue-200'
+                            }`}
+                          >
+                            {conv.lead.temperature}
+                          </span>
+                        )}
+                        {conv.lead.interestedProject?.name && (
+                          <span className="text-[10px] text-text-tertiary truncate max-w-[120px]">
+                            {conv.lead.interestedProject.name}
+                          </span>
+                        )}
+                      </>
+                    )}
+                    {conv.broker && (
+                      <span className="px-1.5 py-0.2 rounded-md bg-purple-50 text-purple-700 border border-purple-200 text-[9px] font-bold">
+                        Broker {conv.broker.companyName ? `• ${conv.broker.companyName}` : ''}
+                      </span>
+                    )}
+                    {conv.customer && (
+                      <span className="px-1.5 py-0.2 rounded-md bg-sky-50 text-sky-700 border border-sky-200 text-[9px] font-bold">
+                        Customer
+                      </span>
+                    )}
+                  </div>
+
                   <p className="text-xs text-text-secondary truncate leading-normal">
-                    {formatMessagePreview(conv.lastMessageText, 40)}
+                    {formatMessagePreview(conv.lastMessageText, 38)}
                   </p>
 
                   <div className="flex items-center justify-between mt-1.5">
                     {/* Status Dot */}
                     <div className="flex items-center gap-1.5">
                       <span
-                        className={`w-2 h-2 rounded-full ${conv.status === 'open'
-                          ? 'bg-emerald-500'
-                          : conv.status === 'pending'
-                            ? 'bg-amber-500'
-                            : 'bg-zinc-400'
-                          }`}
+                        className={`w-2 h-2 rounded-full ${
+                          conv.status === 'open'
+                            ? 'bg-emerald-500'
+                            : conv.status === 'pending'
+                              ? 'bg-amber-500'
+                              : 'bg-zinc-400'
+                        }`}
                       />
                       <span className="text-[10px] capitalize text-text-tertiary font-medium">
                         {conv.status}

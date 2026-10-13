@@ -17,6 +17,7 @@ export * from './components/inbox/ContactDrawer';
 export * from './components/inbox/TemplatePickerModal';
 export * from './components/inbox/QuickReplyPickerModal';
 export * from './components/inbox/StartNewChatModal';
+export * from './components/inbox/DepartmentWhatsAppPageClient';
 
 export * from './components/contacts/WhatsAppContactsTable';
 export * from './components/contacts/ContactFormModal';
