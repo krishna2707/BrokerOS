@@ -1,18 +1,49 @@
 ---
 title: "Phone Carriers (PSTN) Overview"
 sidebarTitle: "Telephony Overview"
-description: "How BrokerOS connects to PSTN telephone carriers via the Carrier Bridge Dispatcher to place real cellular calls."
+description: "How BrokerOS connects to PSTN telephone carriers for AI voice broadcast campaigns and in-browser CRM WebRTC softphone calling."
 ---
 
-For BrokerOS to dial a physical telephone number for an AI voice campaign or an automated mobile dialer queue, it must establish a connection with the Public Switched Telephone Network (PSTN). Telecom carriers provide the SIP trunking lines, virtual long numbers, and voice channels required to ring customer handsets.
+Telecom carriers connect BrokerOS to the Public Switched Telephone Network (PSTN), providing the telephone numbers, SIP trunking lines, and audio channels required to ring physical mobile handsets and landlines.
 
-BrokerOS integrates four enterprise phone carriers through a unified interface, allowing brokerages to maintain their own phone number reputation, local caller ID presentation, and custom carrier contracts.
+In BrokerOS, telephony serves two distinct operational channels:
+
+1. **AI Voice Marketing Campaigns**: Automated outbound voice broadcasts executed by background BullMQ workers and AI conversational personas, configured at `Dashboard -> Marketing -> Voice -> Settings`.
+2. **Company-Wide Human CRM Softphone**: In-browser WebRTC and bridged PSTN telecalling used by pre-sales agents and sales executives, configured by administrators at `Dashboard -> Admin -> Settings -> CRM Telephony & WebRTC`.
+
+BrokerOS integrates four enterprise carriers through unified provider adapters located in [`integrations/voice/telephony/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/).
 
 ---
 
-## Carrier Bridge Architecture
+## Two Telephony Architectures
 
-Rather than hardcoding telecom logic into individual campaign engines, BrokerOS delegates all outbound calls to the **Carrier Bridge Dispatcher** (`tryCarrierBridgeDispatch` in `@brokeros/int-voice`):
+### 1. In-Browser CRM WebRTC Softphone
+For direct human agent calling from Lead and Broker profiles, BrokerOS utilizes [`CrmTelephonyModule`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/crm-telephony/crm-telephony.module.ts):
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Agent as Pre-Sales Agent (Browser)
+    participant UI as ActiveCallWidget ([ActiveCallWidget.tsx](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/web/features/telephony/components/ActiveCallWidget.tsx))
+    participant API as CRM Telephony Controller (/api/crm/telephony)
+    participant Carrier as Telecom Carrier (Twilio WebRTC / Exotel / Telnyx / Vobiz)
+    actor Lead as Buyer Mobile Handset
+    participant Blob as Vercel Blob Storage
+    participant Groq as Groq Whisper AI
+
+    Agent->>UI: Click "Direct Call" on Lead Profile
+    UI->>API: POST /api/crm/telephony/call
+    API->>Carrier: Generate WebRTC Token or Dispatch PSTN Bridge Call
+    Carrier->>Lead: Outbound Phone Rings Customer Handset
+    Lead-->>Agent: Two-Way Call Connected (Browser Audio or PSTN Bridge)
+    Agent->>UI: Take Real-Time Notes & End Call
+    Carrier->>API: Webhook Delivers Recording Audio
+    API->>Blob: Upload MP3 to Vercel Blob Storage
+    API->>Groq: Queue Groq Whisper Transcription & LLM Summarization
+```
+
+### 2. Marketing AI Voice Broadcasts
+For high-volume AI voice broadcasts, BrokerOS uses the **Carrier Bridge Dispatcher** ([`tryCarrierBridgeDispatch`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/bridge/carrier-bridge-dispatcher.ts)):
 
 ```mermaid
 sequenceDiagram
@@ -40,7 +71,7 @@ sequenceDiagram
 
 ## The `IVoiceTelephonyProvider` Contract
 
-Every carrier adapter inside `integrations/voice/telephony/` implements the standard TypeScript interface defined in `@brokeros/types`:
+Every carrier adapter inside [`integrations/voice/telephony/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/) implements the standard TypeScript interface defined in `@brokeros/types`:
 
 ```typescript
 export interface IVoiceTelephonyProvider {
@@ -63,10 +94,16 @@ export interface IVoiceTelephonyProvider {
 ## Supported Telephony Carriers
 
 <CardGroup cols={2}>
-  <Card title="Vobiz" icon="tower-cell" href="/integrations/telephony/vobiz">
-    **Primary Region**: India (Local Geographic CLI).
+  <Card title="Twilio" icon="network-wired" href="/integrations/telephony/twilio">
+    **Primary Region**: Global (180+ Countries).
     
-    Direct REST API and SIP trunking with Indian mobile and landline caller ID display. Delivers low domestic per-minute termination rates and dynamic XML answer callbacks.
+    Direct in-browser WebRTC VoIP calling via Twilio Voice SDK, TwiML call orchestration, programmable voice, and dual-channel call recording.
+  </Card>
+
+  <Card title="Telnyx" icon="satellite-dish" href="/integrations/telephony/telnyx">
+    **Primary Region**: Global (Private IP Network).
+    
+    Carrier-grade elastic SIP trunking built on a private global IP backbone. Delivers ultra-low conversational latency, automated Outbound Voice Profiles, and TeXML media streaming.
   </Card>
 
   <Card title="Exotel" icon="headset" href="/integrations/telephony/exotel">
@@ -75,16 +112,10 @@ export interface IVoiceTelephonyProvider {
     India's leading cloud telephony platform. Provides virtual pilot numbers (ExoPhones), automated call recording, and native TRAI DND (Do Not Disturb) compliance scrubbing.
   </Card>
 
-  <Card title="Twilio" icon="network-wired" href="/integrations/telephony/twilio">
-    **Primary Region**: Global (180+ Countries).
+  <Card title="Vobiz" icon="tower-cell" href="/integrations/telephony/vobiz">
+    **Primary Region**: India (Local Geographic CLI).
     
-    Industry-standard cloud communications platform. Supports programmable voice, international caller ID pools, TwiML call orchestration, and real-time Twilio Media Streams.
-  </Card>
-
-  <Card title="Telnyx" icon="satellite-dish" href="/integrations/telephony/telnyx">
-    **Primary Region**: Global (Private IP Network).
-    
-    Carrier-grade elastic SIP trunking built on a private global IP backbone. Delivers ultra-low conversational latency, automated Outbound Voice Profiles, and TeXML media streaming.
+    Direct REST API and SIP trunking with Indian mobile and landline caller ID display. Delivers low domestic per-minute termination rates and dynamic XML answer callbacks.
   </Card>
 </CardGroup>
 
@@ -92,44 +123,41 @@ export interface IVoiceTelephonyProvider {
 
 ## Carrier Feature Matrix
 
-| Feature / Capability | Vobiz | Exotel | Twilio | Telnyx |
+| Feature / Capability | Twilio | Telnyx | Exotel | Vobiz |
 | :--- | :--- | :--- | :--- | :--- |
-| **Primary Protocol** | REST API & XML Callback | REST API & Basic Auth | REST API & TwiML | REST API v2 & TeXML |
-| **Indian CLI Presentation** | Supported (Local City Numbers) | Supported (Virtual ExoPhones) | Supported (Regulatory Docs Required) | International E.164 |
-| **Automated DND Scrubbing** | Handled via API | Built-in TRAI Registry Scrub | Custom Suppression Lists | Custom Suppression Lists |
-| **Media Stream WebSocket** | Dynamic Answer Callback | Call Routing Applet | Native Twilio Media Streams | Native TeXML Media Streams |
-| **Audio Transcoding** | G.711 u-law (8kHz) | G.711 A-law / u-law | G.711 u-law / Linear PCM | G.711 u-law / Opus |
-| **Multiple From Numbers** | Supported (Trunk Pool) | Supported (ExoPhone Group) | Supported (Number Inventory) | Supported (Number Inventory) |
+| **CRM In-Browser WebRTC** | Native (Twilio Voice SDK) | PSTN Bridge | PSTN Bridge | PSTN Bridge |
+| **Primary Protocol** | REST API & TwiML | REST API v2 & TeXML | REST API & Basic Auth | REST API & XML Callback |
+| **Indian CLI Presentation** | Supported (Regulatory Docs) | International E.164 | Supported (Virtual ExoPhones) | Supported (Local City Numbers) |
+| **Automated DND Scrubbing** | Custom Suppression Lists | Custom Suppression Lists | Built-in TRAI Registry Scrub | Handled via API |
+| **Media Stream WebSocket** | Native Twilio Media Streams | Native TeXML Media Streams | Call Routing Applet | Dynamic Answer Callback |
+| **Audio Transcoding** | G.711 u-law / Linear PCM | G.711 u-law / Opus | G.711 A-law / u-law | G.711 u-law (8kHz) |
+| **Multiple From Numbers** | Supported (Number Inventory) | Supported (Number Inventory) | Supported (ExoPhone Group) | Supported (Trunk Pool) |
 
 ---
 
-## Live Carrier Verification & Latency Testing
+## Where to Configure Telephony
 
-Through the **Telephony Carriers Settings Tab** (`TelephonyCarriersTab.tsx`), administrators can test and monitor connected trunks:
+Depending on the operational use case, configure your carrier in the corresponding interface:
 
-1. Navigate to **Dashboard -> Marketing -> Voice -> Settings -> Telephony Carriers**.
-2. Click **Verify Carrier** on any configured trunk.
-3. BrokerOS triggers `POST /api/marketing/voice/integrations/telephony/:id/verify`.
-4. The system invokes `validateCredentials()`, executes an authenticated ping against the provider's API, and measures round-trip network latency in milliseconds.
-5. If valid, an emerald status badge displays the latency readout (for example, *Valid: 76ms*). If credentials are revoked or expired, an alert banner details the specific error response.
+### 1. CRM Telephony & WebRTC Softphone (Company-Wide)
+- **Path**: `Dashboard -> Admin -> Settings -> CRM Telephony & WebRTC` (`/dashboard/admin/settings`).
+- **Target Table**: [`CrmTelephonyConfig`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/prisma/schema.prisma).
+- **Scope**: Single active company-wide carrier for all browser telecalling, direct lead profile calls, and call recording uploads.
+- **Verification**: Built-in test call verification modal (`POST /api/crm/telephony/verify`).
 
----
-
-## Carrier Webhook Ingestion Routes
-
-When an outbound call is answered or concluded, carriers notify BrokerOS via dedicated webhook routes handled by `VoiceWebhooksController`:
-
-- **Vobiz Answer XML**: `/api/marketing/voice/webhooks/vobiz-answer`
-- **Exotel Status Callback**: `/api/marketing/voice/webhooks/exotel`
-- **Twilio TwiML Callback**: `/api/marketing/voice/webhooks/twilio-answer`
-- **Telnyx TeXML Callback**: `/api/marketing/voice/webhooks/telnyx-answer`
+### 2. AI Voice Broadcast Platforms (Marketing Suite)
+- **Path**: `Dashboard -> Marketing -> Voice -> Settings -> Gateways & Voice Platforms` (`/dashboard/marketing/voice/settings`).
+- **Target Table**: `VoiceTelephonyIntegration`.
+- **Scope**: Outbound voice campaign batches and conversational AI pipelines.
+- **Verification**: Trunk verification and latency benchmarking (`POST /api/marketing/voice/integrations/telephony/:id/verify`).
 
 ---
 
 ## Related Guides
 
-- [Connect Vobiz](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/integrations/telephony/vobiz.mdx)
-- [Connect Exotel](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/integrations/telephony/exotel.mdx)
+- [In-Browser WebRTC Softphone Guide](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/brokerage/pre-sales/softphone.mdx)
 - [Connect Twilio](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/integrations/telephony/twilio.mdx)
 - [Connect Telnyx](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/integrations/telephony/telnyx.mdx)
-- [Carrier Telephony Bridge in Voice Suite](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/marketing/voice/carrier-telephony.mdx)
+- [Connect Exotel](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/integrations/telephony/exotel.mdx)
+- [Connect Vobiz](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/integrations/telephony/vobiz.mdx)
+- [CRM Telephony API Reference](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/api-reference/crm-telephony.mdx)
