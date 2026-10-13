@@ -1,0 +1,244 @@
+---
+title: "CRM Telephony API"
+sidebarTitle: "CRM Telephony"
+description: "REST endpoints for managing company-wide telephony carriers, agent WebRTC access tokens, browser dialing, and call session termination."
+---
+
+The CRM Telephony API provides endpoints for configuring the company-wide telephony carrier in Admin Settings, minting ephemeral WebRTC tokens for authenticated agents, initiating outbound softphone calls to leads or brokers, and terminating active call sessions.
+
+Controller: [`CrmTelephonyController`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/crm-telephony/crm-telephony.controller.ts) (`/api/crm/telephony` and `/telephony`).
+
+---
+
+## 1. Get Active Telephony Configuration
+
+Returns the currently active organization-wide telephony configuration. Sensitive secrets (Auth Tokens, API Keys, Application SIDs) are masked for UI display safety.
+
+```http
+GET /api/crm/telephony/config
+```
+
+### Response (200 OK)
+
+```json
+{
+  "id": "c1f7b7f1-8cb4-4db6-9e67-d86ea5278df2",
+  "provider": "TWILIO",
+  "name": "Twilio Production Trunk",
+  "isActive": true,
+  "accountSid": "AC12••••••••3456",
+  "apiKey": "SK98••••••••7654",
+  "subdomain": null,
+  "sipDomain": null,
+  "fromNumbers": [
+    "+12025550199"
+  ],
+  "applicationSid": "AP11••••••••2233",
+  "createdAt": "2026-10-13T10:00:00.000Z",
+  "updatedAt": "2026-10-13T10:00:00.000Z"
+}
+```
+
+If no provider has been activated, returns `null`.
+
+---
+
+## 2. Connect / Update Telephony Carrier
+
+Validates carrier credentials against the third-party telecom API, auto-provisions required application resources if needed, deactivates any previously active carrier, and sets the new carrier active.
+
+```http
+POST /api/crm/telephony/connect
+Content-Type: application/json
+```
+
+### Request Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `provider` | string | Yes | One of `TWILIO`, `TELNYX`, `EXOTEL`, `VOBIZ`. |
+| `name` | string | Yes | Friendly label for this connection (e.g., `Twilio Production`). |
+| `accountSid` | string | Optional | Carrier Account SID (Required for Twilio and Exotel). |
+| `authToken` | string | Optional | Primary secret auth token (Required for Twilio). |
+| `apiKey` | string | Optional | API Key SID or username. For Twilio, auto-provisioned if left blank. |
+| `apiToken` | string | Optional | API Key secret. For Twilio, auto-provisioned if left blank. |
+| `subdomain` | string | Optional | API subdomain (e.g. `api.exotel.com` for Exotel). |
+| `sipDomain` | string | Optional | SIP trunk domain if using custom SIP. |
+| `fromNumbers` | string[] | Optional | Array of registered caller ID phone numbers in E.164 format. |
+| `applicationSid` | string | Optional | TwiML Application SID (`AP...`) or Telnyx App ID. Auto-provisioned for Twilio if blank. |
+
+### Request Example
+
+```json
+{
+  "provider": "TWILIO",
+  "name": "Company Twilio Softphone",
+  "accountSid": "ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "authToken": "your_twilio_auth_token",
+  "fromNumbers": [
+    "+12025550199"
+  ]
+}
+```
+
+### Response (201 Created)
+
+Returns the activated configuration with masked credentials.
+
+---
+
+## 3. Disconnect Carrier
+
+Deactivates the current active carrier configuration.
+
+```http
+DELETE /api/crm/telephony/disconnect/:id
+```
+
+### Response (200 OK)
+
+```json
+{
+  "success": true,
+  "message": "Carrier TWILIO disconnected."
+}
+```
+
+---
+
+## 4. Verify Carrier (Outbound Test Call)
+
+Places an outbound verification call to the specified administrator phone number to verify trunk authorization and dial tone.
+
+```http
+POST /api/crm/telephony/verify
+Content-Type: application/json
+```
+
+### Request Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `toPhone` | string | Yes | Destination phone number in E.164 format (e.g. `+12025550155`). |
+| `fromNumber` | string | Optional | Selected caller ID from the registered numbers list. Defaults to the first configured number. |
+
+### Response (200 OK)
+
+```json
+{
+  "success": true,
+  "callId": "CAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+}
+```
+
+---
+
+## 5. Generate Agent WebRTC Access Token
+
+Mints an ephemeral token for the authenticated user session. For Twilio, generates a JWT Access Token with `VoiceGrant` allowing both incoming and outgoing browser audio.
+
+```http
+POST /api/crm/telephony/token
+```
+
+### Response (200 OK)
+
+```json
+{
+  "provider": "TWILIO",
+  "identity": "agent_usr_981247",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0...",
+  "fromNumber": "+12025550199"
+}
+```
+
+---
+
+## 6. Initiate Outbound Call
+
+Creates an initial `CallRecord` in PostgreSQL, marks the calling agent as `isOnCall = true`, and initiates the outbound call session.
+
+```http
+POST /api/crm/telephony/call
+Content-Type: application/json
+```
+
+### Request Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `leadId` | string | Yes | ID of the target lead being called. |
+| `phone` | string | Yes | Destination phone number to dial. |
+| `brokerId` | string | Optional | ID of the broker if calling a Channel Partner. |
+
+### Request Example
+
+```json
+{
+  "leadId": "lead_luxury_872",
+  "phone": "+12025550144"
+}
+```
+
+### Response (201 Created)
+
+```json
+{
+  "callRecordId": "rec_91823746",
+  "leadId": "lead_luxury_872",
+  "leadName": "Ananya Sharma",
+  "toPhone": "+12025550144",
+  "fromNumber": "+12025550199",
+  "provider": "TWILIO",
+  "bridgeType": "WEBRTC",
+  "tokenData": {
+    "provider": "TWILIO",
+    "identity": "agent_usr_981247",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVC...",
+    "fromNumber": "+12025550199"
+  }
+}
+```
+
+---
+
+## 7. Hangup Call
+
+Terminates an active softphone call session, calculates total elapsed duration in seconds, updates `CallRecord.endedAt`, and resets `User.isOnCall = false`.
+
+```http
+POST /api/crm/telephony/hangup
+Content-Type: application/json
+```
+
+### Request Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `callRecordId` | string | Yes | ID of the CallRecord to finalize. |
+
+### Response (200 OK)
+
+```json
+{
+  "success": true
+}
+```
+
+---
+
+## 8. Carrier Webhooks Directory
+
+The following webhook endpoints receive events from carriers during and after softphone calls:
+
+| Endpoint | Method | Provider | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/crm/telephony/webhooks/twilio-voice` | POST | Twilio | Returns TwiML dial instructions when an agent places a WebRTC call. Enables dual-channel recording. |
+| `/api/crm/telephony/webhooks/twilio-status` | POST | Twilio | Receives call completion status and duration. Resets agent `isOnCall` state. |
+| `/api/crm/telephony/webhooks/twilio-recording` | POST | Twilio | Receives recording URL, uploads audio to Vercel Blob, and triggers Groq Whisper transcription. |
+| `/api/crm/telephony/webhooks/telnyx-voice` | POST | Telnyx | Returns TeXML to bridge lead to agent with dual recording. |
+| `/api/crm/telephony/webhooks/telnyx-recording` | POST | Telnyx | Processes audio recording for Telnyx bridged calls. |
+| `/api/crm/telephony/webhooks/exotel-status` | POST | Exotel | Updates call duration and triggers transcription for Exotel bridged calls. |
+| `/api/crm/telephony/webhooks/vobiz-answer` | POST | Vobiz | Returns Vobiz XML to bridge call to agent phone. |
+| `/api/crm/telephony/webhooks/vobiz-recording` | POST | Vobiz | Processes audio recording for Vobiz calls. |
+| `/api/crm/telephony/webhooks/mock-call` | POST | Dev / Test | Simulates a completed call with transcription for local testing. |
