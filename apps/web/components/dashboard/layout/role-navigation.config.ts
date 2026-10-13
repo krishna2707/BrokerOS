@@ -102,6 +102,7 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
     return [
       { name: "Overview", href: "/dashboard/pre-sales", icon: LayoutDashboard, roles: ["PRE_SALES"] },
       { name: "Lead Management", href: "/dashboard/pre-sales/lead-management", icon: Users, roles: ["PRE_SALES"] },
+      { name: "WhatsApp Inbox", href: "/dashboard/pre-sales/whatsapp", icon: MessageSquare, roles: ["PRE_SALES"] },
       { name: "Analytics", href: "/dashboard/pre-sales/analytics", icon: BarChart2, roles: ["PRE_SALES"] },
       { name: "Settings", href: "/dashboard/pre-sales/settings", icon: Settings, roles: ["PRE_SALES"] },
     ];
@@ -113,6 +114,7 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
       { name: "Employees", href: "/dashboard/pre-sales-manager/employees", icon: Users, roles: ["PRE_SALES_MANAGER"] },
       { name: "New Leads", href: "/dashboard/pre-sales-manager/new-leads", icon: Star, roles: ["PRE_SALES_MANAGER"] },
       { name: "Lead Management", href: "/dashboard/pre-sales-manager/lead-management", icon: List, roles: ["PRE_SALES_MANAGER"] },
+      { name: "WhatsApp Inbox", href: "/dashboard/pre-sales-manager/whatsapp", icon: MessageSquare, roles: ["PRE_SALES_MANAGER"] },
       { name: "Analytics", href: "/dashboard/pre-sales-manager/analytics", icon: BarChart2, roles: ["PRE_SALES_MANAGER"] },
       { name: "Settings", href: "/dashboard/pre-sales-manager/settings", icon: Settings, roles: ["PRE_SALES_MANAGER"] },
     ];
@@ -122,6 +124,7 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
     return [
       { name: "Overview", href: "/dashboard/sales-executive", icon: LayoutDashboard, roles: ["SALES_EXECUTIVE"] },
       { name: "Lead Management", href: "/dashboard/sales-executive/lead-management", icon: Users, roles: ["SALES_EXECUTIVE"] },
+      { name: "WhatsApp Inbox", href: "/dashboard/sales-executive/whatsapp", icon: MessageSquare, roles: ["SALES_EXECUTIVE"] },
       { name: "Approval", href: "/dashboard/sales-executive/approval", icon: CheckSquare, roles: ["SALES_EXECUTIVE"] },
       { name: "Booking", href: "/dashboard/sales-executive/booking", icon: Calendar, roles: ["SALES_EXECUTIVE"] },
       { name: "Inventory", href: "/dashboard/sales-executive/inventory", icon: Package, roles: ["SALES_EXECUTIVE"] },
@@ -135,6 +138,7 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
       { name: "Overview", href: "/dashboard/sales-manager", icon: LayoutDashboard, roles: ["SALES_MANAGER"] },
       { name: "Employees", href: "/dashboard/sales-manager/employees", icon: Users, roles: ["SALES_MANAGER"] },
       { name: "Lead Management", href: "/dashboard/sales-manager/lead-management", icon: List, roles: ["SALES_MANAGER"] },
+      { name: "WhatsApp Inbox", href: "/dashboard/sales-manager/whatsapp", icon: MessageSquare, roles: ["SALES_MANAGER"] },
       { name: "Approval", href: "/dashboard/sales-manager/approval", icon: CheckSquare, roles: ["SALES_MANAGER"] },
       { name: "Inventory", href: "/dashboard/sales-manager/inventory", icon: Package, roles: ["SALES_MANAGER"] },
       { name: "Booking", href: "/dashboard/sales-manager/booking", icon: Calendar, roles: ["SALES_MANAGER"] },
@@ -147,6 +151,7 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
     return [
       { name: "Overview", href: "/dashboard/post-sales", icon: LayoutDashboard, roles: ["POST_SALES"] },
       { name: "Lead Management", href: "/dashboard/post-sales/lead-management", icon: List, roles: ["POST_SALES"] },
+      { name: "WhatsApp Inbox", href: "/dashboard/post-sales/whatsapp", icon: MessageSquare, roles: ["POST_SALES"] },
       { name: "Inventory", href: "/dashboard/post-sales/inventory", icon: Package, roles: ["POST_SALES"] },
       { name: "Commissions", href: "/dashboard/post-sales/commissions", icon: Handshake, roles: ["POST_SALES"] },
       { name: "Handover", href: "/dashboard/post-sales/handover", icon: Handshake, roles: ["POST_SALES"] },
@@ -160,6 +165,7 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
       { name: "Overview", href: "/dashboard/post-sales-manager", icon: LayoutDashboard, roles: ["POST_SALES_MANAGER"] },
       { name: "Employees", href: "/dashboard/post-sales-manager/employees", icon: Users, roles: ["POST_SALES_MANAGER"] },
       { name: "Lead Management", href: "/dashboard/post-sales-manager/lead-management", icon: List, roles: ["POST_SALES_MANAGER"] },
+      { name: "WhatsApp Inbox", href: "/dashboard/post-sales-manager/whatsapp", icon: MessageSquare, roles: ["POST_SALES_MANAGER"] },
       { name: "Commissions", href: "/dashboard/post-sales-manager/commissions", icon: Handshake, roles: ["POST_SALES_MANAGER"] },
       { name: "Handover", href: "/dashboard/post-sales-manager/handover", icon: Handshake, roles: ["POST_SALES_MANAGER"] },
       { name: "Analytics", href: "/dashboard/post-sales-manager/analytics", icon: BarChart2, roles: ["POST_SALES_MANAGER"] },
@@ -171,6 +177,7 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
     return [
       { name: "Overview", href: "/dashboard/sourcing-manager", icon: LayoutDashboard, roles: ["SOURCING_MANAGER"] },
       { name: "Broker Management", href: "/dashboard/sourcing-manager/broker-management", icon: Handshake, roles: ["SOURCING_MANAGER"] },
+      { name: "WhatsApp Inbox", href: "/dashboard/sourcing-manager/whatsapp", icon: MessageSquare, roles: ["SOURCING_MANAGER"] },
       { name: "Commissions", href: "/dashboard/sourcing-manager/commissions", icon: Handshake, roles: ["SOURCING_MANAGER"] },
       { name: "Inventory", href: "/dashboard/sourcing-manager/inventory", icon: Package, roles: ["SOURCING_MANAGER"] },
       { name: "Analytics", href: "/dashboard/sourcing-manager/analytics", icon: BarChart2, roles: ["SOURCING_MANAGER"] },
@@ -183,6 +190,7 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
       { name: "Overview", href: "/dashboard/closing-manager", icon: LayoutDashboard, roles: ["CLOSING_MANAGER"] },
       { name: "Inventory", href: "/dashboard/closing-manager/inventory", icon: Package, roles: ["CLOSING_MANAGER"] },
       { name: "Lead Management", href: "/dashboard/closing-manager/lead-management", icon: List, roles: ["CLOSING_MANAGER"] },
+      { name: "WhatsApp Inbox", href: "/dashboard/closing-manager/whatsapp", icon: MessageSquare, roles: ["CLOSING_MANAGER"] },
       { name: "Broker Management", href: "/dashboard/closing-manager/broker-management", icon: Handshake, roles: ["CLOSING_MANAGER"] },
       { name: "Handover", href: "/dashboard/closing-manager/handover", icon: CheckSquare, roles: ["CLOSING_MANAGER"] },
       { name: "Analytics", href: "/dashboard/closing-manager/analytics", icon: BarChart2, roles: ["CLOSING_MANAGER"] },
@@ -206,6 +214,7 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
     return [
       { name: "Overview", href: "/dashboard/business-manager", icon: LayoutDashboard, roles: ["BUSINESS_MANAGER"] },
       { name: "Leads", href: "/dashboard/business-manager/leads", icon: Users, roles: ["BUSINESS_MANAGER"] },
+      { name: "WhatsApp Inbox", href: "/dashboard/business-manager/whatsapp", icon: MessageSquare, roles: ["BUSINESS_MANAGER"] },
       { name: "Inventory", href: "/dashboard/business-manager/inventory", icon: Package, roles: ["BUSINESS_MANAGER"] },
       { name: "Financials", href: "/dashboard/business-manager/financials", icon: DollarSign, roles: ["BUSINESS_MANAGER"] },
       { name: "Employees", href: "/dashboard/business-manager/employees", icon: Briefcase, roles: ["BUSINESS_MANAGER"] },
@@ -217,11 +226,19 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
   if (userRole === "DIRECTOR") {
     return [
       { name: "Overview", href: "/dashboard/director", icon: LayoutDashboard, roles: ["DIRECTOR"] },
+      { name: "WhatsApp Inbox", href: "/dashboard/director/whatsapp", icon: MessageSquare, roles: ["DIRECTOR"] },
       { name: "Pre-Sales", href: "/dashboard/pre-sales", icon: Users, roles: ["DIRECTOR"] },
       { name: "Sales", href: "/dashboard/sales", icon: Briefcase, roles: ["DIRECTOR"] },
       { name: "Marketing", href: "/dashboard/marketing", icon: Mail, roles: ["DIRECTOR"] },
       { name: "Post-Sales", href: "/dashboard/post-sales", icon: Handshake, roles: ["DIRECTOR"] },
       { name: "Finance", href: "/dashboard/finance", icon: DollarSign, roles: ["DIRECTOR"] },
+    ];
+  }
+
+  if (userRole === "FINANCE") {
+    return [
+      { name: "Overview", href: "/dashboard/finance", icon: LayoutDashboard, roles: ["FINANCE"] },
+      { name: "WhatsApp Inbox", href: "/dashboard/finance/whatsapp", icon: MessageSquare, roles: ["FINANCE"] },
     ];
   }
 
@@ -294,14 +311,9 @@ export function getRoleNavLinks(userRole: string, pathname: string): NavLinkItem
 
   if (userRole === "ADMIN") {
     return [
-      { name: "Overview", href: "/dashboard/business-manager", icon: LayoutDashboard, roles: ["ADMIN"] },
-      { name: "Marketing Hub", href: "/dashboard/marketing", icon: Mail, roles: ["ADMIN"] },
-      { name: "Pre-Sales Manager", href: "/dashboard/pre-sales-manager", icon: Users, roles: ["ADMIN"] },
-      { name: "Sales Manager", href: "/dashboard/sales-manager", icon: Briefcase, roles: ["ADMIN"] },
-      { name: "Post-Sales Manager", href: "/dashboard/post-sales-manager", icon: Handshake, roles: ["ADMIN"] },
-      { name: "CP Network", href: "/dashboard/channel-partner", icon: Package, roles: ["ADMIN"] },
-      { name: "Analytics", href: "/dashboard/business-manager/analytics", icon: BarChart2, roles: ["ADMIN"] },
-      { name: "Settings", href: "/dashboard/business-manager/settings", icon: Settings, roles: ["ADMIN"] },
+      { name: "Overview", href: "/dashboard/admin", icon: LayoutDashboard, roles: ["ADMIN"] },
+      { name: "WhatsApp Hub", href: "/dashboard/admin/whatsapp", icon: MessageSquare, roles: ["ADMIN"] },
+      { name: "Settings", href: "/dashboard/admin/settings", icon: Settings, roles: ["ADMIN"] },
     ];
   }
 
