@@ -16,7 +16,8 @@ BrokerOS exposes public webhook endpoints to receive real-time events from exter
 | **Google Ads** | `POST /api/marketing/ads/google/webhooks` | Google Search / YouTube Lead Forms | Ingest leads from Google Ads extensions |
 | **WhatsApp** | `GET/POST /api/marketing/whatsapp/webhook` | Meta Cloud API | Token challenge, inbound messages & delivery receipts |
 | **Voice AI** | `POST /api/marketing/voice/webhooks/:provider` | Vapi, Retell, Sarvam, ElevenLabs | Call ended, transcript, and sentiment analysis |
-| **PSTN Telephony** | `GET/POST /api/marketing/voice/webhooks/:carrier-answer` | Vobiz, Twilio, Telnyx | Call pickup XML / TeXML media stream bridge |
+| **Marketing Telephony** | `GET/POST /api/marketing/voice/webhooks/:carrier-answer` | Vobiz, Twilio, Telnyx | Call pickup XML / TeXML media stream bridge |
+| **CRM Softphone** | `POST /api/crm/telephony/webhooks/:event` | Twilio, Telnyx, Exotel, Vobiz | Softphone TwiML, status callbacks, recording upload & AI transcription |
 | **SMS** | `POST /api/marketing/sms/webhooks/:provider` | Gupshup, Twilio, Sinch, AWS SNS | Delivery receipts (DLR) and failure notifications |
 | **Email** | `POST /api/marketing/email/webhooks/:provider` | SendGrid, Brevo, AWS SES, Mailchimp | Opens, clicks, bounces, and spam complaints |
 
@@ -170,3 +171,39 @@ Receives real-time message status updates (`sent`, `delivered`, `read`, `failed`
   ]
 }
 ```
+
+---
+
+## 4. CRM In-Browser Telephony & Softphone Webhooks
+
+Managed by [`CrmTelephonyWebhooksController`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/crm-telephony/crm-telephony-webhooks.controller.ts) to handle softphone dialing, duration tracking, and call recording uploads:
+
+### Twilio Voice Dial TwiML (POST)
+
+```http
+POST /api/crm/telephony/webhooks/twilio-voice
+```
+
+Called by Twilio when an in-browser WebRTC agent clicks to call a lead. Responds with dynamic TwiML enabling dual-channel recording and status callbacks:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Dial callerId="+12025550199" record="record-from-answer-dual" recordingStatusCallback="https://api.yourdomain.com/api/crm/telephony/webhooks/twilio-recording?callRecordId=rec_123">
+    <Number statusCallback="https://api.yourdomain.com/api/crm/telephony/webhooks/twilio-status?callRecordId=rec_123" statusCallbackEvent="initiated ringing answered completed">+12025550144</Number>
+  </Dial>
+</Response>
+```
+
+### Twilio Recording Callback (POST)
+
+```http
+POST /api/crm/telephony/webhooks/twilio-recording?callRecordId=rec_123
+```
+
+Carrier delivers recording URL upon call completion:
+1. Server downloads audio buffer using authenticated Basic Auth.
+2. Streams audio to Vercel Blob storage (`calls/:targetId-:timestamp-:id.mp3`).
+3. Resets `User.isOnCall = false`.
+4. Enqueues Groq Whisper AI transcription, next step extraction, and non-destructive lead profile updates.
+

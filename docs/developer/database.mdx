@@ -48,11 +48,90 @@ erDiagram
     Lead ||--o{ FollowUp : "tracks"
     Lead ||--o{ Negotiation : "records"
     Lead ||--o| Booking : "finalizes"
+    Lead ||--o{ CallRecord : "logs"
+    User ||--o{ CallRecord : "places"
     
     Booking ||--|| Customer : "converts to"
     Booking ||--|| Unit : "locks"
     Booking ||--o| BrokerageRecord : "creates (if CP)"
     Broker ||--o{ BrokerageRecord : "earns"
+```
+
+---
+
+## Telephony & Softphone Architecture Models
+
+The database tracks both company-wide carrier infrastructure and individual softphone call sessions:
+
+### 1. `CrmTelephonyConfig`
+Manages the organization's active carrier connection configured at `Dashboard -> Admin -> Settings -> CRM Telephony & WebRTC`:
+
+```prisma
+model CrmTelephonyConfig {
+  id             String             @id @default(uuid())
+  provider       VoiceTelephonyType // TWILIO, TELNYX, EXOTEL, VOBIZ
+  name           String
+  isActive       Boolean            @default(true)
+
+  accountSid     String?
+  authToken      String?
+  apiKey         String?
+  apiToken       String?
+  subdomain      String? // e.g. api.exotel.com
+  sipDomain      String?
+  fromNumbers    String[] // Array of caller IDs / virtual numbers
+  applicationSid String? // TwiML App SID or Telnyx App ID for browser WebRTC
+
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([provider])
+  @@index([isActive])
+  @@map("crm_telephony_config")
+}
+```
+
+<Note>
+  **Single Active Carrier Rule**: Only one `CrmTelephonyConfig` record may have `isActive = true` at any given time. Connecting a new carrier automatically marks prior configurations inactive.
+</Note>
+
+### 2. `CallRecord`
+Stores every inbound and outbound telecalling interaction, carrier identifiers, audio recording URLs, and AI intelligence:
+
+```prisma
+model CallRecord {
+  id                    String              @id @default(uuid())
+  leadId                String?
+  brokerId              String?
+  userId                String?
+  phoneNumber           String
+  direction             CallDirection       // INBOUND, OUTBOUND
+  status                CallStatus          // CONNECTED, MISSED, BUSY, FAILED
+  startedAt             DateTime
+  endedAt               DateTime?
+  duration              Int?                // Duration in seconds
+  recordingUrl          String?
+  recordingSize         Int?
+
+  aiTranscript          String?
+  aiSummary             String?
+  aiSentiment           String?
+  aiExtractedData       Json?
+
+  provider              VoiceTelephonyType?
+  providerCallId        String?             // Carrier Call SID or UUID
+  agentBrowserSessionId String?
+
+  createdAt             DateTime            @default(now())
+
+  @@index([leadId])
+  @@index([brokerId])
+  @@index([userId])
+  @@index([startedAt])
+  @@index([direction])
+  @@index([providerCallId])
+  @@map("call_record")
+}
 ```
 
 ---
@@ -136,6 +215,7 @@ The BrokerOS schema enforces indexes on frequently filtered fields:
 - Index on `[phoneNumberId, createdAt]` for incoming WhatsApp message lookups
 - Unique index on `[email, deletedAt]` for customer deduplication
 - Indexes on foreign keys (`brokerId`, `assignedUserId`, `unitId`) to optimize relational joins
+- Index on `providerCallId` for fast lookup during carrier recording and status webhook callbacks
 
 ---
 
