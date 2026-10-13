@@ -6,7 +6,7 @@ description: "Ultra-low latency WebRTC real-time voice transport, SIP trunk part
 
 ## Overview
 
-LiveKit is an open-source real-time communication platform built on WebRTC and distributed media servers. In BrokerOS, the LiveKit integration is implemented in [`integrations/voice/agents/livekit/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/livekit/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-livekit`.
+LiveKit is an open-source real-time communication platform built on WebRTC and distributed media servers. In BrokerOS, the LiveKit integration is implemented in [`integrations/voice/agents/livekit/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/livekit/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-livekit`.
 
 BrokerOS administrators configure LiveKit directly inside the Web UI at **Dashboard -> Marketing -> Voice -> Settings**. All API credentials and server endpoints are encrypted using AES-256-GCM and stored in PostgreSQL (`VoiceAgentIntegration`).
 
@@ -14,7 +14,7 @@ BrokerOS administrators configure LiveKit directly inside the Web UI at **Dashbo
 
 ## Architecture and Dispatch Sequence
 
-The LiveKit integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types).
+The LiveKit integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types).
 
 ```mermaid
 sequenceDiagram
@@ -76,7 +76,7 @@ In your BrokerOS dashboard:
 
 ## Integration Implementation Details
 
-The LiveKit integration logic is located in [`integrations/voice/agents/livekit/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/livekit/src/index.ts) and [`integrations/voice/agents/livekit/src/livekit-dispatcher.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/livekit/src/livekit-dispatcher.ts).
+The LiveKit integration logic is located in [`integrations/voice/agents/livekit/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/livekit/src/index.ts) and [`integrations/voice/agents/livekit/src/livekit-dispatcher.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/livekit/src/livekit-dispatcher.ts).
 
 ### Live Verification Engine
 

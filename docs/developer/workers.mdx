@@ -8,7 +8,7 @@ description: "Asynchronous task processing, BullMQ worker processors, Redis queu
 
 Heavy I/O operations such as dispatching 50,000 WhatsApp messages, streaming audio to telephony carriers, or parsing massive lead CSV files must **never execute inside the NestJS HTTP request cycle**.
 
-BrokerOS enforces that all background jobs, bulk broadcasts, and external provider dispatches are enqueued via **BullMQ** backed by **Redis** and processed independently by [`apps/workers/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/workers/).
+BrokerOS enforces that all background jobs, bulk broadcasts, and external provider dispatches are enqueued via **BullMQ** backed by **Redis** and processed independently by [`apps/workers/`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/workers/).
 
 ---
 
@@ -42,7 +42,7 @@ sequenceDiagram
 
 ## Dedicated Worker Processors
 
-All worker processors live in [`apps/workers/src/processors/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/workers/src/processors/) and run as dedicated Node.js worker nodes:
+All worker processors live in [`apps/workers/src/processors/`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/workers/src/processors/) and run as dedicated Node.js worker nodes:
 
 ### 1. `marketing-voice.processor.ts`
 - Processes autonomous outbound AI voice campaigns.

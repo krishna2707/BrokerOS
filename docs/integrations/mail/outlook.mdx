@@ -6,7 +6,7 @@ description: "Send direct, high-trust sales communications, property proposals, 
 
 ## Overview
 
-Commercial real estate brokerages running on the Microsoft 365 enterprise ecosystem rely on Microsoft Graph for authenticated corporate messaging. In BrokerOS, the Microsoft 365 and Outlook integration lives in [`integrations/mail/outlook/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/mail/outlook/src/index.ts) under the Turborepo workspace package `@brokeros/int-mail-outlook`.
+Commercial real estate brokerages running on the Microsoft 365 enterprise ecosystem rely on Microsoft Graph for authenticated corporate messaging. In BrokerOS, the Microsoft 365 and Outlook integration lives in [`integrations/mail/outlook/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/mail/outlook/src/index.ts) under the Turborepo workspace package `@brokeros/int-mail-outlook`.
 
 BrokerOS administrators configure Outlook accounts directly in the Web UI at **Dashboard -> Marketing -> Email -> Settings**. Credentials and refresh tokens are encrypted with AES-256-GCM and stored in the database (`MarketingIntegration`).
 
@@ -14,7 +14,7 @@ BrokerOS administrators configure Outlook accounts directly in the Web UI at **D
 
 ## Architecture and Dispatch Sequence
 
-The Outlook integration implements the `IEmailMarketingProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types). It communicates directly with Microsoft Graph API v1.0.
+The Outlook integration implements the `IEmailMarketingProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types). It communicates directly with Microsoft Graph API v1.0.
 
 ```mermaid
 sequenceDiagram
@@ -76,7 +76,7 @@ In your BrokerOS dashboard:
 
 ## Integration Implementation Details
 
-The Outlook integration source code is located in [`integrations/mail/outlook/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/mail/outlook/src/index.ts).
+The Outlook integration source code is located in [`integrations/mail/outlook/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/mail/outlook/src/index.ts).
 
 ### OAuth Token Refresh
 

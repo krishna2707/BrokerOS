@@ -41,7 +41,7 @@ sequenceDiagram
 
 <Steps>
   <Step title="App Boot & Session Check">
-    When the app boots, [`app/_layout.tsx`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/app/_layout.tsx) invokes `authClient.useSession()`. If no valid token exists in `expo-secure-store`, the router redirects immediately to `/(auth)/sign-in`.
+    When the app boots, [`app/_layout.tsx`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/mobile/app/_layout.tsx) invokes `authClient.useSession()`. If no valid token exists in `expo-secure-store`, the router redirects immediately to `/(auth)/sign-in`.
   </Step>
 
   <Step title="Credential Verification">
@@ -69,7 +69,7 @@ sequenceDiagram
 
 ## Client Configuration Code
 
-The mobile auth client is configured in [`apps/mobile/lib/auth-client.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/lib/auth-client.ts):
+The mobile auth client is configured in [`apps/mobile/lib/auth-client.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/mobile/lib/auth-client.ts):
 
 ```typescript
 import { createAuthClient } from 'better-auth/react';

@@ -45,7 +45,7 @@ sequenceDiagram
 
 ## Headless Background Task Architecture
 
-The location tracking subsystem ([`apps/mobile/lib/location-tracking.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/lib/location-tracking.ts)) uses `expo-location` and `expo-task-manager` to register a background task:
+The location tracking subsystem ([`apps/mobile/lib/location-tracking.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/mobile/lib/location-tracking.ts)) uses `expo-location` and `expo-task-manager` to register a background task:
 
 ```typescript
 export const LOCATION_TASK_NAME = 'background-location-task';
@@ -86,7 +86,7 @@ This persistent notification informs field employees that their location is bein
 
 ## Production Optimizations & Privacy Filters
 
-The tracking module in [`apps/mobile/lib/location-tracking.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/lib/location-tracking.ts) contains configurable enterprise safeguards:
+The tracking module in [`apps/mobile/lib/location-tracking.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/mobile/lib/location-tracking.ts) contains configurable enterprise safeguards:
 
 ### 1. Off-Duty Hours Filter
 Prevents tracking outside business operating hours (e.g., between 11:00 PM and 6:00 AM):

@@ -6,7 +6,7 @@ description: "Architecture of the custom Kotlin Android auto-dialer module, nati
 
 ## What is the Auto-Dialer?
 
-The BrokerOS Auto-Dialer is a **custom native Android module** written in Kotlin, embedded directly into the Expo mobile application ([`apps/mobile/modules/auto-dialer/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/modules/auto-dialer/)). It enables pre-sales telecallers to dial through daily lead queues consecutively without manually entering phone numbers or switching between multiple apps.
+The BrokerOS Auto-Dialer is a **custom native Android module** written in Kotlin, embedded directly into the Expo mobile application ([`apps/mobile/modules/auto-dialer/`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/mobile/modules/auto-dialer/)). It enables pre-sales telecallers to dial through daily lead queues consecutively without manually entering phone numbers or switching between multiple apps.
 
 Every outgoing call is:
 1. **Automatically initiated** using Android's native telephony manager and the agent's physical SIM card
@@ -68,7 +68,7 @@ sequenceDiagram
 
 ## Real-Time Manager Supervision (`useCallStatus`)
 
-BrokerOS provides sales managers with live visibility into which agents are on a call. This is synchronized through the [`useCallStatus`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/hooks/useCallStatus.ts) hook mounted at the root of the dashboard shell:
+BrokerOS provides sales managers with live visibility into which agents are on a call. This is synchronized through the [`useCallStatus`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/mobile/hooks/useCallStatus.ts) hook mounted at the root of the dashboard shell:
 
 - When `onCallStarted` fires: The mobile app triggers `POST /api/call-status { isOnCall: true }`.
 - When `onCallEnded` fires: The mobile app triggers `POST /api/call-status { isOnCall: false }`.
@@ -95,7 +95,7 @@ To ensure audio recordings are uploaded reliably even if an agent force-closes t
 
 ## Required Android Telephony Permissions
 
-The auto-dialer requires the following permissions declared in [`apps/mobile/app.json`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/app.json):
+The auto-dialer requires the following permissions declared in [`apps/mobile/app.json`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/mobile/app.json):
 
 | Android Permission | Technical Justification |
 | :--- | :--- |

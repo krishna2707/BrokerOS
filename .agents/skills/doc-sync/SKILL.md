@@ -26,7 +26,7 @@ Every documentation file in `docs/` must satisfy the following non-negotiable la
 5. **Navigation Registration (`docs.json`)**:
    Whenever a new `.mdx` file is created, it MUST be registered under the appropriate tab and group in both `docs/docs.json` and the repository root `docs.json`.
 6. **Clickable Links**:
-   All monorepo file references and code symbols must use clickable `file:///` links formatted with forward slashes (e.g., [`apps/api/src/leads/leads.service.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/leads/leads.service.ts)).
+   All monorepo file references and code symbols must use clickable `file:///` links formatted with forward slashes (e.g., [`apps/api/src/leads/leads.service.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/leads/leads.service.ts)).
 
 ---
 
@@ -82,9 +82,9 @@ When executing doc-sync, follow this strict sequence:
 
 ### Step 4: Register New Pages in Navigation
 If your update created a new `.mdx` documentation page:
-1. Open [`docs/docs.json`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs/docs.json) and locate the relevant `tab` and `group`.
+1. Open [`docs/docs.json`](https://github.com/trybrokeros/BrokerOS/blob/main/docs/docs.json) and locate the relevant `tab` and `group`.
 2. Insert the new page path (without the `.mdx` extension).
-3. Mirror the exact change in root [`docs.json`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/docs.json).
+3. Mirror the exact change in root [`docs.json`](https://github.com/trybrokeros/BrokerOS/blob/main/docs.json).
 
 ### Step 5: Automated Compliance Audit
 Run the following automated verification searches before completing the task:

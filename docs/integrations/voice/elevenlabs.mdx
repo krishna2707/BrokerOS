@@ -6,7 +6,7 @@ description: "Deploy ultra-realistic neural voice agents with expressive vocal i
 
 ## Overview
 
-ElevenLabs is an industry leader in synthetic speech quality and emotional realism. In BrokerOS, the ElevenLabs integration is implemented in [`integrations/voice/agents/elevenlabs/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/elevenlabs/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-elevenlabs`.
+ElevenLabs is an industry leader in synthetic speech quality and emotional realism. In BrokerOS, the ElevenLabs integration is implemented in [`integrations/voice/agents/elevenlabs/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/elevenlabs/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-elevenlabs`.
 
 BrokerOS administrators configure ElevenLabs accounts directly inside the Web UI at **Dashboard -> Marketing -> Voice -> Settings**. All credentials are encrypted using AES-256-GCM and stored in PostgreSQL (`VoiceAgentIntegration`).
 
@@ -14,7 +14,7 @@ BrokerOS administrators configure ElevenLabs accounts directly inside the Web UI
 
 ## Architecture and Dispatch Sequence
 
-The ElevenLabs integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types). Outbound sessions initialize through the ElevenLabs Conversational AI API and bridge to PSTN carriers.
+The ElevenLabs integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types). Outbound sessions initialize through the ElevenLabs Conversational AI API and bridge to PSTN carriers.
 
 ```mermaid
 sequenceDiagram
@@ -86,7 +86,7 @@ For flagship developments (villas and penthouses priced above 5 Crores INR), fir
 
 ## Integration Implementation Details
 
-The ElevenLabs integration logic is defined in [`integrations/voice/agents/elevenlabs/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/elevenlabs/src/index.ts) and [`integrations/voice/agents/elevenlabs/src/elevenlabs-dispatcher.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/elevenlabs/src/elevenlabs-dispatcher.ts).
+The ElevenLabs integration logic is defined in [`integrations/voice/agents/elevenlabs/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/elevenlabs/src/index.ts) and [`integrations/voice/agents/elevenlabs/src/elevenlabs-dispatcher.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/elevenlabs/src/elevenlabs-dispatcher.ts).
 
 ### Live Verification Engine
 

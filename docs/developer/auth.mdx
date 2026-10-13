@@ -8,7 +8,7 @@ description: "Universal authentication architecture powered by Better Auth acros
 
 Authentication across the entire BrokerOS monorepo is powered exclusively by **Better Auth**. Custom JWT minting, custom session tables, and custom password hashing algorithms are strictly prohibited by system architecture law.
 
-Every client (web, mobile, background workers) authenticates through the unified Better Auth server instance mounted in [`apps/api/src/auth/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/auth/).
+Every client (web, mobile, background workers) authenticates through the unified Better Auth server instance mounted in [`apps/api/src/auth/`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/auth/).
 
 ---
 
@@ -85,7 +85,7 @@ handleIncomingWebhook() {
 
 ## 2. Frontend Implementation (Next.js 16)
 
-The web application uses the official `better-auth/react` client configured in [`apps/web/lib/auth-client.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/web/lib/auth-client.ts):
+The web application uses the official `better-auth/react` client configured in [`apps/web/lib/auth-client.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/web/lib/auth-client.ts):
 
 ```typescript
 import { createAuthClient } from 'better-auth/react';

@@ -6,7 +6,7 @@ description: "Open-source modular voice and multimodal AI pipelines orchestrated
 
 ## Overview
 
-Pipecat is an open-source framework created by Daily for building real-time voice, multimodal, and conversational AI agents. In BrokerOS, the Pipecat integration is implemented in [`integrations/voice/agents/pipecat/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/pipecat/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-pipecat`.
+Pipecat is an open-source framework created by Daily for building real-time voice, multimodal, and conversational AI agents. In BrokerOS, the Pipecat integration is implemented in [`integrations/voice/agents/pipecat/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/pipecat/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-pipecat`.
 
 BrokerOS administrators configure the Pipecat runner connection directly within the Web UI at **Dashboard -> Marketing -> Voice -> Settings**. All credentials and endpoint URLs are encrypted using AES-256-GCM and stored in PostgreSQL (`VoiceAgentIntegration`).
 
@@ -14,7 +14,7 @@ BrokerOS administrators configure the Pipecat runner connection directly within 
 
 ## Architecture and Dispatch Sequence
 
-The Pipecat integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types). Outbound sessions initialize on a Pipecat runner microservice and connect to the lead via PSTN SIP trunks.
+The Pipecat integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types). Outbound sessions initialize on a Pipecat runner microservice and connect to the lead via PSTN SIP trunks.
 
 ```mermaid
 sequenceDiagram
@@ -84,7 +84,7 @@ In your BrokerOS dashboard:
 
 ## Integration Implementation Details
 
-The Pipecat client is defined in [`integrations/voice/agents/pipecat/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/pipecat/src/index.ts).
+The Pipecat client is defined in [`integrations/voice/agents/pipecat/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/pipecat/src/index.ts).
 
 ### Live Verification Engine
 

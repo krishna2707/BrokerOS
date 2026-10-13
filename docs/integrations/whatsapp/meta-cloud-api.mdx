@@ -8,7 +8,7 @@ description: "Step-by-step setup guide for Meta WhatsApp Cloud API v22.0, WABA c
 
 BrokerOS connects directly to **Meta WhatsApp Cloud API v22.0**, bypassing unverified third-party scrapers or brittle QR-code gateways. Official Cloud API integration guarantees enterprise reliability, verified badge support, 24-hour service conversation windows, pre-approved marketing templates, and cryptographic delivery tracking.
 
-All WhatsApp communication logic is decoupled into the [`@brokeros/int-whatsapp`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/whatsapp/) integration adapter, while the NestJS backend ([`apps/api/src/marketing/whatsapp/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/marketing/whatsapp/)) orchestrates team inbox threads, AI reply synthesis, broadcast queues, and inbound webhook processing.
+All WhatsApp communication logic is decoupled into the [`@brokeros/int-whatsapp`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/whatsapp/) integration adapter, while the NestJS backend ([`apps/api/src/marketing/whatsapp/`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/marketing/whatsapp/)) orchestrates team inbox threads, AI reply synthesis, broadcast queues, and inbound webhook processing.
 
 ---
 
@@ -142,7 +142,7 @@ The `@brokeros/int-whatsapp` package encapsulates all direct communication with 
 
 BrokerOS protects WhatsApp communications and credentials using multi-layered enterprise safeguards:
 
-1. **At-Rest AES-256-GCM Encryption**: System User Access Tokens are encrypted with an initialization vector (IV) and authentication tag prior to database storage in [`packages/prisma/schema.prisma`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/prisma/schema.prisma#L3092). Plaintext access tokens are never written to disk or logs.
+1. **At-Rest AES-256-GCM Encryption**: System User Access Tokens are encrypted with an initialization vector (IV) and authentication tag prior to database storage in [`packages/prisma/schema.prisma`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/prisma/schema.prisma#L3092). Plaintext access tokens are never written to disk or logs.
 2. **In-Transit Webhook Integrity**: Inbound webhooks from Meta are validated against the `x-hub-signature-256` header. The server computes an HMAC-SHA256 signature using your Meta App Secret to ensure payloads originate exclusively from Meta servers.
 3. **SSRF Guard**: Media URLs and dynamic asset links undergo strict Server-Side Request Forgery validation (`ssrf-guard.ts`) to prevent internal network probing.
 4. **Zero Downtime Updates**: Modifying access tokens or phone number mappings through the settings interface takes effect immediately across all workers without requiring server restarts.

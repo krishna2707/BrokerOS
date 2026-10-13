@@ -6,7 +6,7 @@ description: "Full-duplex WebSocket server on /voice/stream with G.711 u-law and
 
 When connecting outbound PSTN phone calls to conversational AI engines over a carrier bridge, audio must travel bi-directionally with sub-second latency. Traditional HTTP polling or pre-recorded audio files cannot handle natural human conversations.
 
-BrokerOS operates a high-performance **Raw RFC 6455 WebSocket Media Streaming Gateway** ([`voice-raw-media.gateway.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/marketing/voice/gateway/voice-raw-media.gateway.ts)) on `/voice/stream`. It receives live audio packets from PSTN carriers, transcodes them in real time, streams them to the conversational model via [`VoiceAiAudioBridgeService`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/marketing/voice/gateway/voice-ai-audio-bridge.service.ts), and sends synthesized voice responses back to the consumer handset.
+BrokerOS operates a high-performance **Raw RFC 6455 WebSocket Media Streaming Gateway** ([`voice-raw-media.gateway.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/marketing/voice/gateway/voice-raw-media.gateway.ts)) on `/voice/stream`. It receives live audio packets from PSTN carriers, transcodes them in real time, streams them to the conversational model via [`VoiceAiAudioBridgeService`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/marketing/voice/gateway/voice-ai-audio-bridge.service.ts), and sends synthesized voice responses back to the consumer handset.
 
 ---
 

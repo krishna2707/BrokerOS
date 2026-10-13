@@ -88,7 +88,7 @@ The mobile app relies on native Google Maps for GPS site visit verification, bro
 3. Enable the **Maps SDK for Android**.
 4. Go to **Credentials**, click **Create Credentials -> API Key**, and restrict the key to the Maps SDK for Android.
 5. Paste the key into `apps/mobile/.env` under `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`.
-6. At compile time, [`apps/mobile/app.config.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/app.config.ts) injects this key directly into the native Android Manifest.
+6. At compile time, [`apps/mobile/app.config.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/mobile/app.config.ts) injects this key directly into the native Android Manifest.
 
 ---
 
@@ -102,7 +102,7 @@ Background push notifications require Firebase Cloud Messaging (FCM) linked to y
   </Step>
 
   <Step title="Add Android Application">
-    Click **Add app -> Android**. Enter the exact package name declared in [`apps/mobile/app.json`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/app.json):
+    Click **Add app -> Android**. Enter the exact package name declared in [`apps/mobile/app.json`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/mobile/app.json):
     ```
     com.anonymous.mobile
     ```
@@ -178,7 +178,7 @@ npx expo run:android
 ```
 
 This command automatically:
-1. Generates the native Android project directory using prebuild plugins (including [`plugins/withCmakeShortPath.js`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/plugins/withCmakeShortPath.js)).
+1. Generates the native Android project directory using prebuild plugins (including [`plugins/withCmakeShortPath.js`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/mobile/plugins/withCmakeShortPath.js)).
 2. Compiles native C++ and Kotlin dependencies (React Native New Architecture and `auto-dialer`).
 3. Installs the resulting development client APK onto your connected device or emulator.
 4. Starts the Metro bundler server on port 8081.
@@ -201,7 +201,7 @@ For the auto-dialer to access audio recordings captured by ODialer or stock reco
 
 ## Step 8: Running Maestro Native E2E Tests
 
-BrokerOS mobile flows are verified using **Maestro**, an automated native UI testing framework. Test specifications live in [`apps/mobile/e2e/`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/mobile/e2e/):
+BrokerOS mobile flows are verified using **Maestro**, an automated native UI testing framework. Test specifications live in [`apps/mobile/e2e/`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/mobile/e2e/):
 
 - `01-login-and-roles.yaml`: Multi-role login and adaptive bottom navigation tabs.
 - `02-lead-autodialer.yaml`: Lead queue loading, call initiation, and outcome logging.
@@ -227,7 +227,7 @@ With an active Android device or emulator connected (`adb devices`):
 pnpm test:mobile:e2e
 ```
 
-The runner executes [`scripts/test-mobile-e2e.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/scripts/test-mobile-e2e.ts), boots the flows sequentially, and asserts that all role workspaces and native intents execute without regression.
+The runner executes [`scripts/test-mobile-e2e.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/scripts/test-mobile-e2e.ts), boots the flows sequentially, and asserts that all role workspaces and native intents execute without regression.
 
 ---
 

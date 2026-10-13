@@ -45,7 +45,7 @@ sequenceDiagram
 ## The 3 Dedicated Gateways
 
 ### 1. Chat & Notification Gateway (`/chat`)
-Located in [`apps/api/src/chat/chat.gateway.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/chat/chat.gateway.ts):
+Located in [`apps/api/src/chat/chat.gateway.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/chat/chat.gateway.ts):
 - **Staff-to-Staff Messaging**: Real-time direct messages and project channel dialogues between field executives and managers.
 - **Push Notification Broadcasts**: Transmits real-time alerts when a lead is assigned or an executive approves a discount.
 - **Presence Tracking**: Displays live online/offline indicators for floor agents.
@@ -62,7 +62,7 @@ socket.join(`project:${projectId}`);
 ---
 
 ### 2. WhatsApp Real-Time Gateway (`/whatsapp`)
-Located in [`apps/api/src/marketing/whatsapp/gateway/whatsapp-realtime.gateway.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/marketing/whatsapp/gateway/whatsapp-realtime.gateway.ts):
+Located in [`apps/api/src/marketing/whatsapp/gateway/whatsapp-realtime.gateway.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/marketing/whatsapp/gateway/whatsapp-realtime.gateway.ts):
 - **Instant Inbound Push**: Broadcasts incoming customer text, attachments, and button taps the millisecond Meta's webhook posts an incoming reply.
 - **Delivery Receipts**: Updates message ticks (sent to delivered to read) dynamically.
 - **Agent Typing Indicators**: Broadcasts when a colleague or customer is actively composing a response.
@@ -70,7 +70,7 @@ Located in [`apps/api/src/marketing/whatsapp/gateway/whatsapp-realtime.gateway.t
 ---
 
 ### 3. Voice Media Stream Gateway (`/voice/stream`)
-Located in [`apps/api/src/marketing/voice/gateway/voice-media-stream.gateway.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/marketing/voice/gateway/voice-media-stream.gateway.ts):
+Located in [`apps/api/src/marketing/voice/gateway/voice-media-stream.gateway.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/marketing/voice/gateway/voice-media-stream.gateway.ts):
 - **Low-Latency Audio Bridge**: Connects raw PSTN audio streams from telephony carriers (Telnyx TeXML or Twilio Media Streams) to LLM voice engines.
 - **Audio Codec**: Streams bidirectional `audio/x-mulaw` (8kHz, 8-bit mono) or 16-bit linear PCM.
 - **Barge-In Interruption Detection**: Detects user speech interruption and immediately clears the playback buffer to halt the AI agent from speaking over the prospect.

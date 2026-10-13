@@ -6,7 +6,7 @@ description: "Configure Retell AI for high-velocity real estate telecalling with
 
 ## Overview
 
-Retell AI is a specialized conversational voice engine designed for sub-second conversational latency (~350 ms) and human-like turn-taking. In BrokerOS, the Retell integration is implemented in [`integrations/voice/agents/retell/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/retell/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-retell`.
+Retell AI is a specialized conversational voice engine designed for sub-second conversational latency (~350 ms) and human-like turn-taking. In BrokerOS, the Retell integration is implemented in [`integrations/voice/agents/retell/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/retell/src/index.ts) under the Turborepo workspace package `@brokeros/int-agent-retell`.
 
 BrokerOS administrators configure and manage Retell AI directly through the Web UI at **Dashboard -> Marketing -> Voice -> Settings**. All API credentials are encrypted using AES-256-GCM and stored in PostgreSQL (`VoiceAgentIntegration`).
 
@@ -14,7 +14,7 @@ BrokerOS administrators configure and manage Retell AI directly through the Web 
 
 ## Architecture and Dispatch Sequence
 
-The Retell integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/types).
+The Retell integration implements the `IVoiceAgentProvider` contract from [`@brokeros/types`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/types).
 
 ```mermaid
 sequenceDiagram
@@ -94,7 +94,7 @@ The BrokerOS `parseRetellWebhookEvent` parser automatically captures:
 
 ## Integration Implementation Details
 
-The Retell client and call dispatcher are located in [`integrations/voice/agents/retell/src/index.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/retell/src/index.ts) and [`integrations/voice/agents/retell/src/retell-dispatcher.ts`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/integrations/voice/agents/retell/src/retell-dispatcher.ts).
+The Retell client and call dispatcher are located in [`integrations/voice/agents/retell/src/index.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/retell/src/index.ts) and [`integrations/voice/agents/retell/src/retell-dispatcher.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/integrations/voice/agents/retell/src/retell-dispatcher.ts).
 
 ### Live Verification Engine
 

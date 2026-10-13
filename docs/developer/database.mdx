@@ -6,7 +6,7 @@ description: "PostgreSQL schema design, Prisma 7 ORM, the isCpProject invariant,
 
 ## Overview
 
-BrokerOS relies on **PostgreSQL** managed through **Prisma 7**. The schema located at [`packages/prisma/schema.prisma`](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/packages/prisma/schema.prisma) serves as the single source of truth for the entire database architecture.
+BrokerOS relies on **PostgreSQL** managed through **Prisma 7**. The schema located at [`packages/prisma/schema.prisma`](https://github.com/trybrokeros/BrokerOS/blob/main/packages/prisma/schema.prisma) serves as the single source of truth for the entire database architecture.
 
 All database queries across `apps/api` and `apps/workers` use the strongly typed Prisma client generated to `packages/prisma/generated/client` and re-exported via `@brokeros/prisma`. Raw SQL strings are strictly prohibited in application code.
 
