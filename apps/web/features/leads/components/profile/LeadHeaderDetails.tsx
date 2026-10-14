@@ -322,11 +322,44 @@ export function LeadHeaderDetails({
             const roleSlug = match ? match[1] : (isPreSales ? "pre-sales" : isPostSales ? "post-sales" : "sales-executive");
             router.push(`/dashboard/${roleSlug}/whatsapp?leadId=${lead.id}`);
           }}
-          title="Open in WhatsApp Inbox (Alt+Click for external web)"
-          className="h-8 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all active:scale-[0.96] press-effect shadow-xs cursor-pointer"
+          disabled={!lead.phone}
+          title={lead.phone ? "Open in WhatsApp Inbox (Alt+Click for external web)" : "No phone number available"}
+          className="h-8 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all active:scale-[0.96] press-effect shadow-xs cursor-pointer"
         >
           <MessageSquare className="w-3.5 h-3.5" />
           <span>WhatsApp</span>
+        </button>
+
+        {/* SMS */}
+        <button
+          onClick={() => {
+            if (!lead.phone) return;
+            const match = pathname ? pathname.match(/^\/dashboard\/([^/]+)/) : null;
+            const roleSlug = match ? match[1] : (isPreSales ? "pre-sales" : isPostSales ? "post-sales" : "sales-executive");
+            router.push(`/dashboard/${roleSlug}/sms?leadId=${lead.id}`);
+          }}
+          disabled={!lead.phone}
+          title={lead.phone ? "Open in SMS Inbox" : "No phone number available"}
+          className="h-8 px-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 text-xs font-bold inline-flex items-center gap-1.5 transition-all active:scale-[0.96] press-effect shadow-xs cursor-pointer"
+        >
+          <MessageSquare className="w-3.5 h-3.5" />
+          <span>SMS</span>
+        </button>
+
+        {/* Email */}
+        <button
+          onClick={() => {
+            if (!lead.email) return;
+            const match = pathname ? pathname.match(/^\/dashboard\/([^/]+)/) : null;
+            const roleSlug = match ? match[1] : (isPreSales ? "pre-sales" : isPostSales ? "post-sales" : "sales-executive");
+            router.push(`/dashboard/${roleSlug}/email?leadId=${lead.id}`);
+          }}
+          disabled={!lead.email}
+          title={lead.email ? "Open in Email Inbox" : "No email address available"}
+          className="h-8 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all active:scale-[0.96] press-effect shadow-xs cursor-pointer"
+        >
+          <Mail className="w-3.5 h-3.5" />
+          <span>Email</span>
         </button>
 
         {/* Schedule Follow-up */}

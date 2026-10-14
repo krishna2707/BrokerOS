@@ -210,11 +210,44 @@ export function BrokerHeaderDetails({
               const roleSlug = match ? match[1] : (isCM ? "closing-manager" : "sourcing-manager");
               router.push(`/dashboard/${roleSlug}/whatsapp?brokerId=${broker.id}`);
             }}
-            title="Open in WhatsApp Inbox (Alt+Click for external web)"
-            className="h-8 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all active:scale-[0.96] press-effect shadow-xs cursor-pointer"
+            disabled={!broker.phone}
+            title={broker.phone ? "Open in WhatsApp Inbox (Alt+Click for external web)" : "No phone number available"}
+            className="h-8 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all active:scale-[0.96] press-effect shadow-xs cursor-pointer"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>WhatsApp</span>
+          </button>
+
+          {/* SMS */}
+          <button
+            onClick={() => {
+              if (!broker.phone) return;
+              const match = pathname ? pathname.match(/^\/dashboard\/([^/]+)/) : null;
+              const roleSlug = match ? match[1] : (isCM ? "closing-manager" : "sourcing-manager");
+              router.push(`/dashboard/${roleSlug}/sms?brokerId=${broker.id}`);
+            }}
+            disabled={!broker.phone}
+            title={broker.phone ? "Open in SMS Inbox" : "No phone number available"}
+            className="h-8 px-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 text-xs font-bold inline-flex items-center gap-1.5 transition-all active:scale-[0.96] press-effect shadow-xs cursor-pointer"
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>SMS</span>
+          </button>
+
+          {/* Email */}
+          <button
+            onClick={() => {
+              if (!broker.email) return;
+              const match = pathname ? pathname.match(/^\/dashboard\/([^/]+)/) : null;
+              const roleSlug = match ? match[1] : (isCM ? "closing-manager" : "sourcing-manager");
+              router.push(`/dashboard/${roleSlug}/email?brokerId=${broker.id}`);
+            }}
+            disabled={!broker.email}
+            title={broker.email ? "Open in Email Inbox" : "No email address registered"}
+            className="h-8 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all active:scale-[0.96] press-effect shadow-xs cursor-pointer"
+          >
+            <Mail className="w-3.5 h-3.5" />
+            <span>Email</span>
           </button>
 
           {/* Follow-up */}
