@@ -173,6 +173,7 @@
             "pages": [
               "marketing/sms/overview",
               "marketing/sms/team-inbox",
+              "marketing/sms/departmental-inbox",
               "marketing/sms/sms-flows",
               "marketing/sms/campaign-wizard",
               "marketing/sms/preflight-and-sender-pools",
@@ -188,6 +189,7 @@
             "pages": [
               "marketing/email/overview",
               "marketing/email/team-inbox",
+              "marketing/email/departmental-inbox",
               "marketing/email/email-flows",
               "marketing/email/campaign-wizard",
               "marketing/email/preflight-and-sender-pools",
