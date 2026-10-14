@@ -1,0 +1,97 @@
+---
+title: "Departmental SMS Inbox"
+sidebarTitle: "Departmental Inboxes"
+description: "Role-scoped 1-on-1 SMS messaging across CRM operational departments with automated executive provisioning, message history preservation, and carrier gateway routing."
+---
+
+## Departmental Scoping Overview
+
+In BrokerOS, real estate client communications are not isolated to marketing broadcasts. Every operational department requires direct, real-time SMS messaging with prospects, clients, and channel partners while strictly honoring data governance boundaries.
+
+Rather than maintaining separate chat applications or permitting agents to use unmonitored personal phones, BrokerOS implements a **Universal Engine with Role-Scoped Workspaces**:
+
+- **Pre-Sales**: Communicates only with assigned early discovery leads (`NEW`, `CONTACTED`, `INTERESTED`) that have valid phone numbers.
+- **Sales Executive**: Takes over lead communication immediately upon site visit scheduling (`SITE_VISIT_SCHEDULED`, `NEGOTIATION`, `BOOKING`).
+- **Post-Sales**: Direct SMS engagement with confirmed buyers for documentation, home loans, milestone billing, and possession handover.
+- **Sourcing Manager**: Communicates strictly with assigned Channel Partner (CP) brokers regarding inventory availability, site visits, and commission settlements.
+- **Closing Manager**: Stationed on-site at sales galleries, managing walk-in leads and on-site negotiation prospects.
+- **Finance**: Oversees payment collections, demand notices, receipts, and CP commission disbursements.
+- **Managers and Directors**: Maintain team-wide oversight with interactive filters to inspect subordinate conversation velocity.
+
+---
+
+## Architectural Workflow: Lead Handoff and Lifecycle Continuity
+
+When a lead transitions across departments, such as from Pre-Sales to Sales Executive upon scheduling a site visit, the SMS thread history remains unified while active inbox routing shifts automatically.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Buyer as Property Buyer
+    actor PreSales as Pre-Sales Rep
+    participant CRM as BrokerOS CRM API
+    participant Gateway as SMS Carrier Gateway
+    actor SalesExec as Sales Executive
+    actor PostSales as Post-Sales Rep
+
+    Buyer->>Gateway: Inbound SMS Text Reply
+    Gateway->>CRM: Webhook Ingestion (/api/marketing/sms/webhooks/:provider)
+    CRM->>PreSales: Routes to Pre-Sales Rep Inbox (/dashboard/pre-sales/sms)
+    PreSales->>Buyer: Direct SMS Outbound Reply
+    
+    Note over PreSales,SalesExec: Lead Qualifies and Schedules Site Visit
+    PreSales->>CRM: Schedule Site Visit -> Reassigns to Sales Executive
+    CRM->>SalesExec: Conversation moves to Sales Exec Inbox (/dashboard/sales-executive/sms)
+    Note over SalesExec: Full prior SMS chat history seamlessly visible
+    SalesExec->>Buyer: Sends Location Pin and Meeting Confirmation via SMS
+    
+    Note over SalesExec,PostSales: Unit Booked -> Booking Confirmed
+    SalesExec->>CRM: Creates Booking -> Customer Profile Generated
+    CRM->>PostSales: Routes to Post-Sales Inbox (/dashboard/post-sales/sms)
+    PostSales->>Buyer: Automated Payment Demand Notice via Default SMS Gateway
+```
+
+---
+
+## Role Scoping Matrix
+
+The backend enforces data isolation through [sms-inbox.service.ts](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/marketing/sms/services/sms-inbox.service.ts):
+
+| Department Role | Scope Filter | Visible Entities | In-App UI Route |
+| :--- | :--- | :--- | :--- |
+| **Pre-Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`NEW`, `CONTACTED`, `INTERESTED`) with valid phone | `/dashboard/pre-sales/sms` |
+| **Pre-Sales Manager** | `team` | All leads assigned to direct subordinates, with executive dropdown filter | `/dashboard/pre-sales-manager/sms` |
+| **Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`SITE_VISIT_SCHEDULED`, `NEGOTIATION`, `BOOKING`) with valid phone | `/dashboard/sales-executive/sms` |
+| **Sales Manager** | `team` | All leads assigned to subordinate sales executives, with deal velocity tracking | `/dashboard/sales-manager/sms` |
+| **Post-Sales Executive** | `my` | Customers where `booking.assignedPostSalesId = currentUser.id` with valid phone | `/dashboard/post-sales/sms` |
+| **Post-Sales Manager** | `team` | All post-booking customer threads across all team post-sales executives | `/dashboard/post-sales-manager/sms` |
+| **Sourcing Manager** | `my` | External CP Brokers where `broker.sourcingManagerId = currentUser.id` with valid phone | `/dashboard/sourcing-manager/sms` |
+| **Closing Manager** | `my` | Walk-in leads created on-site or leads assigned at their project sales gallery | `/dashboard/closing-manager/sms` |
+| **Finance Department** | `all` | Customers with payment transactions and Brokers with commission claims | `/dashboard/finance/sms` |
+| **Business Manager** | `all` | Enterprise-wide operational visibility across both Brokerage and CP network | `/dashboard/business-manager/sms` |
+| **Director and Admin** | `all` | Full organizational oversight with real-time audit capabilities | `/dashboard/director/sms` |
+
+---
+
+## Key Operational Features
+
+### 1. Automated Executive Provisioning
+When a manager assigns new leads or brokers to an executive, BrokerOS automatically provisions conversation records even if the contact has not sent an inbound text yet. The contact appears in the executive directory with a `"New • Uncontacted"` badge, allowing immediate outbound engagement.
+
+### 2. Clean Outbound Delivery
+Outbound text messages sent to property buyers are dispatched cleanly without artificial agent signature prefixes. Internal CRM attribution is recorded in message audit logs with `senderName` and `senderType: agent`.
+
+### 3. Contact Qualification Enforcement
+Operational SMS inboxes enforce contact phone qualification. Contacts without a telephone number are omitted from directory lists. In the CRM profile header toolbars, the **SMS** button is automatically disabled with the tooltip `"No phone number available"`.
+
+### 4. Default Operational Gateway Configuration
+System administrators configure a single default SMS gateway for operational messaging in the Admin Workspace:
+- Navigation: `Dashboard -> Admin -> Settings -> SMS`
+- Providers: Twilio, AWS SNS, Sinch, Gupshup, Infobip, Vonage, Telnyx, Plivo, Bird
+- Feature: 1-click active default switching with visual badge indicator
+
+### 5. Deep-Linking from CRM Profiles
+In both the Lead Profile and Broker Profile headers, clicking the **SMS** action navigates directly to the current department SMS inbox:
+- `/dashboard/pre-sales/sms?leadId=[id]`
+- `/dashboard/sales-executive/sms?leadId=[id]`
+- `/dashboard/sourcing-manager/sms?brokerId=[id]`
