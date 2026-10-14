@@ -11,6 +11,8 @@ export interface EmailConversation {
   lastMessageText?: string | null;
   lastMessageAt?: string | null;
   unreadCount: number;
+  scheduledCount?: number;
+  nextScheduledAt?: string | null;
 
   assignedProvider: string;
   assignedSenderEmail?: string | null;
@@ -68,7 +70,7 @@ export interface EmailMessage {
   subject?: string | null;
   bodyText?: string | null;
   bodyHtml?: string | null;
-  status: 'PENDING' | 'SENT' | 'DELIVERED' | 'OPENED' | 'CLICKED' | 'FAILED';
+  status: 'PENDING' | 'SENT' | 'DELIVERED' | 'OPENED' | 'CLICKED' | 'FAILED' | 'SCHEDULED' | 'CANCELLED';
   provider?: string | null;
   providerMsgId?: string | null;
   inReplyTo?: string | null;
@@ -80,6 +82,9 @@ export interface EmailMessage {
   }> | null;
   isAiGenerated: boolean;
   failureReason?: string | null;
+  scheduledAt?: string | null;
+  scheduledBy?: string | null;
+  isScheduled?: boolean;
   sentAt?: string | null;
   deliveredAt?: string | null;
   openedAt?: string | null;
