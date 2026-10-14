@@ -3,7 +3,7 @@
 // ============================================================================
 
 import React, { useState } from 'react';
-import { Search, MessageSquare, Plus, Filter } from 'lucide-react';
+import { Search, MessageSquare, Plus, Filter, Clock } from 'lucide-react';
 import type { SmsConversation } from '../../types/inbox';
 import { StartNewSmsModal } from './StartNewSmsModal';
 
@@ -61,6 +61,16 @@ export const SmsConversationList: React.FC<SmsConversationListProps> = ({
     const clean = text.replace(/\s+/g, ' ').trim();
     if (!clean) return 'No messages yet';
     return clean.length > maxChars ? `${clean.slice(0, maxChars)}...` : clean;
+  };
+
+  const formatScheduleChipDate = (dateStr?: string | null) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      return `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } catch {
+      return '';
+    }
   };
 
   return (
@@ -223,6 +233,15 @@ export const SmsConversationList: React.FC<SmsConversationListProps> = ({
                     {conv.customer && (
                       <span className="px-1.5 py-0.2 rounded-md bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 border border-sky-200 dark:border-sky-800 text-[9px] font-bold">
                         Customer
+                      </span>
+                    )}
+                    {conv.nextScheduledAt && (
+                      <span
+                        title={`Scheduled message queued for ${formatScheduleChipDate(conv.nextScheduledAt)}`}
+                        className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[9px] font-bold"
+                      >
+                        <Clock className="w-2.5 h-2.5 animate-pulse" />
+                        <span>Scheduled: {formatScheduleChipDate(conv.nextScheduledAt)}</span>
                       </span>
                     )}
                   </div>

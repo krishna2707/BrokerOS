@@ -10,11 +10,17 @@ import { Loader2, MessageSquare } from 'lucide-react';
 interface SmsConversationThreadProps {
   messages: SmsMessage[];
   loading?: boolean;
+  onSendNow?: (id: string) => void;
+  onEdit?: (message: SmsMessage) => void;
+  onCancel?: (id: string) => void;
 }
 
 export const SmsConversationThread: React.FC<SmsConversationThreadProps> = ({
   messages,
   loading = false,
+  onSendNow,
+  onEdit,
+  onCancel,
 }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -46,7 +52,13 @@ export const SmsConversationThread: React.FC<SmsConversationThreadProps> = ({
         </div>
       ) : (
         messages.map((message) => (
-          <SmsMessageBubble key={message.id} message={message} />
+          <SmsMessageBubble
+            key={message.id}
+            message={message}
+            onSendNow={onSendNow}
+            onEdit={onEdit}
+            onCancel={onCancel}
+          />
         ))
       )}
     </div>
