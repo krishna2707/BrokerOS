@@ -98,6 +98,10 @@ export class SmsService {
     return this.integrationsService.deleteIntegration(id);
   }
 
+  async setDefaultIntegration(id: string) {
+    return this.integrationsService.setDefaultIntegration(id);
+  }
+
   async syncNumbersForIntegration(integrationId: string) {
     return this.integrationsService.syncNumbersForIntegration(integrationId);
   }

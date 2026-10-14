@@ -33,6 +33,11 @@ export class SmsIntegrationsController {
     return this.smsService.deleteIntegration(id);
   }
 
+  @Patch(':id/default')
+  async setDefault(@Param('id') id: string) {
+    return this.smsService.setDefaultIntegration(id);
+  }
+
   @Get('numbers')
   async listNumbers() {
     return this.smsService.listAllActiveSenderNumbers();
