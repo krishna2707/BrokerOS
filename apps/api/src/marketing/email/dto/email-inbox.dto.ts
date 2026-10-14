@@ -134,3 +134,67 @@ export class DraftEmailAiReplyDto {
   @IsOptional()
   instruction?: string;
 }
+
+export class ScheduleEmailDto {
+  @IsString()
+  @IsNotEmpty()
+  scheduledAt!: string; // ISO 8601 string
+
+  @IsString()
+  @IsOptional()
+  text?: string;
+
+  @IsString()
+  @IsOptional()
+  html?: string;
+
+  @IsString()
+  @IsOptional()
+  subject?: string;
+
+  @IsArray()
+  @IsOptional()
+  attachments?: Array<{
+    name: string;
+    url: string;
+    size?: number;
+    contentType?: string;
+  }>;
+
+  @IsString()
+  @IsOptional()
+  templateId?: string;
+}
+
+export class RescheduleEmailDto {
+  @IsString()
+  @IsNotEmpty()
+  scheduledAt!: string;
+}
+
+export class EditScheduledEmailDto {
+  @IsString()
+  @IsOptional()
+  scheduledAt?: string;
+
+  @IsString()
+  @IsOptional()
+  text?: string;
+
+  @IsString()
+  @IsOptional()
+  html?: string;
+
+  @IsString()
+  @IsOptional()
+  subject?: string;
+
+  @IsArray()
+  @IsOptional()
+  attachments?: Array<{
+    name: string;
+    url: string;
+    size?: number;
+    contentType?: string;
+  }>;
+}
