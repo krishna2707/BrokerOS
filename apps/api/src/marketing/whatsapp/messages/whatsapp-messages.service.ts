@@ -26,6 +26,9 @@ import type {
   SendWhatsAppMessageDto,
   SendWhatsAppTemplateDirectDto,
   ListWhatsAppMessagesQueryDto,
+  ScheduleWhatsAppMessageDto,
+  RescheduleWhatsAppMessageDto,
+  EditScheduledWhatsAppMessageDto,
 } from '../dto/whatsapp.dto.js';
 
 @Injectable()
@@ -59,7 +62,10 @@ export class WhatsAppMessagesService {
       throw new NotFoundException(`Conversation ${conversationId} not found`);
     }
 
-    const where: Record<string, any> = { conversationId };
+    const where: Record<string, any> = {
+      conversationId,
+      status: { not: 'CANCELLED' },
+    };
 
     const [items, total] = await Promise.all([
       this.prisma.whatsAppMessage.findMany({
@@ -504,5 +510,243 @@ export class WhatsAppMessagesService {
       waMessageId: messageRow.waMessageId,
       message: messageRow,
     };
+  }
+
+  /**
+   * Schedule a WhatsApp message for future dispatch
+   */
+  async scheduleMessage(
+    conversationId: string,
+    dto: ScheduleWhatsAppMessageDto,
+    senderUser?: { id: string; name?: string },
+  ) {
+    const conversation = await this.prisma.whatsAppConversation.findUnique({
+      where: { id: conversationId },
+      include: { contact: true },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException(`Conversation ${conversationId} not found`);
+    }
+
+    const scheduledDate = new Date(dto.scheduledAt);
+    if (isNaN(scheduledDate.getTime()) || scheduledDate.getTime() <= Date.now() + 5000) {
+      throw new BadRequestException('Scheduled time must be at least 10 seconds in the future');
+    }
+
+    let messageType: WhatsAppMessageType = 'TEXT';
+    if (dto.type === 'media') {
+      const kind = (dto.mediaKind || 'image').toLowerCase();
+      if (kind === 'video') messageType = 'VIDEO';
+      else if (kind === 'audio') messageType = 'AUDIO';
+      else if (kind === 'document') messageType = 'DOCUMENT';
+      else messageType = 'IMAGE';
+    } else if (dto.type === 'template') {
+      messageType = 'TEMPLATE';
+    } else if (dto.type === 'interactive') {
+      messageType = 'INTERACTIVE';
+    }
+
+    let resolvedBody = dto.text || null;
+    let templateId: string | null = null;
+
+    if (dto.type === 'template' && dto.templateName) {
+      const templateRecord = await this.prisma.whatsAppTemplate.findFirst({
+        where: {
+          accountId: conversation.accountId,
+          name: dto.templateName,
+        },
+      });
+
+      if (templateRecord) {
+        templateId = templateRecord.id;
+        resolvedBody = templateRecord.bodyText;
+        if (Array.isArray(dto.templateParams) && dto.templateParams.length > 0) {
+          dto.templateParams.forEach((param: any, idx: number) => {
+            resolvedBody = resolvedBody?.replace(
+              new RegExp(`\\{\\{${idx + 1}\\}\\}`, 'g'),
+              String(param),
+            ) || null;
+          });
+        }
+      } else {
+        resolvedBody = `[Template: ${dto.templateName}]`;
+      }
+    } else if (dto.type === 'media') {
+      resolvedBody = dto.caption || dto.filename || null;
+    }
+
+    const scheduledMessage = await this.prisma.whatsAppMessage.create({
+      data: {
+        conversationId: conversation.id,
+        direction: 'OUTBOUND',
+        type: messageType,
+        status: 'SCHEDULED',
+        senderType: 'agent',
+        contentType: dto.type === 'media' ? dto.mediaKind || 'image' : dto.type,
+        senderName: senderUser?.name || 'Agent',
+        body: resolvedBody,
+        caption: dto.caption || null,
+        mediaUrl: dto.mediaUrl || null,
+        mediaType: dto.mediaKind || null,
+        fileName: dto.filename || null,
+        templateId,
+        templateValues: dto.templateParams ? dto.templateParams : undefined,
+        interactivePayload: dto.interactivePayload ? dto.interactivePayload : undefined,
+        scheduledAt: scheduledDate,
+        scheduledBy: senderUser?.id || null,
+        isScheduled: true,
+      },
+      include: {
+        template: {
+          select: {
+            id: true,
+            name: true,
+            headerText: true,
+            bodyText: true,
+            footerText: true,
+            buttons: true,
+          },
+        },
+      },
+    });
+
+    return scheduledMessage;
+  }
+
+  /**
+   * Get all pending scheduled WhatsApp messages for a conversation
+   */
+  async getScheduledMessages(conversationId: string) {
+    return this.prisma.whatsAppMessage.findMany({
+      where: {
+        conversationId,
+        status: 'SCHEDULED',
+      },
+      orderBy: { scheduledAt: 'asc' },
+      include: {
+        template: {
+          select: {
+            id: true,
+            name: true,
+            headerText: true,
+            bodyText: true,
+            footerText: true,
+            buttons: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Reschedule an existing scheduled WhatsApp message
+   */
+  async rescheduleMessage(messageId: string, newScheduledAt: string) {
+    const msg = await this.prisma.whatsAppMessage.findUnique({ where: { id: messageId } });
+    if (!msg || msg.status !== 'SCHEDULED') {
+      throw new NotFoundException(`Scheduled WhatsApp message #${messageId} not found`);
+    }
+
+    const scheduledDate = new Date(newScheduledAt);
+    if (isNaN(scheduledDate.getTime()) || scheduledDate.getTime() <= Date.now() + 5000) {
+      throw new BadRequestException('Scheduled time must be in the future');
+    }
+
+    return this.prisma.whatsAppMessage.update({
+      where: { id: messageId },
+      data: { scheduledAt: scheduledDate },
+    });
+  }
+
+  /**
+   * Edit content and/or date of a scheduled WhatsApp message
+   */
+  async editScheduledMessage(messageId: string, dto: EditScheduledWhatsAppMessageDto) {
+    const msg = await this.prisma.whatsAppMessage.findUnique({ where: { id: messageId } });
+    if (!msg || msg.status !== 'SCHEDULED') {
+      throw new NotFoundException(`Scheduled WhatsApp message #${messageId} not found`);
+    }
+
+    const data: any = {};
+    if (dto.text !== undefined) data.body = dto.text;
+    if (dto.caption !== undefined) data.caption = dto.caption;
+    if (dto.mediaUrl !== undefined) data.mediaUrl = dto.mediaUrl;
+    if (dto.templateParams !== undefined) data.templateValues = dto.templateParams;
+
+    if (dto.scheduledAt) {
+      const scheduledDate = new Date(dto.scheduledAt);
+      if (isNaN(scheduledDate.getTime()) || scheduledDate.getTime() <= Date.now() + 5000) {
+        throw new BadRequestException('Scheduled time must be in the future');
+      }
+      data.scheduledAt = scheduledDate;
+    }
+
+    return this.prisma.whatsAppMessage.update({
+      where: { id: messageId },
+      data,
+    });
+  }
+
+  /**
+   * Cancel a scheduled WhatsApp message
+   */
+  async cancelScheduledMessage(messageId: string) {
+    const msg = await this.prisma.whatsAppMessage.findUnique({ where: { id: messageId } });
+    if (!msg || msg.status !== 'SCHEDULED') {
+      throw new NotFoundException(`Scheduled WhatsApp message #${messageId} not found`);
+    }
+
+    return this.prisma.whatsAppMessage.update({
+      where: { id: messageId },
+      data: { status: 'CANCELLED' },
+    });
+  }
+
+  /**
+   * Immediately dispatch a scheduled WhatsApp message
+   */
+  async sendScheduledMessageNow(
+    messageId: string,
+    senderUser?: { id: string; name?: string },
+  ) {
+    const msg = await this.prisma.whatsAppMessage.findUnique({
+      where: { id: messageId },
+      include: { template: true },
+    });
+    if (!msg || msg.status !== 'SCHEDULED') {
+      throw new NotFoundException(`Scheduled WhatsApp message #${messageId} not found or already sent`);
+    }
+
+    let payload: SendWhatsAppMessageDto;
+    if (msg.type === 'TEMPLATE' && msg.template?.name) {
+      payload = {
+        type: 'template',
+        templateName: msg.template.name,
+        templateParams: msg.templateValues ? (msg.templateValues as any) : undefined,
+      };
+    } else if (['IMAGE', 'VIDEO', 'DOCUMENT', 'AUDIO'].includes(msg.type)) {
+      payload = {
+        type: 'media',
+        mediaUrl: msg.mediaUrl || undefined,
+        mediaKind: msg.type.toLowerCase() as any,
+        caption: msg.caption || undefined,
+      };
+    } else {
+      payload = {
+        type: 'text',
+        text: msg.body || '',
+      };
+    }
+
+    const dispatched = await this.sendMessage(
+      msg.conversationId,
+      payload,
+      senderUser || (msg.scheduledBy ? { id: msg.scheduledBy, name: msg.senderName || 'Agent' } : undefined),
+    );
+
+    await this.prisma.whatsAppMessage.delete({ where: { id: messageId } }).catch(() => null);
+
+    return dispatched;
   }
 }
