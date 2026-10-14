@@ -1,7 +1,3 @@
-// ============================================================================
-// BrokerOS — WhatsApp Message Bubble Component
-// ============================================================================
-
 import React from 'react';
 import {
   Check,
@@ -12,17 +8,29 @@ import {
   Play,
   Bot,
   User,
+  Zap,
+  Edit2,
+  Trash2,
 } from 'lucide-react';
 import type { WhatsAppMessage } from '../../types';
 
 interface MessageBubbleProps {
   message: WhatsAppMessage;
+  onSendNow?: (id: string) => void;
+  onEdit?: (message: WhatsAppMessage) => void;
+  onCancel?: (id: string) => void;
 }
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
+export const MessageBubble: React.FC<MessageBubbleProps> = ({
+  message,
+  onSendNow,
+  onEdit,
+  onCancel,
+}) => {
   const isOutbound = message.direction === 'OUTBOUND';
   const isBot = message.senderType === 'bot';
   const isAgent = message.senderType === 'agent';
+  const isScheduled = message.status === 'SCHEDULED';
 
   const formatTime = (dateStr?: string | null) => {
     if (!dateStr) return '';
@@ -36,12 +44,30 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     }
   };
 
+  const formatScheduleDate = (dateStr?: string | null) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      return `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })} at ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } catch {
+      return dateStr;
+    }
+  };
+
 
 
   const renderStatus = () => {
     if (!isOutbound) return null;
 
     switch (message.status) {
+      case 'SCHEDULED':
+        return (
+          <span title={`Scheduled for ${message.scheduledAt}`} className="flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-400">
+            <Clock className="w-3.5 h-3.5 animate-pulse" />
+            <span className="text-[10px]">SCHEDULED</span>
+          </span>
+        );
+
       case 'READ':
         return (
           <CheckCheck className="w-3.5 h-3.5 text-sky-300 shrink-0" />
@@ -72,7 +98,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     }
   };
 
-
   return (
     <div
       className={`flex w-full my-1.5 ${
@@ -81,7 +106,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     >
       <div
         className={`max-w-[75%] md:max-w-[65%] rounded-2xl px-4 py-2.5 shadow-sm text-sm relative transition-all ${
-          isOutbound
+          isScheduled
+            ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-text-primary rounded-br-xs border-2 border-dashed border-emerald-500/50 shadow-sm'
+            : isOutbound
             ? isBot
               ? 'bg-purple-600/90 text-white rounded-br-xs border border-purple-500/30'
               : 'bg-emerald-600 text-white rounded-br-xs border border-emerald-500/30'
@@ -89,18 +116,33 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         }`}
       >
         {/* Sender Attribution Badge */}
-        {isOutbound && (
-          <div className="flex items-center gap-1 text-[10px] font-medium opacity-80 mb-1">
-            {isBot ? (
-              <>
-                <Bot className="w-3 h-3 text-purple-200" />
-                <span>Automated Bot</span>
-              </>
-            ) : (
-              <>
-                <User className="w-3 h-3 text-emerald-200" />
-                <span>{message.senderName || 'Agent'}</span>
-              </>
+        {(isOutbound || isScheduled) && (
+          <div className="flex items-center justify-between gap-2 text-[10px] font-medium mb-1.5 pb-1 border-b border-black/10 dark:border-white/10">
+            <div className="flex items-center gap-1">
+              {isScheduled ? (
+                <>
+                  <Clock className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                    Scheduled by {message.senderName || 'Agent'}
+                  </span>
+                </>
+              ) : isBot ? (
+                <>
+                  <Bot className="w-3 h-3 text-purple-200" />
+                  <span>Automated Bot</span>
+                </>
+              ) : (
+                <>
+                  <User className="w-3 h-3 text-emerald-200" />
+                  <span>{message.senderName || 'Agent'}</span>
+                </>
+              )}
+            </div>
+
+            {isScheduled && message.scheduledAt && (
+              <span className="font-mono text-[9px] text-emerald-700 dark:text-emerald-400 font-bold">
+                Due {formatScheduleDate(message.scheduledAt)}
+              </span>
             )}
           </div>
         )}
@@ -236,6 +278,52 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
           <span>{formatTime(message.sentAt || message.createdAt)}</span>
           {renderStatus()}
         </div>
+
+        {/* Scheduled Message Action Strip */}
+        {isScheduled && (
+          <div className="mt-2.5 pt-2 border-t border-emerald-500/25 flex items-center justify-between gap-2">
+            <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
+              Will send automatically
+            </span>
+
+            <div className="flex items-center gap-1.5">
+              {onSendNow && (
+                <button
+                  type="button"
+                  onClick={() => onSendNow(message.id)}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] transition-colors shadow-2xs"
+                  title="Send message immediately"
+                >
+                  <Zap className="w-2.5 h-2.5" />
+                  <span>Send Now</span>
+                </button>
+              )}
+
+              {onEdit && (
+                <button
+                  type="button"
+                  onClick={() => onEdit(message)}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-bg-surface hover:bg-bg-subtle border border-border-default text-text-secondary hover:text-text-primary text-[10px] transition-colors"
+                  title="Edit text or reschedule"
+                >
+                  <Edit2 className="w-2.5 h-2.5" />
+                  <span>Edit</span>
+                </button>
+              )}
+
+              {onCancel && (
+                <button
+                  type="button"
+                  onClick={() => onCancel(message.id)}
+                  className="p-1 rounded-md hover:bg-rose-500/10 text-text-tertiary hover:text-rose-500 transition-colors"
+                  title="Cancel scheduled message"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

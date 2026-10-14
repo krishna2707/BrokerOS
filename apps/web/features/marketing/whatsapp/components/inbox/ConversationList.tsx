@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, MessageSquare, Filter, Plus } from 'lucide-react';
+import { Search, MessageSquare, Filter, Plus, Clock } from 'lucide-react';
 import type { WhatsAppConversation } from '../../types';
 import { StartNewChatModal } from './StartNewChatModal';
 
@@ -59,6 +59,16 @@ export const ConversationList: React.FC<ConversationListProps> = ({
     const clean = text.replace(/\s+/g, ' ').trim();
     if (!clean) return 'No messages yet';
     return clean.length > maxChars ? `${clean.slice(0, maxChars)}...` : clean;
+  };
+
+  const formatScheduleChipDate = (dateStr?: string | null) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      return `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } catch {
+      return '';
+    }
   };
 
   return (
@@ -218,6 +228,15 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     {conv.customer && (
                       <span className="px-1.5 py-0.2 rounded-md bg-sky-50 text-sky-700 border border-sky-200 text-[9px] font-bold">
                         Customer
+                      </span>
+                    )}
+                    {conv.nextScheduledAt && (
+                      <span
+                        title={`Scheduled WhatsApp message queued for ${formatScheduleChipDate(conv.nextScheduledAt)}`}
+                        className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-[9px] font-bold"
+                      >
+                        <Clock className="w-2.5 h-2.5 animate-pulse" />
+                        <span>Scheduled: {formatScheduleChipDate(conv.nextScheduledAt)}</span>
                       </span>
                     )}
                   </div>

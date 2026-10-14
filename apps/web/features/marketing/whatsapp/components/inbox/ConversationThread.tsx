@@ -12,11 +12,17 @@ interface ConversationThreadProps {
   loading?: boolean;
   is24HourWindowActive?: boolean;
   onOpenTemplatePicker?: () => void;
+  onSendNow?: (id: string) => void;
+  onEdit?: (message: WhatsAppMessage) => void;
+  onCancel?: (id: string) => void;
 }
 
 export const ConversationThread: React.FC<ConversationThreadProps> = ({
   messages,
   loading = false,
+  onSendNow,
+  onEdit,
+  onCancel,
 }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -45,7 +51,15 @@ export const ConversationThread: React.FC<ConversationThreadProps> = ({
           </p>
         </div>
       ) : (
-        messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)
+        messages.map((msg) => (
+          <MessageBubble
+            key={msg.id}
+            message={msg}
+            onSendNow={onSendNow}
+            onEdit={onEdit}
+            onCancel={onCancel}
+          />
+        ))
       )}
 
       <div ref={bottomRef} />

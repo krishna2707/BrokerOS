@@ -12,10 +12,12 @@ import { ConversationThread } from './ConversationThread';
 import { MessageComposer } from './MessageComposer';
 import { ContactDrawer } from './ContactDrawer';
 import { TemplatePickerModal } from './TemplatePickerModal';
+import { ScheduledMessagesDock } from '../../../components/ScheduledMessagesDock';
+import { ScheduleMessageModal } from '../../../components/ScheduleMessageModal';
 import { useWhatsAppConversations } from '../../hooks/use-whatsapp-conversations';
 import { useWhatsAppMessages } from '../../hooks/use-whatsapp-messages';
 import { useWhatsAppRealtime } from '../../hooks/use-whatsapp-realtime';
-import type { WhatsAppConversation, WhatsAppTemplate } from '../../types';
+import type { WhatsAppConversation, WhatsAppTemplate, WhatsAppMessage } from '../../types';
 
 interface WhatsAppInboxViewProps {
   initialAccountId?: string;
@@ -97,10 +99,30 @@ export const WhatsAppInboxView: React.FC<WhatsAppInboxViewProps> = ({
     messages,
     loading: messagesLoading,
     sendMessage,
+    scheduleMessage,
+    rescheduleMessage,
+    editScheduledMessage,
+    cancelScheduledMessage,
+    sendScheduledMessageNow,
     draftReplyWithAi,
     handleIncomingMessage,
     handleStatusUpdate,
   } = useWhatsAppMessages(activeConversation?.id || null);
+
+  const [templates, setTemplates] = useState<WhatsAppTemplate[]>([]);
+  const [editingScheduledMessage, setEditingScheduledMessage] = useState<WhatsAppMessage | null>(null);
+  const scheduledMessages = messages.filter((m) => m.status === 'SCHEDULED');
+
+  useEffect(() => {
+    if (activeConversation?.accountId) {
+      fetch(`${baseUrl}/api/marketing/whatsapp/templates?accountId=${activeConversation.accountId}`, {
+        credentials: 'include',
+      })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => setTemplates(Array.isArray(data) ? data : data.items || []))
+        .catch(() => setTemplates([]));
+    }
+  }, [activeConversation?.accountId, baseUrl]);
 
   // Auto-select deep-linked conversation, lead, broker, customer, or first conversation if only 1 exists
   useEffect(() => {
@@ -261,10 +283,22 @@ export const WhatsAppInboxView: React.FC<WhatsAppInboxViewProps> = ({
                   <ConversationThread
                     messages={messages}
                     loading={messagesLoading}
+                    onSendNow={sendScheduledMessageNow}
+                    onEdit={(msg) => setEditingScheduledMessage(msg)}
+                    onCancel={cancelScheduledMessage}
+                  />
+
+                  <ScheduledMessagesDock
+                    messages={scheduledMessages}
+                    channel="whatsapp"
+                    onSendNow={sendScheduledMessageNow}
+                    onEdit={(msg) => setEditingScheduledMessage(msg)}
+                    onCancel={cancelScheduledMessage}
                   />
 
                   <MessageComposer
                     onSendMessage={sendMessage}
+                    onScheduleMessage={scheduleMessage}
                     onDraftWithAi={() =>
                       draftReplyWithAi(
                         activeConversation.accountId,
@@ -272,8 +306,45 @@ export const WhatsAppInboxView: React.FC<WhatsAppInboxViewProps> = ({
                       )
                     }
                     accountId={activeConversation.accountId}
+                    recipientName={
+                      activeConversation.contactName ||
+                      (activeConversation.lead ? `${activeConversation.lead.firstName || ''} ${activeConversation.lead.lastName || ''}`.trim() : undefined)
+                    }
+                    recipientPhone={activeConversation.contactPhone}
+                    templates={templates}
                     is24HourWindowActive={is24HourWindowActive}
                   />
+
+                  {editingScheduledMessage && (
+                    <ScheduleMessageModal
+                      isOpen={Boolean(editingScheduledMessage)}
+                      onClose={() => setEditingScheduledMessage(null)}
+                      isEditing={true}
+                      initialText={editingScheduledMessage.body || editingScheduledMessage.caption || ''}
+                      initialScheduledAt={editingScheduledMessage.scheduledAt || undefined}
+                      channel="whatsapp"
+                      recipientName={
+                        activeConversation.contactName ||
+                        (activeConversation.lead ? `${activeConversation.lead.firstName || ''} ${activeConversation.lead.lastName || ''}`.trim() : undefined)
+                      }
+                      recipientTarget={activeConversation.contactPhone}
+                      is24HourWindowActive={is24HourWindowActive}
+                      templates={templates.map((t) => ({
+                        name: t.name,
+                        bodyText: t.bodyText || t.name,
+                        language: t.language,
+                      }))}
+                      onSchedule={async (payload) => {
+                        await editScheduledMessage(editingScheduledMessage.id, {
+                          text: payload.text,
+                          templateName: payload.templateName,
+                          templateParams: payload.templateParams,
+                          scheduledAt: payload.scheduledAt,
+                        });
+                        setEditingScheduledMessage(null);
+                      }}
+                    />
+                  )}
                 </>
               );
             })()}
