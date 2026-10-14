@@ -50,3 +50,10 @@ export { EmailRecipientTable as RecipientActivityTable } from "../email/componen
 export { EmailProviderConfigCard as ProviderConfigCard } from "../email/components/EmailProviderConfigCard";
 export { EmailMergeTagSelector as MergeTagSelector } from "../email/components/EmailMergeTagSelector";
 export { SmsRecipientTable as SmsRecipientActivityTable } from "../sms/components/SmsRecipientTable";
+
+// Scheduled Messaging Components
+export { ScheduleMessageModal } from "./ScheduleMessageModal";
+export type { ScheduleMessageModalProps, ScheduleModalPayload } from "./ScheduleMessageModal";
+export { ScheduledMessagesDock } from "./ScheduledMessagesDock";
+export type { ScheduledMessagesDockProps } from "./ScheduledMessagesDock";
+
