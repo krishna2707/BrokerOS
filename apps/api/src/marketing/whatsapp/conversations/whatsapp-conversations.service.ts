@@ -362,6 +362,12 @@ export class WhatsAppConversationsService {
               reraNumber: true,
             },
           },
+          messages: {
+            where: { status: 'SCHEDULED' },
+            orderBy: { scheduledAt: 'asc' as const },
+            take: 1,
+            select: { id: true, scheduledAt: true, body: true },
+          },
         },
         orderBy: [{ lastMessageAt: 'desc' }, { updatedAt: 'desc' }],
         skip,
@@ -370,8 +376,14 @@ export class WhatsAppConversationsService {
       this.prisma.whatsAppConversation.count({ where }),
     ]);
 
+    const mappedItems = items.map((item: any) => ({
+      ...item,
+      nextScheduledAt: item.messages?.[0]?.scheduledAt || null,
+      scheduledCount: item.messages?.length || 0,
+    }));
+
     return {
-      items,
+      items: mappedItems,
       pagination: {
         total,
         page,
