@@ -13,9 +13,11 @@ import { EmailConversationHeader } from './EmailConversationHeader';
 import { EmailConversationThread } from './EmailConversationThread';
 import { EmailMessageComposer } from './EmailMessageComposer';
 import { EmailContactDrawer } from './EmailContactDrawer';
+import { ScheduledMessagesDock } from '../../../components/ScheduledMessagesDock';
+import { ScheduleMessageModal } from '../../../components/ScheduleMessageModal';
 import { useEmailConversations } from '../../hooks/use-email-conversations';
 import { useEmailMessages } from '../../hooks/use-email-messages';
-import type { EmailConversation } from '../../types/inbox';
+import type { EmailConversation, EmailMessage } from '../../types/inbox';
 
 interface EmailInboxViewProps {
   initialAccountId?: string;
@@ -96,8 +98,16 @@ export const EmailInboxView: React.FC<EmailInboxViewProps> = ({
     messages,
     loading: messagesLoading,
     sendMessage,
+    scheduleMessage,
+    rescheduleMessage,
+    editScheduledMessage,
+    cancelScheduledMessage,
+    sendScheduledMessageNow,
     draftReplyWithAi,
   } = useEmailMessages(activeConversation?.id || null);
+
+  const [editingScheduledMessage, setEditingScheduledMessage] = useState<EmailMessage | null>(null);
+  const scheduledMessages = messages.filter((m) => m.status === 'SCHEDULED');
 
   // Auto-select deep-linked conversation, lead, broker, customer, or first conversation if 1 exists
   useEffect(() => {
@@ -214,14 +224,56 @@ export const EmailInboxView: React.FC<EmailInboxViewProps> = ({
             <EmailConversationThread
               messages={messages}
               loading={messagesLoading}
+              onSendNow={sendScheduledMessageNow}
+              onEdit={(msg) => setEditingScheduledMessage(msg)}
+              onCancel={cancelScheduledMessage}
+            />
+
+            <ScheduledMessagesDock
+              messages={scheduledMessages}
+              channel="email"
+              onSendNow={sendScheduledMessageNow}
+              onEdit={(msg) => setEditingScheduledMessage(msg)}
+              onCancel={cancelScheduledMessage}
             />
 
             <EmailMessageComposer
               onSendMessage={sendMessage}
+              onScheduleMessage={scheduleMessage}
               onDraftWithAi={() => draftReplyWithAi(session?.user?.name || undefined)}
               assignedProvider={activeConversation.assignedProvider}
               assignedSenderEmail={activeConversation.assignedSenderEmail}
+              recipientName={
+                activeConversation.contactName ||
+                (activeConversation.lead ? `${activeConversation.lead.firstName || ''} ${activeConversation.lead.lastName || ''}`.trim() : undefined)
+              }
+              recipientEmail={activeConversation.contactEmail}
             />
+
+            {editingScheduledMessage && (
+              <ScheduleMessageModal
+                isOpen={Boolean(editingScheduledMessage)}
+                onClose={() => setEditingScheduledMessage(null)}
+                isEditing={true}
+                initialText={editingScheduledMessage.bodyText || ''}
+                initialSubject={editingScheduledMessage.subject || ''}
+                initialScheduledAt={editingScheduledMessage.scheduledAt || undefined}
+                channel="email"
+                recipientName={
+                  activeConversation.contactName ||
+                  (activeConversation.lead ? `${activeConversation.lead.firstName || ''} ${activeConversation.lead.lastName || ''}`.trim() : undefined)
+                }
+                recipientTarget={activeConversation.contactEmail}
+                onSchedule={async (payload) => {
+                  await editScheduledMessage(editingScheduledMessage.id, {
+                    text: payload.text,
+                    subject: payload.subject,
+                    scheduledAt: payload.scheduledAt,
+                  });
+                  setEditingScheduledMessage(null);
+                }}
+              />
+            )}
           </>
         ) : (
           <div className="flex flex-col items-center justify-center flex-1 text-center p-6 space-y-3">

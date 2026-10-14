@@ -10,11 +10,17 @@ import { EmailMessageBubble } from './EmailMessageBubble';
 interface EmailConversationThreadProps {
   messages: EmailMessage[];
   loading?: boolean;
+  onSendNow?: (id: string) => void;
+  onEdit?: (message: EmailMessage) => void;
+  onCancel?: (id: string) => void;
 }
 
 export const EmailConversationThread: React.FC<EmailConversationThreadProps> = ({
   messages,
   loading = false,
+  onSendNow,
+  onEdit,
+  onCancel,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +52,13 @@ export const EmailConversationThread: React.FC<EmailConversationThreadProps> = (
         </div>
       ) : (
         messages.map((message) => (
-          <EmailMessageBubble key={message.id} message={message} />
+          <EmailMessageBubble
+            key={message.id}
+            message={message}
+            onSendNow={onSendNow}
+            onEdit={onEdit}
+            onCancel={onCancel}
+          />
         ))
       )}
     </div>
