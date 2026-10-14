@@ -33,6 +33,11 @@ export class EmailIntegrationsController {
     return this.emailService.deleteIntegration(id);
   }
 
+  @Patch(':id/default')
+  async setDefault(@Param('id') id: string) {
+    return this.emailService.setDefaultIntegration(id);
+  }
+
   @Get('domains')
   async listDomains() {
     return this.emailService.listAllActiveSenderDomains();

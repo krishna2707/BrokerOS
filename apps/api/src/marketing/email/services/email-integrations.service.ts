@@ -528,6 +528,19 @@ export class EmailIntegrationsService {
     });
   }
 
+  async setDefaultIntegration(id: string) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.marketingIntegration.updateMany({
+        where: { isDefault: true },
+        data: { isDefault: false },
+      });
+      return tx.marketingIntegration.update({
+        where: { id },
+        data: { isDefault: true, isActive: true },
+      });
+    });
+  }
+
   async deleteIntegration(id: string) {
     return this.prisma.marketingIntegration.delete({ where: { id } });
   }
