@@ -20,6 +20,34 @@ import type {
 } from '../dto/email-inbox.dto.js';
 import type { ProviderCredentials } from '@brokeros/types';
 
+const EMAIL_CONVERSATION_INCLUDE = {
+  agent: {
+    select: { id: true, name: true, email: true },
+  },
+  lead: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      status: true,
+      temperature: true,
+      budget: true,
+      score: true,
+      interestedProject: {
+        select: { id: true, name: true },
+      },
+    },
+  },
+  broker: {
+    select: { id: true, name: true, phone: true, email: true, status: true },
+  },
+  customer: {
+    select: { id: true, firstName: true, lastName: true, phone: true, email: true },
+  },
+};
+
 @Injectable()
 export class EmailInboxService {
   private readonly logger = new Logger(EmailInboxService.name);
@@ -31,56 +59,358 @@ export class EmailInboxService {
   ) {}
 
   /**
-   * List paginated conversations with status filtering and text search.
+   * Auto-provision uncontacted leads and brokers who possess an email address
    */
-  async listConversations(query: ListEmailConversationsQueryDto) {
+  async autoProvisionExecutiveConversations(
+    userId: string,
+    roleCode: string,
+    defaultProvider: string,
+    defaultSenderEmail?: string | null,
+    defaultSenderName?: string | null,
+  ) {
+    try {
+      if (['PRE_SALES', 'SALES_EXECUTIVE'].includes(roleCode)) {
+        const unprovisionedLeads = await this.prisma.lead.findMany({
+          where: {
+            assignedUserId: userId,
+            deletedAt: null,
+            email: { not: null },
+            emailConversations: { none: {} },
+          },
+          take: 40,
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        });
+
+        for (const lead of unprovisionedLeads) {
+          if (!lead.email || !lead.email.trim()) continue;
+          await this.prisma.emailConversation
+            .create({
+              data: {
+                contactEmail: lead.email.trim(),
+                contactName:
+                  `${lead.firstName || ''} ${lead.lastName || ''}`.trim() ||
+                  'Lead',
+                leadId: lead.id,
+                agentUserId: userId,
+                status: 'open',
+                isActive: true,
+                assignedProvider: defaultProvider,
+                assignedSenderEmail: defaultSenderEmail || null,
+                assignedSenderName: defaultSenderName || null,
+              },
+            })
+            .catch(() => null);
+        }
+      } else if (roleCode === 'SOURCING_MANAGER') {
+        const unprovisionedBrokers = await this.prisma.broker.findMany({
+          where: {
+            sourcingManagerId: userId,
+            deletedAt: null,
+            email: { not: null },
+            emailConversations: { none: {} },
+          },
+          take: 40,
+          select: { id: true, name: true, email: true },
+        });
+
+        for (const broker of unprovisionedBrokers) {
+          if (!broker.email || !broker.email.trim()) continue;
+          await this.prisma.emailConversation
+            .create({
+              data: {
+                contactEmail: broker.email.trim(),
+                contactName: broker.name || 'Broker',
+                brokerId: broker.id,
+                agentUserId: userId,
+                status: 'open',
+                isActive: true,
+                assignedProvider: defaultProvider,
+                assignedSenderEmail: defaultSenderEmail || null,
+                assignedSenderName: defaultSenderName || null,
+              },
+            })
+            .catch(() => null);
+        }
+      } else if (roleCode === 'POST_SALES') {
+        const assignedBookings = await this.prisma.booking.findMany({
+          where: {
+            assignedPostSalesId: userId,
+            customer: {
+              emailConversations: { none: {} },
+              email: { not: null },
+            },
+          },
+          take: 40,
+          select: {
+            customer: {
+              select: { id: true, firstName: true, lastName: true, email: true },
+            },
+          },
+        });
+
+        for (const b of assignedBookings) {
+          const customer = b.customer;
+          if (!customer || !customer.email || !customer.email.trim()) continue;
+          await this.prisma.emailConversation
+            .create({
+              data: {
+                contactEmail: customer.email.trim(),
+                contactName:
+                  `${customer.firstName || ''} ${customer.lastName || ''}`.trim() ||
+                  'Customer',
+                customerId: customer.id,
+                agentUserId: userId,
+                status: 'open',
+                isActive: true,
+                assignedProvider: defaultProvider,
+                assignedSenderEmail: defaultSenderEmail || null,
+                assignedSenderName: defaultSenderName || null,
+              },
+            })
+            .catch(() => null);
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(
+        `Auto-provisioning executive Email conversations skipped: ${err?.message}`,
+      );
+    }
+  }
+
+  /**
+   * List paginated conversations with role scoping, search, and contact qualification.
+   */
+  async listConversations(
+    query: ListEmailConversationsQueryDto,
+    currentUser?: { id: string; roleId?: string; role?: any; name?: string },
+  ) {
     const page = Math.max(1, Number(query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(query.limit) || 25));
     const skip = (page - 1) * limit;
 
+    // Resolve Role Code of currentUser
+    let roleCode: string | undefined = undefined;
+    if (currentUser?.roleId) {
+      const role = await this.prisma.role.findUnique({
+        where: { id: currentUser.roleId },
+        select: { code: true },
+      });
+      roleCode = role?.code;
+    } else if (currentUser?.role) {
+      roleCode =
+        typeof currentUser.role === 'string'
+          ? currentUser.role
+          : currentUser.role?.code;
+    }
+
+    const isMarketing = ['MARKETING', 'MARKETING_MANAGER'].includes(roleCode || '');
+
+    // Get default Email provider for assignedProvider continuity
+    let defaultProviderName = 'SYSTEM_DEFAULT';
+    let defaultSenderEmail: string | null = null;
+    let defaultSenderName: string | null = null;
+    const defaultIntegration = await this.prisma.marketingIntegration.findFirst({
+      where: { isActive: true },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+      select: { provider: true, fromEmail: true, fromName: true },
+    });
+    if (defaultIntegration?.provider) {
+      defaultProviderName = defaultIntegration.provider;
+      defaultSenderEmail = defaultIntegration.fromEmail;
+      defaultSenderName = defaultIntegration.fromName;
+    }
+
+    if (currentUser?.id && roleCode && !isMarketing) {
+      await this.autoProvisionExecutiveConversations(
+        currentUser.id,
+        roleCode,
+        defaultProviderName,
+        defaultSenderEmail,
+        defaultSenderName,
+      );
+    }
+
     const where: any = { isActive: true };
 
-    // Status filter: all | open | pending | closed
     if (query.status && ['open', 'pending', 'closed'].includes(query.status)) {
       where.status = query.status;
     }
 
-    // Agent filter
-    if (query.agentId) {
-      where.agentUserId = query.agentId;
-    }
+    const andConditions: any[] = [];
 
-    // Search filter
+    // Qualification invariant: Contact must have an email address
+    andConditions.push({
+      contactEmail: { not: '' },
+    });
+
     if (query.search && query.search.trim()) {
       const q = query.search.trim();
-      where.OR = [
-        { contactEmail: { contains: q, mode: 'insensitive' } },
-        { contactName: { contains: q, mode: 'insensitive' } },
-        { subject: { contains: q, mode: 'insensitive' } },
-        { lastMessageText: { contains: q, mode: 'insensitive' } },
-      ];
+      andConditions.push({
+        OR: [
+          { contactEmail: { contains: q, mode: 'insensitive' } },
+          { contactName: { contains: q, mode: 'insensitive' } },
+          { subject: { contains: q, mode: 'insensitive' } },
+          { lastMessageText: { contains: q, mode: 'insensitive' } },
+          {
+            lead: {
+              OR: [
+                { firstName: { contains: q, mode: 'insensitive' } },
+                { lastName: { contains: q, mode: 'insensitive' } },
+                { email: { contains: q, mode: 'insensitive' } },
+              ],
+            },
+          },
+          {
+            broker: {
+              OR: [
+                { name: { contains: q, mode: 'insensitive' } },
+                { email: { contains: q, mode: 'insensitive' } },
+              ],
+            },
+          },
+          {
+            customer: {
+              OR: [
+                { firstName: { contains: q, mode: 'insensitive' } },
+                { lastName: { contains: q, mode: 'insensitive' } },
+                { email: { contains: q, mode: 'insensitive' } },
+              ],
+            },
+          },
+        ],
+      });
+    }
+
+    // Explicit entity scoping
+    if (query.leadId) {
+      where.leadId = query.leadId;
+    }
+    if (query.brokerId) {
+      where.brokerId = query.brokerId;
+    }
+    if (query.customerId) {
+      where.customerId = query.customerId;
+    }
+
+    // ── Role & Department Scoping ───────────────────────────────────────────
+    const effectiveDept = (query.department || '').toUpperCase();
+    const isExec = [
+      'PRE_SALES',
+      'SALES_EXECUTIVE',
+      'POST_SALES',
+      'CLOSING_MANAGER',
+      'SOURCING_MANAGER',
+    ].includes(roleCode || '');
+
+    if (!isMarketing && (query.scope === 'my' || (isExec && query.scope !== 'all'))) {
+      if (roleCode === 'PRE_SALES' || effectiveDept === 'PRE_SALES') {
+        where.lead = { assignedUserId: currentUser?.id, deletedAt: null };
+      } else if (
+        roleCode === 'SALES_EXECUTIVE' ||
+        effectiveDept === 'SALES_EXECUTIVE' ||
+        effectiveDept === 'SALES'
+      ) {
+        where.lead = { assignedUserId: currentUser?.id, deletedAt: null };
+      } else if (
+        roleCode === 'CLOSING_MANAGER' ||
+        effectiveDept === 'CLOSING_MANAGER'
+      ) {
+        andConditions.push({
+          OR: [
+            { lead: { createdById: currentUser?.id, deletedAt: null } },
+            { lead: { assignedUserId: currentUser?.id, deletedAt: null } },
+          ],
+        });
+      } else if (
+        roleCode === 'SOURCING_MANAGER' ||
+        effectiveDept === 'SOURCING_MANAGER'
+      ) {
+        where.broker = {
+          sourcingManagerId: currentUser?.id,
+        };
+      } else if (
+        roleCode === 'POST_SALES' ||
+        effectiveDept === 'POST_SALES'
+      ) {
+        andConditions.push({
+          OR: [
+            {
+              customer: {
+                bookings: {
+                  some: { assignedPostSalesId: currentUser?.id },
+                },
+              },
+            },
+            {
+              lead: {
+                assignedUserId: currentUser?.id,
+                deletedAt: null,
+              },
+            },
+          ],
+        });
+      }
+    } else if (
+      !isMarketing &&
+      (query.scope === 'team' ||
+        ['PRE_SALES_MANAGER', 'SALES_MANAGER', 'POST_SALES_MANAGER'].includes(
+          roleCode || '',
+        ))
+    ) {
+      const targetAgentId = query.agentId;
+      if (targetAgentId) {
+        andConditions.push({
+          OR: [
+            { lead: { assignedUserId: targetAgentId } },
+            { agentUserId: targetAgentId },
+            { broker: { sourcingManagerId: targetAgentId } },
+          ],
+        });
+      } else if (currentUser?.id) {
+        const subordinates = await this.prisma.user.findMany({
+          where: { managerId: currentUser.id },
+          select: { id: true },
+        });
+        const subIds = subordinates.map((s) => s.id);
+        subIds.push(currentUser.id);
+
+        andConditions.push({
+          OR: [
+            { lead: { assignedUserId: { in: subIds } } },
+            { agentUserId: { in: subIds } },
+            { broker: { sourcingManagerId: { in: subIds } } },
+          ],
+        });
+      }
+    } else if (
+      !isMarketing &&
+      ['BUSINESS_MANAGER', 'DIRECTOR', 'FINANCE', 'ADMIN'].includes(roleCode || '')
+    ) {
+      // Full cross-enterprise visibility; no restrictive user filter
+      if (query.agentId) {
+        andConditions.push({
+          OR: [
+            { lead: { assignedUserId: query.agentId } },
+            { agentUserId: query.agentId },
+            { broker: { sourcingManagerId: query.agentId } },
+          ],
+        });
+      }
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     const [items, total] = await Promise.all([
       this.prisma.emailConversation.findMany({
         where,
-        include: {
-          agent: {
-            select: { id: true, name: true, email: true },
-          },
-          lead: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              phone: true,
-              status: true,
-              temperature: true,
-              budget: true,
-            },
-          },
-        },
+        include: EMAIL_CONVERSATION_INCLUDE,
         orderBy: [{ lastMessageAt: 'desc' }, { updatedAt: 'desc' }],
         skip,
         take: limit,
@@ -103,23 +433,7 @@ export class EmailInboxService {
   async getConversation(id: string) {
     const conv = await this.prisma.emailConversation.findUnique({
       where: { id },
-      include: {
-        agent: {
-          select: { id: true, name: true, email: true },
-        },
-        lead: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            phone: true,
-            status: true,
-            temperature: true,
-            budget: true,
-          },
-        },
-      },
+      include: EMAIL_CONVERSATION_INCLUDE,
     });
 
     if (!conv) {
