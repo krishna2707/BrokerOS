@@ -10,6 +10,8 @@ export interface SmsConversation {
   lastMessageText?: string | null;
   lastMessageAt?: string | null;
   unreadCount: number;
+  scheduledCount?: number;
+  nextScheduledAt?: string | null;
   aiAutoReplyDisabled?: boolean;
 
   assignedProvider: string;
@@ -76,11 +78,14 @@ export interface SmsMessage {
   toPhone: string;
   bodyText: string;
   segmentsCount?: number;
-  status: 'PENDING' | 'SENT' | 'DELIVERED' | 'FAILED';
+  status: 'PENDING' | 'SENT' | 'DELIVERED' | 'FAILED' | 'SCHEDULED' | 'CANCELLED';
   provider?: string | null;
   providerMsgId?: string | null;
   isAiGenerated?: boolean;
   failureReason?: string | null;
+  scheduledAt?: string | null;
+  scheduledBy?: string | null;
+  isScheduled?: boolean;
   sentAt?: string | null;
   deliveredAt?: string | null;
   createdAt: string;
