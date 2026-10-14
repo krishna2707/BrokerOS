@@ -12,9 +12,11 @@ import {
   Loader2,
   Server,
   X,
+  CalendarClock,
 } from 'lucide-react';
 import { EmailQuickReplyModal } from './EmailQuickReplyModal';
 import { EmailTemplatePickerModal } from './EmailTemplatePickerModal';
+import { ScheduleMessageModal } from '../../../components/ScheduleMessageModal';
 import { EmailQuickReplyItem, DEFAULT_EMAIL_QUICK_REPLIES } from '../../types/inbox';
 
 interface EmailMessageComposerProps {
@@ -29,17 +31,34 @@ interface EmailMessageComposerProps {
       contentType?: string;
     }>;
   }) => Promise<any>;
+  onScheduleMessage?: (payload: {
+    scheduledAt: string;
+    text?: string;
+    html?: string;
+    subject?: string;
+    attachments?: Array<{
+      name: string;
+      url: string;
+      size?: number;
+      contentType?: string;
+    }>;
+  }) => Promise<any>;
   onDraftWithAi: () => Promise<{ subject: string; textBody: string; htmlBody: string }>;
   assignedProvider?: string;
   assignedSenderEmail?: string | null;
+  recipientName?: string;
+  recipientEmail?: string;
   disabled?: boolean;
 }
 
 export const EmailMessageComposer: React.FC<EmailMessageComposerProps> = ({
   onSendMessage,
+  onScheduleMessage,
   onDraftWithAi,
   assignedProvider = 'SYSTEM_DEFAULT',
   assignedSenderEmail,
+  recipientName,
+  recipientEmail,
   disabled = false,
 }) => {
   const [text, setText] = useState('');
@@ -49,6 +68,7 @@ export const EmailMessageComposer: React.FC<EmailMessageComposerProps> = ({
   const [aiDrafting, setAiDrafting] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isQuickReplyModalOpen, setIsQuickReplyModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [attachments, setAttachments] = useState<Array<{ name: string; url: string; size?: number }>>([]);
 
   // Slash command autocomplete state
@@ -297,6 +317,18 @@ export const EmailMessageComposer: React.FC<EmailMessageComposerProps> = ({
             <Paperclip className="w-3.5 h-3.5 text-blue-500" />
             <span>Attach</span>
           </button>
+
+          {/* Schedule Button */}
+          <button
+            type="button"
+            onClick={() => setIsScheduleModalOpen(true)}
+            disabled={!text.trim() || disabled}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-bg-subtle transition-colors disabled:opacity-40"
+            title="Schedule email for later..."
+          >
+            <CalendarClock className="w-3.5 h-3.5 text-blue-500" />
+            <span>Schedule</span>
+          </button>
           <input
             type="file"
             ref={fileInputRef}
@@ -393,19 +425,31 @@ export const EmailMessageComposer: React.FC<EmailMessageComposerProps> = ({
           className="flex-1 bg-transparent resize-none border-none outline-hidden px-3 py-2 text-sm text-text-primary placeholder:text-text-muted max-h-40 leading-relaxed"
         />
 
-        <button
-          type="button"
-          onClick={handleSend}
-          disabled={!text.trim() || sending || disabled}
-          className="p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-40 disabled:hover:bg-blue-600 transition-colors shrink-0 shadow-sm"
-          title="Send Email Reply (Enter)"
-        >
-          {sending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Send className="w-4 h-4" />
-          )}
-        </button>
+        {/* Split Send / Schedule Button */}
+        <div className="flex items-center shrink-0">
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={!text.trim() || sending || disabled}
+            className="p-2.5 rounded-l-xl bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-40 disabled:hover:bg-blue-600 transition-colors shadow-sm"
+            title="Send Email Reply (Enter)"
+          >
+            {sending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsScheduleModalOpen(true)}
+            disabled={!text.trim() || sending || disabled}
+            className="p-2.5 rounded-r-xl bg-blue-600 hover:bg-blue-700 text-white border-l border-blue-500/40 disabled:opacity-40 transition-colors shadow-sm"
+            title="Schedule email for later..."
+          >
+            <CalendarClock className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Modals */}
@@ -429,6 +473,31 @@ export const EmailMessageComposer: React.FC<EmailMessageComposerProps> = ({
           }
           if (textareaRef.current) textareaRef.current.focus();
         }}
+      />
+
+      <ScheduleMessageModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        onSchedule={async (payload) => {
+          if (onScheduleMessage) {
+            await onScheduleMessage({
+              scheduledAt: payload.scheduledAt,
+              text: payload.text || text,
+              html: payload.html,
+              subject: payload.subject || subject || 'Real Estate Follow-up',
+              attachments,
+            });
+            setText('');
+            setSubject('');
+            setAttachments([]);
+          }
+        }}
+        initialText={text}
+        initialSubject={subject}
+        initialAttachments={attachments}
+        channel="email"
+        recipientName={recipientName}
+        recipientTarget={recipientEmail || assignedSenderEmail || undefined}
       />
     </div>
   );
