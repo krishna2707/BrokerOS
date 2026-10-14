@@ -7,6 +7,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Param,
   Query,
   Body,
@@ -21,6 +22,9 @@ import {
   AssignSmsConversationAgentDto,
   ListSmsMessagesQueryDto,
   DraftSmsAiReplyDto,
+  ScheduleSmsDto,
+  RescheduleSmsDto,
+  EditScheduledSmsDto,
 } from '../dto/sms-inbox.dto.js';
 
 @Controller('api/marketing/sms/inbox')
@@ -71,6 +75,55 @@ export class SmsInboxController {
     return this.inboxService.sendReply(id, dto, sender);
   }
 
+  @Post('conversations/:id/schedule')
+  async scheduleMessage(
+    @Param('id') id: string,
+    @Body() dto: ScheduleSmsDto,
+    @Req() req: any,
+  ) {
+    const sender = req?.user
+      ? { id: req.user.id, name: req.user.name, email: req.user.email }
+      : undefined;
+    return this.inboxService.scheduleMessage(id, dto, sender);
+  }
+
+  @Get('conversations/:id/scheduled')
+  async getScheduledMessages(@Param('id') id: string) {
+    return this.inboxService.getScheduledMessages(id);
+  }
+
+  @Patch('messages/:messageId/reschedule')
+  async rescheduleMessage(
+    @Param('messageId') messageId: string,
+    @Body() dto: RescheduleSmsDto,
+  ) {
+    return this.inboxService.rescheduleMessage(messageId, dto.scheduledAt);
+  }
+
+  @Patch('messages/:messageId/edit')
+  async editScheduledMessage(
+    @Param('messageId') messageId: string,
+    @Body() dto: EditScheduledSmsDto,
+  ) {
+    return this.inboxService.editScheduledMessage(messageId, dto);
+  }
+
+  @Delete('messages/:messageId/schedule')
+  async cancelScheduledMessage(@Param('messageId') messageId: string) {
+    return this.inboxService.cancelScheduledMessage(messageId);
+  }
+
+  @Post('messages/:messageId/send-now')
+  async sendScheduledMessageNow(
+    @Param('messageId') messageId: string,
+    @Req() req: any,
+  ) {
+    const sender = req?.user
+      ? { id: req.user.id, name: req.user.name, email: req.user.email }
+      : undefined;
+    return this.inboxService.sendScheduledMessageNow(messageId, sender);
+  }
+
   @Patch('conversations/:id/status')
   async updateStatus(
     @Param('id') id: string,
@@ -111,3 +164,4 @@ export class SmsInboxController {
     return this.inboxService.draftAiReply(id, dto);
   }
 }
+
