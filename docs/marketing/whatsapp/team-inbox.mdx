@@ -86,6 +86,59 @@ Meta enforces strict messaging guidelines to prevent customer spam:
 
 BrokerOS supports both automated and manual assignment policies:
 
-- **Automatic Project Matching**: If an incoming phone number matches an existing lead in the CRM, the conversation is automatically assigned to that lead's existing sales executive.
-- **Round-Robin Queue**: New inquiries from first-time prospects are distributed evenly among on-duty sales agents assigned to the active campaign project.
-- **Manager Override**: Sales managers can reassign active threads at any time with an accompanying internal transition note.
+- Automatic Project Matching: If an incoming phone number matches an existing lead in the CRM, the conversation is automatically assigned to that lead's existing sales executive.
+- Round-Robin Queue: New inquiries from first-time prospects are distributed evenly among on-duty sales agents assigned to the active campaign project.
+- Manager Override: Sales managers can reassign active threads at any time with an accompanying internal transition note.
+
+---
+
+## Scheduled WhatsApp Messaging
+
+Sales agents can compose messages ahead of time and schedule them for future delivery directly from the team inbox. This ensures timely communications (such as appointment reminders, morning follow-ups, or weekend check-ins) without requiring agents to be logged in at the exact dispatch moment.
+
+### Scheduling Flow and Controls
+
+1. **Triggering the Modal**: In the composer toolbar at `Dashboard -> Marketing -> WhatsApp -> Inbox`, click the `<CalendarClock />` icon or click the split Send button dropdown and select **Schedule Message**.
+2. **Scheduling Options Modal**:
+   - **Quick Presets**: Select from convenient shortcuts such as **In 1 hour**, **Tomorrow 9:00 AM**, **Tomorrow 2:00 PM**, or **Monday 9:00 AM**.
+   - **Custom Date and Time**: Use the date and time picker to configure any future execution timestamp.
+3. **Smart Meta 24-Hour Window Enforcement**:
+   - If the scheduled time falls within the active 24-hour customer service window, free-form text or media messages are permitted.
+   - If the scheduled time falls outside the 24-hour window (or if the customer session is currently closed), BrokerOS prompts the agent to select an approved Meta Message Template. This guarantees delivery when the scheduled timestamp arrives, regardless of session expiration.
+4. **Pending State and Inline Actions**:
+   - The message enters the conversation thread as a dashed-border bubble marked with an amber clock badge and status `SCHEDULED`.
+   - Any sales agent with thread permissions can click inline action buttons directly on the scheduled bubble:
+     - **Send Now**: Immediately dispatches the message and bypasses the remaining countdown.
+     - **Edit**: Opens the in-place editor modal to modify the message text, template selection, or target dispatch time.
+     - **Cancel**: Removes the scheduled message from the queue and flags it as `CANCELLED`.
+5. **Floating Scheduled Messages Dock**:
+   - When a conversation has one or more pending scheduled messages, a floating amber dock appears directly above the message composer.
+   - Agents can review pending messages, check time remaining, or trigger quick edits and cancellations without scrolling through historical messages.
+6. **Directory Scheduled Chip**:
+   - On the left conversation directory, conversations containing pending scheduled messages display a compact amber chip `[Scheduled: <Date>]`, preventing duplicate follow-ups across the sales team.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Agent as Sales Executive
+    participant Web as Web Composer (apps/web)
+    participant API as NestJS API (apps/api)
+    participant DB as Postgres CRM Database
+    participant Worker as Scheduled Processor (apps/workers)
+    participant Meta as Meta Cloud API
+    actor Lead as Buyer / Lead
+
+    Agent->>Web: Compose Message & Click Schedule (e.g. Tomorrow 9:00 AM)
+    Web->>API: POST /marketing/whatsapp/inbox/schedule
+    API->>DB: Store WhatsAppMessage (status: SCHEDULED, scheduledAt)
+    API-->>Web: 201 Created (Message with SCHEDULED status)
+    Web-->>Agent: Render Dashed Bubble & Floating Scheduled Dock
+
+    Note over DB,Worker: Worker Scanner (Every 10s)
+    Worker->>DB: Scan for scheduledAt <= NOW() and status = SCHEDULED
+    Worker->>DB: Atomic Lock (status: PROCESSING)
+    Worker->>Meta: POST /messages (Template or Free-form)
+    Meta-->>Lead: WhatsApp Message Delivered
+    Worker->>DB: Update Message status = SENT, sentAt = NOW()
+```
+

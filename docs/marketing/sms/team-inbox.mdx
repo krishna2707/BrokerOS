@@ -94,3 +94,54 @@ The message composer enforces strict transparency regarding segment costs:
 - **GSM-7 Standard Encoding**: Supports up to **160 characters** in the first segment. Multi-part messages use 153 characters per segment due to concatenation headers.
 - **Unicode Encoding**: Triggered automatically if emojis, accented characters, or non-Latin scripts are typed, reducing capacity to **70 characters** for the first segment and 67 characters per subsequent segment.
 - **Segment Warning Alert**: Highlights when an agent's text crosses into a second billable segment, helping sales teams control telecom credit expenditures.
+
+---
+
+## Scheduled SMS Messaging
+
+Sales executives can schedule 1-on-1 SMS replies to prospects at specific dates and times directly from the SMS team inbox (`Dashboard -> Marketing -> SMS -> Inbox`).
+
+### Scheduling Features and Controls
+
+1. **Triggering the Modal**: In the SMS composer toolbar, click the `<CalendarClock />` icon or open the split Send button dropdown menu and select **Schedule Message**.
+2. **Scheduling Modal Controls**:
+   - **Preset Quick Picks**: Choose from **In 1 hour**, **Tomorrow 9:00 AM**, **Tomorrow 2:00 PM**, or **Monday 9:00 AM**.
+   - **Custom DateTime Picker**: Specify exact date and minute values for future transmission.
+   - **Live Segment Recalculation**: The modal displays real-time character counters and billable segment breakdowns, preventing unintended SMS cost overruns.
+3. **Pending State and Inline Bubble Controls**:
+   - The scheduled text appears in the conversation stream with an amber dashed border, clock indicator, and status badge `SCHEDULED`.
+   - Dedicated action buttons on the bubble allow agents to:
+     - **Send Now**: Immediately push the text through the active SMS provider (Twilio, Gupshup, Sinch, AWS SNS).
+     - **Edit**: Modify message body copy, recalculate segment limits, or update the scheduled execution time.
+     - **Cancel**: Abort transmission and mark the message status as `CANCELLED`.
+4. **Floating Scheduled Messages Dock**:
+   - A persistent floating notification dock sits above the message composer whenever one or more messages are queued for the selected contact.
+   - Provides instant visibility into upcoming scheduled follow-ups without needing to hunt through historical transcripts.
+5. **Conversation List Indicator**:
+   - Conversations with pending scheduled dispatches display an amber `[Scheduled: <Date>]` chip next to the buyer's name in the left directory.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Agent as Sales Executive
+    participant Web as SMS Composer (apps/web)
+    participant API as NestJS API (apps/api)
+    participant DB as Postgres CRM Database
+    participant Worker as Scheduled Processor (apps/workers)
+    participant Gateway as SMS Gateway (Twilio / Gupshup)
+    actor Buyer as Homebuyer
+
+    Agent->>Web: Type SMS & Select Schedule (e.g. Monday 9:00 AM)
+    Web->>API: POST /marketing/sms/inbox/schedule
+    API->>DB: Store SmsMessage (status: SCHEDULED, scheduledAt)
+    API-->>Web: 201 Created (Message with SCHEDULED status)
+    Web-->>Agent: Render Dashed SMS Bubble & Floating Dock
+
+    Note over DB,Worker: Worker Scanner (Every 10s)
+    Worker->>DB: Scan for scheduledAt <= NOW() and status = SCHEDULED
+    Worker->>DB: Atomic Lock (status: PROCESSING)
+    Worker->>Gateway: Dispatch Outbound SMS
+    Gateway-->>Buyer: Deliver SMS to Buyer Handset
+    Worker->>DB: Update Message status = SENT, sentAt = NOW()
+```
+
