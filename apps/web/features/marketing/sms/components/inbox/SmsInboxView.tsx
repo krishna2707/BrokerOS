@@ -16,13 +16,57 @@ import { SmsConversationThread } from './SmsConversationThread';
 import { SmsMessageComposer } from './SmsMessageComposer';
 import type { SmsConversation } from '../../types/inbox';
 
-export const SmsInboxView: React.FC = () => {
+interface SmsInboxViewProps {
+  initialAccountId?: string;
+  department?: string;
+  scope?: 'my' | 'team' | 'all';
+  initialLeadId?: string;
+  initialBrokerId?: string;
+  initialCustomerId?: string;
+  showManagerFilter?: boolean;
+}
+
+export const SmsInboxView: React.FC<SmsInboxViewProps> = ({
+  initialAccountId,
+  department,
+  scope,
+  initialLeadId,
+  initialBrokerId,
+  initialCustomerId,
+  showManagerFilter = false,
+}) => {
   const [activeConversation, setActiveConversation] = useState<SmsConversation | null>(null);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>('');
+  const [agents, setAgents] = useState<Array<{ id: string; name: string }>>([]);
 
   const { data: session } = authClient.useSession();
   const searchParams = useSearchParams();
   const deepLinkConvId = searchParams.get('conversationId') || searchParams.get('c');
+  const queryLeadId = initialLeadId || searchParams.get('leadId') || undefined;
+  const queryBrokerId = initialBrokerId || searchParams.get('brokerId') || undefined;
+  const queryCustomerId = initialCustomerId || searchParams.get('customerId') || undefined;
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+
+  // Fetch team agents if manager filter is enabled
+  useEffect(() => {
+    if (showManagerFilter) {
+      fetch(`${baseUrl}/api/dashboard/employees`, {
+        credentials: 'include',
+      })
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setAgents(
+              data.map((u: any) => ({
+                id: u.id,
+                name: u.name || u.displayUsername || u.username || 'Agent',
+              })),
+            );
+          }
+        })
+        .catch(() => null);
+    }
+  }, [showManagerFilter, baseUrl]);
 
   const {
     conversations,
@@ -35,7 +79,14 @@ export const SmsInboxView: React.FC = () => {
     updateStatus,
     assignAgent,
     markAsRead,
-  } = useSmsConversations();
+  } = useSmsConversations({
+    department,
+    scope,
+    agentId: selectedAgentId || undefined,
+    leadId: queryLeadId,
+    brokerId: queryBrokerId,
+    customerId: queryCustomerId,
+  });
 
   // Load messages for active conversation
   const {
@@ -47,12 +98,45 @@ export const SmsInboxView: React.FC = () => {
     draftReplyWithAi,
   } = useSmsMessages(activeConversation?.id || null);
 
-  // Auto-select deep-linked conversation or first conversation if available
+  // Auto-select deep-linked conversation, lead, broker, customer, or first conversation if available
   useEffect(() => {
     if (conversations.length === 0) return;
 
     if (deepLinkConvId) {
       const target = conversations.find((c) => c.id === deepLinkConvId);
+      if (target) {
+        if (activeConversation?.id !== target.id) {
+          setActiveConversation(target);
+          if (target.unreadCount > 0) markAsRead(target.id);
+        }
+        return;
+      }
+    }
+
+    if (queryLeadId) {
+      const target = conversations.find((c) => c.leadId === queryLeadId);
+      if (target) {
+        if (activeConversation?.id !== target.id) {
+          setActiveConversation(target);
+          if (target.unreadCount > 0) markAsRead(target.id);
+        }
+        return;
+      }
+    }
+
+    if (queryBrokerId) {
+      const target = conversations.find((c) => c.brokerId === queryBrokerId);
+      if (target) {
+        if (activeConversation?.id !== target.id) {
+          setActiveConversation(target);
+          if (target.unreadCount > 0) markAsRead(target.id);
+        }
+        return;
+      }
+    }
+
+    if (queryCustomerId) {
+      const target = conversations.find((c) => c.customerId === queryCustomerId);
       if (target) {
         if (activeConversation?.id !== target.id) {
           setActiveConversation(target);
@@ -69,7 +153,7 @@ export const SmsInboxView: React.FC = () => {
         markAsRead(conversations[0].id);
       }
     }
-  }, [deepLinkConvId, conversations, activeConversation, markAsRead]);
+  }, [deepLinkConvId, queryLeadId, queryBrokerId, queryCustomerId, conversations, activeConversation, markAsRead]);
 
   // If deepLinkConvId is not in list, fetch directly
   useEffect(() => {
@@ -123,6 +207,10 @@ export const SmsInboxView: React.FC = () => {
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         loading={conversationsLoading}
+        showManagerFilter={showManagerFilter}
+        selectedAgentId={selectedAgentId}
+        onAgentChange={setSelectedAgentId}
+        agents={agents}
       />
 
       {/* 2. Right Panel: Conversation Thread & Message Composer */}
