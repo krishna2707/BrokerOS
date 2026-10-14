@@ -12,9 +12,11 @@ import {
   Loader2,
   Image as ImageIcon,
   AlertCircle,
+  CalendarClock,
 } from 'lucide-react';
 import { TemplatePickerModal } from './TemplatePickerModal';
 import { QuickReplyPickerModal } from './QuickReplyPickerModal';
+import { ScheduleMessageModal } from '../../../components/ScheduleMessageModal';
 import type { WhatsAppTemplate } from '../../types';
 
 interface MessageComposerProps {
@@ -28,16 +30,32 @@ interface MessageComposerProps {
     templateLanguage?: string;
     templateParams?: string[];
   }) => Promise<any>;
+  onScheduleMessage?: (payload: {
+    scheduledAt: string;
+    type?: 'text' | 'media' | 'template' | 'interactive';
+    text?: string;
+    mediaUrl?: string;
+    templateName?: string;
+    templateLanguage?: string;
+    templateParams?: string[];
+  }) => Promise<any>;
   onDraftWithAi: () => Promise<string>;
   accountId?: string;
+  recipientName?: string;
+  recipientPhone?: string;
+  templates?: WhatsAppTemplate[];
   disabled?: boolean;
   is24HourWindowActive?: boolean;
 }
 
 export const MessageComposer: React.FC<MessageComposerProps> = ({
   onSendMessage,
+  onScheduleMessage,
   onDraftWithAi,
   accountId,
+  recipientName,
+  recipientPhone,
+  templates = [],
   disabled = false,
   is24HourWindowActive = false,
 }) => {
@@ -46,6 +64,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
   const [aiDrafting, setAiDrafting] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isQuickReplyModalOpen, setIsQuickReplyModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   // Slash command autocomplete state
   const [allQuickReplies, setAllQuickReplies] = useState<Array<{ id: string; shortcut: string; content: string }>>([]);
@@ -292,6 +311,18 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             <Paperclip className="w-3.5 h-3.5 text-blue-500" />
             <span>Media</span>
           </button>
+
+          {/* Schedule Button */}
+          <button
+            type="button"
+            onClick={() => setIsScheduleModalOpen(true)}
+            disabled={!text.trim() || disabled}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-text-secondary hover:text-text-primary hover:bg-bg-subtle transition-colors disabled:opacity-40"
+            title="Schedule message for later..."
+          >
+            <CalendarClock className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Schedule</span>
+          </button>
           <input
             type="file"
             ref={fileInputRef}
@@ -365,18 +396,31 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
           className="flex-1 bg-transparent resize-none border-none outline-hidden px-3 py-2 text-sm text-text-primary placeholder:text-text-muted max-h-32 leading-relaxed"
         />
 
-        <button
-          type="button"
-          onClick={handleSend}
-          disabled={!text.trim() || sending || disabled}
-          className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-40 disabled:hover:bg-emerald-600 transition-colors shrink-0 shadow-sm"
-        >
-          {sending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Send className="w-4 h-4" />
-          )}
-        </button>
+        {/* Split Send / Schedule Button */}
+        <div className="flex items-center shrink-0">
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={!text.trim() || sending || disabled}
+            className="p-2.5 rounded-l-xl bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-40 disabled:hover:bg-emerald-600 transition-colors shadow-sm"
+            title="Send WhatsApp Message (Enter)"
+          >
+            {sending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsScheduleModalOpen(true)}
+            disabled={!text.trim() || sending || disabled}
+            className="p-2.5 rounded-r-xl bg-emerald-600 hover:bg-emerald-700 text-white border-l border-emerald-500/40 disabled:opacity-40 transition-colors shadow-sm"
+            title="Schedule for later..."
+          >
+            <CalendarClock className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Modals */}
@@ -392,6 +436,33 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         onClose={() => setIsQuickReplyModalOpen(false)}
         onSelect={handleSelectQuickReply}
         accountId={accountId}
+      />
+
+      <ScheduleMessageModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        onSchedule={async (payload) => {
+          if (onScheduleMessage) {
+            await onScheduleMessage({
+              scheduledAt: payload.scheduledAt,
+              type: payload.templateName ? 'template' : 'text',
+              text: payload.text || text,
+              templateName: payload.templateName,
+              templateParams: payload.templateParams,
+            });
+            setText('');
+          }
+        }}
+        initialText={text}
+        channel="whatsapp"
+        recipientName={recipientName}
+        recipientTarget={recipientPhone}
+        is24HourWindowActive={is24HourWindowActive}
+        templates={templates.map((t) => ({
+          name: t.name,
+          bodyText: t.bodyText || t.name,
+          language: t.language,
+        }))}
       />
     </div>
   );
