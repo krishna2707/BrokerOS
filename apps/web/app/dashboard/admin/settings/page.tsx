@@ -4,9 +4,11 @@ import React, { useState } from "react";
 import { DashboardPageWrapper } from "@/components/dashboard/DashboardPageWrapper";
 import { AdminTelephonySettings } from "@/features/telephony/components/admin/AdminTelephonySettings";
 import { WhatsAppConfigCard } from "@/features/marketing/whatsapp";
-import { PhoneCall, Building2, ShieldCheck, Users, Radio } from "lucide-react";
+import { AdminSmsSettings } from "@/features/marketing/sms/components/admin/AdminSmsSettings";
+import { AdminEmailSettings } from "@/features/marketing/email/components/admin/AdminEmailSettings";
+import { PhoneCall, Building2, ShieldCheck, Radio, MessageSquare, Mail } from "lucide-react";
 
-type SettingsTab = "telephony" | "whatsapp" | "general" | "security";
+type SettingsTab = "telephony" | "whatsapp" | "sms" | "email" | "general" | "security";
 
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("telephony");
@@ -21,6 +23,16 @@ export default function AdminSettingsPage() {
       id: "whatsapp",
       label: "WhatsApp Cloud API",
       icon: <Radio className="w-4 h-4" />,
+    },
+    {
+      id: "sms",
+      label: "Default SMS Gateway",
+      icon: <MessageSquare className="w-4 h-4" />,
+    },
+    {
+      id: "email",
+      label: "Default Email Service",
+      icon: <Mail className="w-4 h-4" />,
     },
     {
       id: "general",
@@ -72,6 +84,10 @@ export default function AdminSettingsPage() {
           </div>
         </div>
       )}
+
+      {activeTab === "sms" && <AdminSmsSettings />}
+
+      {activeTab === "email" && <AdminEmailSettings />}
 
       {activeTab === "general" && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
