@@ -17,6 +17,9 @@ import type {
   SendEmailReplyDto,
   ListEmailMessagesQueryDto,
   DraftEmailAiReplyDto,
+  ScheduleEmailDto,
+  RescheduleEmailDto,
+  EditScheduledEmailDto,
 } from '../dto/email-inbox.dto.js';
 import type { ProviderCredentials } from '@brokeros/types';
 
@@ -45,6 +48,12 @@ const EMAIL_CONVERSATION_INCLUDE = {
   },
   customer: {
     select: { id: true, firstName: true, lastName: true, phone: true, email: true },
+  },
+  messages: {
+    where: { status: 'SCHEDULED' },
+    orderBy: { scheduledAt: 'asc' as const },
+    take: 1,
+    select: { id: true, scheduledAt: true, subject: true, bodyText: true },
   },
 };
 
@@ -418,8 +427,14 @@ export class EmailInboxService {
       this.prisma.emailConversation.count({ where }),
     ]);
 
+    const mappedItems = items.map((item: any) => ({
+      ...item,
+      nextScheduledAt: item.messages?.[0]?.scheduledAt || null,
+      scheduledCount: item.messages?.length || 0,
+    }));
+
     return {
-      items,
+      items: mappedItems,
       total,
       page,
       limit,
@@ -457,7 +472,10 @@ export class EmailInboxService {
     }
 
     const messages = await this.prisma.emailMessage.findMany({
-      where: { conversationId },
+      where: {
+        conversationId,
+        status: { not: 'CANCELLED' },
+      },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -880,4 +898,179 @@ export class EmailInboxService {
       htmlBody: aiRes.htmlBody,
     };
   }
+
+  /**
+   * Schedule an Email reply for future delivery
+   */
+  async scheduleMessage(
+    conversationId: string,
+    dto: ScheduleEmailDto,
+    senderUser?: { id: string; name?: string; email?: string },
+  ) {
+    const conv = await this.prisma.emailConversation.findUnique({
+      where: { id: conversationId },
+    });
+    if (!conv) {
+      throw new NotFoundException(`Email Conversation #${conversationId} not found`);
+    }
+
+    const scheduledDate = new Date(dto.scheduledAt);
+    if (isNaN(scheduledDate.getTime()) || scheduledDate.getTime() <= Date.now() + 5000) {
+      throw new BadRequestException('Scheduled time must be at least 10 seconds in the future');
+    }
+
+    const textContent = dto.text?.trim() || '';
+    const htmlContent =
+      dto.html?.trim() ||
+      (textContent
+        ? textContent
+            .split('\n')
+            .map((p) => `<p style="margin:0 0 12px 0;line-height:1.5;">${p}</p>`)
+            .join('')
+        : '');
+
+    if (!textContent && !htmlContent) {
+      throw new BadRequestException('Message content cannot be empty');
+    }
+
+    const replySubject =
+      dto.subject ||
+      (conv.subject?.startsWith('Re:')
+        ? conv.subject
+        : `Re: ${conv.subject || 'Inquiry'}`);
+
+    const provider = conv.assignedProvider || 'SYSTEM_DEFAULT';
+    const fromEmail = conv.assignedSenderEmail || 'sales@brokeros.com';
+    const fromName = senderUser?.name || conv.assignedSenderName || 'Sales Team';
+
+    const scheduledMessage = await this.prisma.emailMessage.create({
+      data: {
+        conversationId,
+        direction: 'OUTBOUND',
+        senderType: 'agent',
+        senderName: fromName,
+        fromEmail,
+        toEmail: conv.contactEmail,
+        subject: replySubject,
+        bodyText: textContent,
+        bodyHtml: htmlContent,
+        status: 'SCHEDULED',
+        provider,
+        attachments: (dto.attachments as any) || undefined,
+        scheduledAt: scheduledDate,
+        scheduledBy: senderUser?.id || null,
+        isScheduled: true,
+      },
+    });
+
+    return scheduledMessage;
+  }
+
+  /**
+   * Get all pending scheduled Email messages for a conversation
+   */
+  async getScheduledMessages(conversationId: string) {
+    return this.prisma.emailMessage.findMany({
+      where: {
+        conversationId,
+        status: 'SCHEDULED',
+      },
+      orderBy: { scheduledAt: 'asc' },
+    });
+  }
+
+  /**
+   * Reschedule an existing scheduled Email message
+   */
+  async rescheduleMessage(messageId: string, newScheduledAt: string) {
+    const msg = await this.prisma.emailMessage.findUnique({ where: { id: messageId } });
+    if (!msg || msg.status !== 'SCHEDULED') {
+      throw new NotFoundException(`Scheduled Email message #${messageId} not found`);
+    }
+
+    const scheduledDate = new Date(newScheduledAt);
+    if (isNaN(scheduledDate.getTime()) || scheduledDate.getTime() <= Date.now() + 5000) {
+      throw new BadRequestException('Scheduled time must be in the future');
+    }
+
+    return this.prisma.emailMessage.update({
+      where: { id: messageId },
+      data: { scheduledAt: scheduledDate },
+    });
+  }
+
+  /**
+   * Edit content and/or date of a scheduled Email message
+   */
+  async editScheduledMessage(messageId: string, dto: EditScheduledEmailDto) {
+    const msg = await this.prisma.emailMessage.findUnique({ where: { id: messageId } });
+    if (!msg || msg.status !== 'SCHEDULED') {
+      throw new NotFoundException(`Scheduled Email message #${messageId} not found`);
+    }
+
+    const data: any = {};
+    if (dto.subject !== undefined) data.subject = dto.subject;
+    if (dto.text !== undefined) data.bodyText = dto.text;
+    if (dto.html !== undefined) data.bodyHtml = dto.html;
+    if (dto.attachments !== undefined) data.attachments = dto.attachments as any;
+
+    if (dto.scheduledAt) {
+      const scheduledDate = new Date(dto.scheduledAt);
+      if (isNaN(scheduledDate.getTime()) || scheduledDate.getTime() <= Date.now() + 5000) {
+        throw new BadRequestException('Scheduled time must be in the future');
+      }
+      data.scheduledAt = scheduledDate;
+    }
+
+    return this.prisma.emailMessage.update({
+      where: { id: messageId },
+      data,
+    });
+  }
+
+  /**
+   * Cancel a scheduled Email message
+   */
+  async cancelScheduledMessage(messageId: string) {
+    const msg = await this.prisma.emailMessage.findUnique({ where: { id: messageId } });
+    if (!msg || msg.status !== 'SCHEDULED') {
+      throw new NotFoundException(`Scheduled Email message #${messageId} not found`);
+    }
+
+    return this.prisma.emailMessage.update({
+      where: { id: messageId },
+      data: { status: 'CANCELLED' },
+    });
+  }
+
+  /**
+   * Immediately dispatch a scheduled Email message
+   */
+  async sendScheduledMessageNow(
+    messageId: string,
+    senderUser?: { id: string; name?: string; email?: string },
+  ) {
+    const msg = await this.prisma.emailMessage.findUnique({
+      where: { id: messageId },
+    });
+    if (!msg || msg.status !== 'SCHEDULED') {
+      throw new NotFoundException(`Scheduled Email message #${messageId} not found or already sent`);
+    }
+
+    const dispatched = await this.sendReply(
+      msg.conversationId,
+      {
+        text: msg.bodyText || undefined,
+        html: msg.bodyHtml || undefined,
+        subject: msg.subject || undefined,
+        attachments: (msg.attachments as any) || undefined,
+      },
+      senderUser || (msg.scheduledBy ? { id: msg.scheduledBy, name: msg.senderName || 'Agent' } : undefined),
+    );
+
+    await this.prisma.emailMessage.delete({ where: { id: messageId } }).catch(() => null);
+
+    return dispatched;
+  }
 }
+
