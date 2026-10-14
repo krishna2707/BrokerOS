@@ -4,6 +4,7 @@ import { MarketingEmailProcessor } from './processors/marketing-email.processor.
 import { MarketingSmsProcessor } from './processors/marketing-sms.processor.js';
 import { MarketingVoiceProcessor } from './processors/marketing-voice.processor.js';
 import { MarketingWhatsAppProcessor } from './processors/marketing-whatsapp.processor.js';
+import { ScheduledMessagesProcessor } from './processors/scheduled-messages.processor.js';
 
 @Module({
   imports: [],
@@ -13,14 +14,17 @@ import { MarketingWhatsAppProcessor } from './processors/marketing-whatsapp.proc
     MarketingSmsProcessor,
     MarketingVoiceProcessor,
     MarketingWhatsAppProcessor,
+    ScheduledMessagesProcessor,
   ],
   exports: [
     MarketingEmailProcessor,
     MarketingSmsProcessor,
     MarketingVoiceProcessor,
     MarketingWhatsAppProcessor,
+    ScheduledMessagesProcessor,
   ],
 })
 export class WorkersModule { }
+
 
 
