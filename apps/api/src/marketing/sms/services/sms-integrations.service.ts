@@ -515,6 +515,19 @@ export class SmsIntegrationsService {
     });
   }
 
+  async setDefaultIntegration(id: string) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.smsIntegration.updateMany({
+        where: { isDefault: true },
+        data: { isDefault: false },
+      });
+      return tx.smsIntegration.update({
+        where: { id },
+        data: { isDefault: true, isActive: true },
+      });
+    });
+  }
+
   async deleteIntegration(id: string) {
     return this.prisma.smsIntegration.delete({ where: { id } });
   }
