@@ -29,6 +29,16 @@ BASE URL: /api/marketing
 | `POST` | `/api/marketing/recipients/:recipientId/promote` | Convert active email opener to CRM Lead | Marketing / Admin |
 | `DELETE` | `/api/marketing/campaigns/:id` | Delete an email campaign | Marketing / Admin |
 
+### Team Inbox Message Scheduling
+
+| Method | Path | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/marketing/email/inbox/schedule` | Schedule a 1-on-1 email for future dispatch | Authenticated |
+| `PATCH` | `/api/marketing/email/inbox/reschedule/:id` | Update target scheduled dispatch timestamp | Authenticated |
+| `PATCH` | `/api/marketing/email/inbox/edit/:id` | Edit email subject, body, or scheduled time | Authenticated |
+| `DELETE` | `/api/marketing/email/inbox/cancel/:id` | Cancel a pending scheduled email message | Authenticated |
+| `POST` | `/api/marketing/email/inbox/send-now/:id` | Immediately send a scheduled email ahead of time | Authenticated |
+
 ---
 
 ## Create Email Campaign

@@ -5,8 +5,8 @@ description: "Send WhatsApp template broadcasts, manage real-time team inbox con
 ---
 
 The Marketing WhatsApp API integrates directly with Meta Cloud API. It powers two distinct flows:
-1. **Outbound Template Broadcasts** — Mass campaigns sent to leads or CSV audiences using pre-approved Meta message templates.
-2. **Team Inbox & Real-Time Chat** — 2-way conversations within Meta's 24-hour customer service window, with agent assignments, tags, and AI assistance.
+1. **Outbound Template Broadcasts**: Mass campaigns sent to leads or CSV audiences using pre-approved Meta message templates.
+2. **Team Inbox & Real-Time Chat**: 2-way conversations within Meta's 24-hour customer service window, with agent assignments, tags, and AI assistance.
 
 ```http
 BASE URL: /api/marketing/whatsapp
@@ -29,6 +29,16 @@ BASE URL: /api/marketing/whatsapp
 | `PATCH` | `/api/marketing/whatsapp/conversations/:id/assign` | Assign conversation to a human agent | Authenticated |
 | `POST` | `/api/marketing/whatsapp/conversations/:id/read` | Mark all unread messages as read | Authenticated |
 
+### Team Inbox Message Scheduling
+
+| Method | Path | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/marketing/whatsapp/inbox/schedule` | Schedule a 1-on-1 WhatsApp message for future dispatch | Authenticated |
+| `PATCH` | `/api/marketing/whatsapp/inbox/reschedule/:id` | Update target scheduled dispatch timestamp | Authenticated |
+| `PATCH` | `/api/marketing/whatsapp/inbox/edit/:id` | Edit message content, template params, or scheduled time | Authenticated |
+| `DELETE` | `/api/marketing/whatsapp/inbox/cancel/:id` | Cancel a pending scheduled WhatsApp message | Authenticated |
+| `POST` | `/api/marketing/whatsapp/inbox/send-now/:id` | Immediately send a scheduled message ahead of time | Authenticated |
+
 ### Broadcasts
 
 | Method | Path | Description | Access |
@@ -44,12 +54,25 @@ BASE URL: /api/marketing/whatsapp
 ## 24-Hour Customer Service Window Rule
 
 ```mermaid
-graph TD
-    A[Customer Sends Inbound Message] -->|24-Hour Timer Starts| B[Free-Form Messages Allowed]
-    B -->|Within 24 Hours| C[Send Plain Text, Images, PDF Brochures]
-    B -->|Timer Expires (24h+)| D[Free-Form Blocked by Meta]
-    D -->|Re-open Window| E[Must send Pre-Approved Meta Template Message]
-    E -->|Customer Replies| B
+sequenceDiagram
+    autonumber
+    actor Customer as Buyer Handset
+    participant Meta as Meta Cloud API
+    participant CRM as BrokerOS Team Inbox
+    actor Agent as Sales Agent
+
+    Customer->>Meta: Inbound Message Received
+    Meta->>CRM: Webhook Notification (24-Hour Timer Starts)
+    Note over CRM,Agent: Free-Form Messages Allowed for 24 Hours
+    Agent->>CRM: Send Free-Form Text, Media or PDF
+    CRM->>Meta: Dispatch Session Message
+    Meta-->>Customer: Deliver Message to Buyer
+
+    Note over CRM,Agent: After 24 Hours Expired
+    Agent->>CRM: Free-Form Blocked by Meta Policy
+    Agent->>CRM: Select Approved Meta Template
+    CRM->>Meta: Dispatch Template Message
+    Meta-->>Customer: Deliver Template Message
 ```
 
 ---

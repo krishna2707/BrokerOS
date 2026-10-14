@@ -71,6 +71,16 @@ All worker processors live in [`apps/workers/src/processors/`](https://github.co
 - Injects tracked short-links and transparent 1x1 tracking pixels for open and click attribution.
 - Suppresses previously bounced or complained recipient addresses automatically.
 
+### 5. `scheduled-messages.processor.ts`
+- Processes scheduled 1-on-1 team inbox messages across SMS, Email, and WhatsApp.
+- Runs on a high-frequency 10-second interval scanner to pick up due messages promptly.
+- Employs atomic status locking (`updateMany` with `status: 'SCHEDULED'` transitioning to `status: 'PROCESSING'`) inside database transactions. This guarantees zero race conditions even across multiple worker instances.
+- Directly invokes channel-specific provider adapters:
+  - SMS: Dispatches text payloads through the active gateway credentials (`Twilio`, `Gupshup`, `Sinch`, `AWS SNS`).
+  - Email: Transmits MIME messages with preserved subject lines and attachments via SendGrid, Brevo, AWS SES, or Mailgun.
+  - WhatsApp: Calls Meta Cloud API for free-form session messages or approved templates, depending on session state.
+- Resilient against worker restarts and power cycles: any message in `SCHEDULED` status with `scheduledAt <= NOW()` is picked up immediately upon restart.
+
 ---
 
 ## Job Configuration & Retry Policies

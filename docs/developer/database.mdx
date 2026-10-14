@@ -216,6 +216,22 @@ The BrokerOS schema enforces indexes on frequently filtered fields:
 - Unique index on `[email, deletedAt]` for customer deduplication
 - Indexes on foreign keys (`brokerId`, `assignedUserId`, `unitId`) to optimize relational joins
 - Index on `providerCallId` for fast lookup during carrier recording and status webhook callbacks
+- Composite index on `[status, scheduledAt]` across `WhatsAppMessage`, `EmailMessage`, and `SmsMessage` models for sub-millisecond worker polling of queued messages
+
+---
+
+## Omnichannel Scheduled Messaging Models
+
+To support time-delayed 1-on-1 team inbox messaging across WhatsApp, SMS, and Email, each messaging table incorporates dedicated scheduling attributes:
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `scheduledAt` | `DateTime?` | Target execution timestamp for message dispatch |
+| `scheduledBy` | `String?` | ID of the sales executive or manager who scheduled the message |
+| `isScheduled` | `Boolean` | Flag indicating whether the message originated as a scheduled delivery |
+| `status` | `Enum` / `String` | Transitions: `SCHEDULED` -> `PROCESSING` -> `SENT` / `FAILED` / `CANCELLED` |
+
+All three models define `@@index([status, scheduledAt])` to ensure the background scanner worker performs non-blocking index scans every 10 seconds.
 
 ---
 
