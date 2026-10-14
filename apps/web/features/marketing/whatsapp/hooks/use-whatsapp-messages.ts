@@ -147,12 +147,154 @@ export function useWhatsAppMessages(conversationId: string | null) {
     }
   };
 
+  const scheduleMessage = async (payload: {
+    scheduledAt: string;
+    type?: 'text' | 'media' | 'template' | 'interactive';
+    text?: string;
+    mediaUrl?: string;
+    mediaKind?: 'image' | 'video' | 'document' | 'audio';
+    caption?: string;
+    templateName?: string;
+    templateLanguage?: string;
+    templateParams?: string[];
+    buttons?: any[];
+  }) => {
+    if (!conversationId) return null;
+
+    try {
+      setSending(true);
+      const res = await fetch(`${baseUrl}/api/marketing/whatsapp/messages/${conversationId}/schedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          conversationId,
+          ...payload,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to schedule WhatsApp message');
+      }
+
+      const created = await res.json();
+      setMessages((prev) => [...prev, created]);
+      return created;
+    } catch (err) {
+      console.error('scheduleWhatsAppMessage error:', err);
+      throw err;
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const rescheduleMessage = async (messageId: string, scheduledAt: string) => {
+    try {
+      const res = await fetch(`${baseUrl}/api/marketing/whatsapp/messages/${messageId}/reschedule`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ scheduledAt }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to reschedule WhatsApp message');
+      }
+
+      const updated = await res.json();
+      setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, ...updated } : m)));
+      return updated;
+    } catch (err) {
+      console.error('rescheduleWhatsAppMessage error:', err);
+      throw err;
+    }
+  };
+
+  const editScheduledMessage = async (
+    messageId: string,
+    payload: {
+      scheduledAt?: string;
+      text?: string;
+      mediaUrl?: string;
+      templateName?: string;
+      templateParams?: string[];
+    },
+  ) => {
+    try {
+      const res = await fetch(`${baseUrl}/api/marketing/whatsapp/messages/${messageId}/edit`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to edit scheduled WhatsApp message');
+      }
+
+      const updated = await res.json();
+      setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, ...updated } : m)));
+      return updated;
+    } catch (err) {
+      console.error('editScheduledWhatsAppMessage error:', err);
+      throw err;
+    }
+  };
+
+  const cancelScheduledMessage = async (messageId: string) => {
+    try {
+      const res = await fetch(`${baseUrl}/api/marketing/whatsapp/messages/${messageId}/schedule`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to cancel scheduled WhatsApp message');
+      }
+
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    } catch (err) {
+      console.error('cancelScheduledWhatsAppMessage error:', err);
+      throw err;
+    }
+  };
+
+  const sendScheduledMessageNow = async (messageId: string) => {
+    try {
+      const res = await fetch(`${baseUrl}/api/marketing/whatsapp/messages/${messageId}/send-now`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to send scheduled message now');
+      }
+
+      const dispatched = await res.json();
+      setMessages((prev) => [...prev.filter((m) => m.id !== messageId), dispatched]);
+      return dispatched;
+    } catch (err) {
+      console.error('sendScheduledMessageNow error:', err);
+      throw err;
+    }
+  };
+
   return {
     messages,
     loading,
     sending,
     draftingAi,
     sendMessage,
+    scheduleMessage,
+    rescheduleMessage,
+    editScheduledMessage,
+    cancelScheduledMessage,
+    sendScheduledMessageNow,
     draftReplyWithAi,
     handleIncomingMessage,
     handleStatusUpdate,

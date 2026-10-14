@@ -51,6 +51,8 @@ export interface WhatsAppConversation {
   lastMessageText?: string | null;
   lastMessageAt?: string | null;
   unreadCount: number;
+  scheduledCount?: number;
+  nextScheduledAt?: string | null;
   agentUserId?: string | null;
   agent?: {
     id: string;
@@ -98,7 +100,7 @@ export interface WhatsAppMessage {
   waMessageId?: string | null;
   direction: 'INBOUND' | 'OUTBOUND';
   type: 'TEXT' | 'IMAGE' | 'VIDEO' | 'DOCUMENT' | 'AUDIO' | 'INTERACTIVE' | 'TEMPLATE' | 'LOCATION';
-  status: 'PENDING' | 'SENT' | 'DELIVERED' | 'READ' | 'FAILED';
+  status: 'PENDING' | 'SENT' | 'DELIVERED' | 'READ' | 'FAILED' | 'SCHEDULED' | 'CANCELLED';
   senderType: 'contact' | 'agent' | 'bot';
   senderName?: string | null;
   body?: string | null;
@@ -114,6 +116,9 @@ export interface WhatsAppMessage {
   readAt?: string | null;
   failedAt?: string | null;
   failureReason?: string | null;
+  scheduledAt?: string | null;
+  scheduledBy?: string | null;
+  isScheduled?: boolean;
   createdAt: string;
 }
 
