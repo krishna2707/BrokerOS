@@ -121,3 +121,41 @@ export class DraftSmsAiReplyDto {
   @IsOptional()
   instruction?: string;
 }
+
+export class ScheduleSmsDto {
+  @IsString()
+  @IsNotEmpty()
+  scheduledAt!: string; // ISO 8601 string
+
+  @IsString()
+  @IsNotEmpty()
+  text!: string;
+
+  @IsString()
+  @IsOptional()
+  templateId?: string;
+
+  @IsString()
+  @IsOptional()
+  mediaUrl?: string;
+}
+
+export class RescheduleSmsDto {
+  @IsString()
+  @IsNotEmpty()
+  scheduledAt!: string;
+}
+
+export class EditScheduledSmsDto {
+  @IsString()
+  @IsOptional()
+  scheduledAt?: string;
+
+  @IsString()
+  @IsOptional()
+  text?: string;
+
+  @IsString()
+  @IsOptional()
+  mediaUrl?: string;
+}
