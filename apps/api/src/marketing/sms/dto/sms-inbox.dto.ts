@@ -17,6 +17,26 @@ export class ListSmsConversationsQueryDto {
   @IsOptional()
   agentId?: string;
 
+  @IsString()
+  @IsOptional()
+  department?: string;
+
+  @IsString()
+  @IsOptional()
+  scope?: string;
+
+  @IsString()
+  @IsOptional()
+  leadId?: string;
+
+  @IsString()
+  @IsOptional()
+  brokerId?: string;
+
+  @IsString()
+  @IsOptional()
+  customerId?: string;
+
   @IsOptional()
   page?: string | number;
 
