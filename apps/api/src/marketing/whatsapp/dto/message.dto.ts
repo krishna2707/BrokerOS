@@ -90,3 +90,25 @@ export class ListWhatsAppMessagesQueryDto {
   @IsOptional()
   cursor?: string;
 }
+
+export class ScheduleWhatsAppMessageDto extends SendWhatsAppMessageDto {
+  @IsString()
+  @IsNotEmpty()
+  scheduledAt!: string; // ISO 8601 string
+
+  @IsString()
+  @IsOptional()
+  conversationId?: string;
+}
+
+export class RescheduleWhatsAppMessageDto {
+  @IsString()
+  @IsNotEmpty()
+  scheduledAt!: string;
+}
+
+export class EditScheduledWhatsAppMessageDto extends SendWhatsAppMessageDto {
+  @IsString()
+  @IsOptional()
+  scheduledAt?: string;
+}
