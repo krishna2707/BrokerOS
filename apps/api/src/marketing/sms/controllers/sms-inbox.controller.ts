@@ -28,8 +28,11 @@ export class SmsInboxController {
   constructor(private readonly inboxService: SmsInboxService) {}
 
   @Get('conversations')
-  async listConversations(@Query() query: ListSmsConversationsQueryDto) {
-    return this.inboxService.listConversations(query);
+  async listConversations(
+    @Query() query: ListSmsConversationsQueryDto,
+    @Req() req: any,
+  ) {
+    return this.inboxService.listConversations(query, req?.user);
   }
 
   @Post('conversations')

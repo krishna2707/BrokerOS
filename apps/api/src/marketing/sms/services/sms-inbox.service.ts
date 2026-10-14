@@ -44,6 +44,12 @@ const SMS_CONVERSATION_INCLUDE = {
   campaign: {
     select: { id: true, title: true },
   },
+  broker: {
+    select: { id: true, name: true, phone: true, email: true, status: true },
+  },
+  customer: {
+    select: { id: true, firstName: true, lastName: true, phone: true, email: true },
+  },
 };
 
 @Injectable()
@@ -57,12 +63,167 @@ export class SmsInboxService {
   ) {}
 
   /**
-   * List paginated SMS conversations with status filtering and phone search.
+   * Auto-provision uncontacted leads and brokers who possess a phone number
    */
-  async listConversations(query: ListSmsConversationsQueryDto) {
+  async autoProvisionExecutiveConversations(
+    userId: string,
+    roleCode: string,
+    defaultProvider: string,
+  ) {
+    try {
+      if (['PRE_SALES', 'SALES_EXECUTIVE'].includes(roleCode)) {
+        const unprovisionedLeads = await this.prisma.lead.findMany({
+          where: {
+            assignedUserId: userId,
+            deletedAt: null,
+            phone: { not: '' },
+            smsConversations: { none: {} },
+          },
+          take: 40,
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+          },
+        });
+
+        for (const lead of unprovisionedLeads) {
+          if (!lead.phone || !lead.phone.trim()) continue;
+          await this.prisma.smsConversation
+            .create({
+              data: {
+                contactPhone: lead.phone.trim(),
+                contactName:
+                  `${lead.firstName || ''} ${lead.lastName || ''}`.trim() ||
+                  'Lead',
+                leadId: lead.id,
+                agentUserId: userId,
+                status: 'open',
+                isActive: true,
+                assignedProvider: defaultProvider,
+              },
+            })
+            .catch(() => null);
+        }
+      } else if (roleCode === 'SOURCING_MANAGER') {
+        const unprovisionedBrokers = await this.prisma.broker.findMany({
+          where: {
+            sourcingManagerId: userId,
+            deletedAt: null,
+            phone: { not: '' },
+            smsConversations: { none: {} },
+          },
+          take: 40,
+          select: { id: true, name: true, phone: true },
+        });
+
+        for (const broker of unprovisionedBrokers) {
+          if (!broker.phone || !broker.phone.trim()) continue;
+          await this.prisma.smsConversation
+            .create({
+              data: {
+                contactPhone: broker.phone.trim(),
+                contactName: broker.name || 'Broker',
+                brokerId: broker.id,
+                agentUserId: userId,
+                status: 'open',
+                isActive: true,
+                assignedProvider: defaultProvider,
+              },
+            })
+            .catch(() => null);
+        }
+      } else if (roleCode === 'POST_SALES') {
+        const assignedBookings = await this.prisma.booking.findMany({
+          where: {
+            assignedPostSalesId: userId,
+            customer: {
+              smsConversations: { none: {} },
+              phone: { not: '' },
+            },
+          },
+          take: 40,
+          select: {
+            customer: {
+              select: { id: true, firstName: true, lastName: true, phone: true },
+            },
+          },
+        });
+
+        for (const b of assignedBookings) {
+          const customer = b.customer;
+          if (!customer || !customer.phone || !customer.phone.trim()) continue;
+          await this.prisma.smsConversation
+            .create({
+              data: {
+                contactPhone: customer.phone.trim(),
+                contactName:
+                  `${customer.firstName || ''} ${customer.lastName || ''}`.trim() ||
+                  'Customer',
+                customerId: customer.id,
+                agentUserId: userId,
+                status: 'open',
+                isActive: true,
+                assignedProvider: defaultProvider,
+              },
+            })
+            .catch(() => null);
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(
+        `Auto-provisioning executive SMS conversations skipped: ${err?.message}`,
+      );
+    }
+  }
+
+  /**
+   * List paginated SMS conversations with role scoping, search, and contact qualification.
+   */
+  async listConversations(
+    query: ListSmsConversationsQueryDto,
+    currentUser?: { id: string; roleId?: string; role?: any; name?: string },
+  ) {
     const page = Math.max(1, Number(query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(query.limit) || 25));
     const skip = (page - 1) * limit;
+
+    // Resolve Role Code of currentUser
+    let roleCode: string | undefined = undefined;
+    if (currentUser?.roleId) {
+      const role = await this.prisma.role.findUnique({
+        where: { id: currentUser.roleId },
+        select: { code: true },
+      });
+      roleCode = role?.code;
+    } else if (currentUser?.role) {
+      roleCode =
+        typeof currentUser.role === 'string'
+          ? currentUser.role
+          : currentUser.role?.code;
+    }
+
+    const isMarketing = ['MARKETING', 'MARKETING_MANAGER'].includes(roleCode || '');
+
+    // Get default SMS provider for assignedProvider continuity
+    let defaultProviderName = 'TWILIO';
+    const defaultIntegration = await this.prisma.smsIntegration.findFirst({
+      where: { isActive: true },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+      select: { provider: true, fromSender: true },
+    });
+    if (defaultIntegration?.provider) {
+      defaultProviderName = defaultIntegration.provider;
+    }
+
+    if (currentUser?.id && roleCode && !isMarketing) {
+      await this.autoProvisionExecutiveConversations(
+        currentUser.id,
+        roleCode,
+        defaultProviderName,
+      );
+    }
 
     const where: any = { isActive: true };
 
@@ -70,17 +231,169 @@ export class SmsInboxService {
       where.status = query.status;
     }
 
-    if (query.agentId) {
-      where.agentUserId = query.agentId;
-    }
+    const andConditions: any[] = [];
+
+    // Qualification invariant: Contact must have a phone number
+    andConditions.push({
+      contactPhone: { not: '' },
+    });
 
     if (query.search && query.search.trim()) {
       const q = query.search.trim();
-      where.OR = [
-        { contactPhone: { contains: q, mode: 'insensitive' } },
-        { contactName: { contains: q, mode: 'insensitive' } },
-        { lastMessageText: { contains: q, mode: 'insensitive' } },
-      ];
+      andConditions.push({
+        OR: [
+          { contactPhone: { contains: q, mode: 'insensitive' } },
+          { contactName: { contains: q, mode: 'insensitive' } },
+          { lastMessageText: { contains: q, mode: 'insensitive' } },
+          {
+            lead: {
+              OR: [
+                { firstName: { contains: q, mode: 'insensitive' } },
+                { lastName: { contains: q, mode: 'insensitive' } },
+                { phone: { contains: q, mode: 'insensitive' } },
+              ],
+            },
+          },
+          {
+            broker: {
+              OR: [
+                { name: { contains: q, mode: 'insensitive' } },
+                { phone: { contains: q, mode: 'insensitive' } },
+              ],
+            },
+          },
+          {
+            customer: {
+              OR: [
+                { firstName: { contains: q, mode: 'insensitive' } },
+                { lastName: { contains: q, mode: 'insensitive' } },
+                { phone: { contains: q, mode: 'insensitive' } },
+              ],
+            },
+          },
+        ],
+      });
+    }
+
+    // Explicit entity scoping
+    if (query.leadId) {
+      where.leadId = query.leadId;
+    }
+    if (query.brokerId) {
+      where.brokerId = query.brokerId;
+    }
+    if (query.customerId) {
+      where.customerId = query.customerId;
+    }
+
+    // ── Role & Department Scoping ───────────────────────────────────────────
+    const effectiveDept = (query.department || '').toUpperCase();
+    const isExec = [
+      'PRE_SALES',
+      'SALES_EXECUTIVE',
+      'POST_SALES',
+      'CLOSING_MANAGER',
+      'SOURCING_MANAGER',
+    ].includes(roleCode || '');
+
+    if (!isMarketing && (query.scope === 'my' || (isExec && query.scope !== 'all'))) {
+      if (roleCode === 'PRE_SALES' || effectiveDept === 'PRE_SALES') {
+        where.lead = { assignedUserId: currentUser?.id, deletedAt: null };
+      } else if (
+        roleCode === 'SALES_EXECUTIVE' ||
+        effectiveDept === 'SALES_EXECUTIVE' ||
+        effectiveDept === 'SALES'
+      ) {
+        where.lead = { assignedUserId: currentUser?.id, deletedAt: null };
+      } else if (
+        roleCode === 'CLOSING_MANAGER' ||
+        effectiveDept === 'CLOSING_MANAGER'
+      ) {
+        andConditions.push({
+          OR: [
+            { lead: { createdById: currentUser?.id, deletedAt: null } },
+            { lead: { assignedUserId: currentUser?.id, deletedAt: null } },
+          ],
+        });
+      } else if (
+        roleCode === 'SOURCING_MANAGER' ||
+        effectiveDept === 'SOURCING_MANAGER'
+      ) {
+        where.broker = {
+          sourcingManagerId: currentUser?.id,
+        };
+      } else if (
+        roleCode === 'POST_SALES' ||
+        effectiveDept === 'POST_SALES'
+      ) {
+        andConditions.push({
+          OR: [
+            {
+              customer: {
+                bookings: {
+                  some: { assignedPostSalesId: currentUser?.id },
+                },
+              },
+            },
+            {
+              lead: {
+                assignedUserId: currentUser?.id,
+                deletedAt: null,
+              },
+            },
+          ],
+        });
+      }
+    } else if (
+      !isMarketing &&
+      (query.scope === 'team' ||
+        ['PRE_SALES_MANAGER', 'SALES_MANAGER', 'POST_SALES_MANAGER'].includes(
+          roleCode || '',
+        ))
+    ) {
+      const targetAgentId = query.agentId;
+      if (targetAgentId) {
+        andConditions.push({
+          OR: [
+            { lead: { assignedUserId: targetAgentId } },
+            { agentUserId: targetAgentId },
+            { broker: { sourcingManagerId: targetAgentId } },
+          ],
+        });
+      } else if (currentUser?.id) {
+        const subordinates = await this.prisma.user.findMany({
+          where: { managerId: currentUser.id },
+          select: { id: true },
+        });
+        const subIds = subordinates.map((s) => s.id);
+        subIds.push(currentUser.id);
+
+        andConditions.push({
+          OR: [
+            { lead: { assignedUserId: { in: subIds } } },
+            { agentUserId: { in: subIds } },
+            { broker: { sourcingManagerId: { in: subIds } } },
+          ],
+        });
+      }
+    } else if (
+      !isMarketing &&
+      ['BUSINESS_MANAGER', 'DIRECTOR', 'FINANCE', 'ADMIN'].includes(roleCode || '')
+    ) {
+      // Full cross-enterprise visibility; no restrictive user filter
+      if (query.agentId) {
+        andConditions.push({
+          OR: [
+            { lead: { assignedUserId: query.agentId } },
+            { agentUserId: query.agentId },
+            { broker: { sourcingManagerId: query.agentId } },
+          ],
+        });
+      }
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     const [items, total] = await Promise.all([
