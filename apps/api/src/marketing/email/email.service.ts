@@ -101,6 +101,10 @@ export class EmailService {
     return this.integrationsService.deleteIntegration(id);
   }
 
+  async setDefaultIntegration(id: string) {
+    return this.integrationsService.setDefaultIntegration(id);
+  }
+
   async syncDomainsForIntegration(id: string) {
     return this.integrationsService.syncDomainsForIntegration(id);
   }
