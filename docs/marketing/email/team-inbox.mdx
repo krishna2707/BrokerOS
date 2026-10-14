@@ -95,3 +95,54 @@ To prevent email replies from splintering into disconnected conversations in the
 - **`In-Reply-To`**: Inbound replies inherit the parent message identifier, ensuring the response nests under the existing email thread.
 - **`References`**: Maintains the complete chain of historical message IDs across long commercial negotiations.
 - **`Reply-To` Routing**: Directs responses back to a monitored project subdomain (for example, `inquiries@mail.yourbrokerage.com`) mapped to the inbound parser.
+
+---
+
+## Scheduled Email Messaging
+
+Sales executives and closing managers can compose rich HTML emails with attachments and schedule them to reach clients during optimal reading hours (such as 9:00 AM weekday mornings).
+
+### Scheduling Features and Controls
+
+1. **Triggering the Modal**: In the email composer toolbar at `Dashboard -> Marketing -> Email -> Inbox`, click the `<CalendarClock />` icon or select **Schedule Message** from the split Send button dropdown menu.
+2. **Scheduling Modal Controls**:
+   - **Preset Quick Picks**: Choose from **In 1 hour**, **Tomorrow 9:00 AM**, **Tomorrow 2:00 PM**, or **Monday 9:00 AM**.
+   - **Custom DateTime Picker**: Select any date and time down to the exact minute.
+   - **Payload Preservation**: The scheduled message safely encapsulates subject lines, HTML bodies, and file attachment URLs (such as unit floor plans or payment schedules).
+3. **Pending State and Inline Bubble Controls**:
+   - The scheduled email renders inside the message timeline wrapped in an amber dashed border, clock badge, and status indicator `SCHEDULED`.
+   - Action controls on the bubble allow staff to:
+     - **Send Now**: Immediately relay the message through the active SMTP or transactional provider (SendGrid, Brevo, AWS SES, Mailgun).
+     - **Edit**: Opens the full in-place editor modal to rewrite the subject, revise the HTML message text, or adjust the scheduled delivery time.
+     - **Cancel**: Cancels queued delivery and marks the message as `CANCELLED`.
+4. **Floating Scheduled Messages Dock**:
+   - When pending emails exist for the active contact thread, a floating dock hovers directly above the email composer.
+   - Shows time remaining and provides one-click Send Now, Edit, and Cancel operations without needing to scroll through message history.
+5. **Conversation List Indicator**:
+   - Threads containing scheduled emails show an amber `[Scheduled: <Date>]` chip on the left conversation directory item.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Agent as Sales Executive
+    participant Web as Email Composer (apps/web)
+    participant API as NestJS API (apps/api)
+    participant DB as Postgres CRM Database
+    participant Worker as Scheduled Processor (apps/workers)
+    participant MailServer as Email Relay (SendGrid / SES / Brevo)
+    actor Buyer as Homebuyer
+
+    Agent->>Web: Compose Email & Select Schedule (e.g. Tomorrow 9:00 AM)
+    Web->>API: POST /marketing/email/inbox/schedule
+    API->>DB: Store EmailMessage (status: SCHEDULED, scheduledAt)
+    API-->>Web: 201 Created (Message with SCHEDULED status)
+    Web-->>Agent: Render Dashed Email Bubble & Floating Dock
+
+    Note over DB,Worker: Worker Scanner (Every 10s)
+    Worker->>DB: Scan for scheduledAt <= NOW() and status = SCHEDULED
+    Worker->>DB: Atomic Lock (status: PROCESSING)
+    Worker->>MailServer: Transmit RFC 2822 Email Message
+    MailServer-->>Buyer: Deliver Email to Buyer Mailbox
+    Worker->>DB: Update Message status = SENT, sentAt = NOW()
+```
+
