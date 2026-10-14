@@ -5,7 +5,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { EmailConversation } from '../types/inbox';
 
-export function useEmailConversations() {
+export interface UseEmailConversationsOptions {
+  department?: string;
+  scope?: 'my' | 'team' | 'all';
+  agentId?: string;
+  leadId?: string;
+  brokerId?: string;
+  customerId?: string;
+}
+
+export function useEmailConversations(options?: UseEmailConversationsOptions) {
   const [conversations, setConversations] = useState<EmailConversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -19,6 +28,12 @@ export function useEmailConversations() {
       const params = new URLSearchParams();
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (search.trim()) params.set('search', search.trim());
+      if (options?.department) params.set('department', options.department);
+      if (options?.scope) params.set('scope', options.scope);
+      if (options?.agentId) params.set('agentId', options.agentId);
+      if (options?.leadId) params.set('leadId', options.leadId);
+      if (options?.brokerId) params.set('brokerId', options.brokerId);
+      if (options?.customerId) params.set('customerId', options.customerId);
 
       const res = await fetch(`${baseUrl}/api/marketing/email/inbox/conversations?${params.toString()}`, {
         credentials: 'include',
@@ -31,7 +46,17 @@ export function useEmailConversations() {
     } finally {
       setLoading(false);
     }
-  }, [baseUrl, statusFilter, search]);
+  }, [
+    baseUrl,
+    statusFilter,
+    search,
+    options?.department,
+    options?.scope,
+    options?.agentId,
+    options?.leadId,
+    options?.brokerId,
+    options?.customerId,
+  ]);
 
   useEffect(() => {
     loadConversations();
