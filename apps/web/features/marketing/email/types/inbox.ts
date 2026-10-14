@@ -36,6 +36,23 @@ export interface EmailConversation {
     leadScore?: number | null;
   } | null;
 
+  brokerId?: string | null;
+  broker?: {
+    id: string;
+    companyName?: string | null;
+    contactPerson?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  } | null;
+
+  customerId?: string | null;
+  customer?: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  } | null;
+
   createdAt: string;
   updatedAt: string;
 }
