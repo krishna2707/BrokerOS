@@ -206,6 +206,9 @@ enum WhatsAppMessageDirection {
 }
 
 enum WhatsAppMessageStatus {
+  SCHEDULED
+  PROCESSING
+  CANCELLED
   SENT
   DELIVERED
   READ
@@ -1267,12 +1270,17 @@ model WhatsAppMessage {
   failedAt      DateTime?
   failureReason String?
 
+  scheduledAt   DateTime?
+  scheduledBy   String?
+  isScheduled   Boolean   @default(false)
+
   createdAt DateTime @default(now())
 
   @@index([conversationId])
   @@index([waMessageId])
   @@index([direction])
   @@index([status])
+  @@index([status, scheduledAt])
   @@index([senderType])
   @@index([contentType])
   @@index([createdAt])
@@ -3484,11 +3492,16 @@ model EmailMessage {
   failedAt      DateTime?
   failureReason String?
 
+  scheduledAt   DateTime?
+  scheduledBy   String?
+  isScheduled   Boolean   @default(false)
+
   createdAt DateTime @default(now())
 
   @@index([conversationId])
   @@index([direction])
   @@index([status])
+  @@index([status, scheduledAt])
   @@index([providerMsgId])
   @@index([createdAt])
   @@map("email_message")
@@ -3930,11 +3943,16 @@ model SmsMessage {
   failedAt      DateTime?
   failureReason String?
 
+  scheduledAt   DateTime?
+  scheduledBy   String?
+  isScheduled   Boolean   @default(false)
+
   createdAt DateTime @default(now())
 
   @@index([conversationId])
   @@index([direction])
   @@index([status])
+  @@index([status, scheduledAt])
   @@index([providerMsgId])
   @@index([createdAt])
   @@map("sms_message")
