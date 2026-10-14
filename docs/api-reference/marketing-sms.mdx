@@ -29,6 +29,16 @@ BASE URL: /api/marketing/sms
 | `POST` | `/api/marketing/sms/recipients/:id/promote` | Promote high-engagement recipient to CRM Lead | Marketing / Admin |
 | `DELETE` | `/api/marketing/sms/campaigns/:id` | Delete an unsent campaign | Marketing / Admin |
 
+### Team Inbox Message Scheduling
+
+| Method | Path | Description | Access |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/marketing/sms/inbox/schedule` | Schedule a 1-on-1 SMS message for future dispatch | Authenticated |
+| `PATCH` | `/api/marketing/sms/inbox/reschedule/:id` | Update target scheduled dispatch timestamp | Authenticated |
+| `PATCH` | `/api/marketing/sms/inbox/edit/:id` | Edit SMS message body or scheduled time | Authenticated |
+| `DELETE` | `/api/marketing/sms/inbox/cancel/:id` | Cancel a pending scheduled SMS message | Authenticated |
+| `POST` | `/api/marketing/sms/inbox/send-now/:id` | Immediately send a scheduled SMS ahead of time | Authenticated |
+
 ---
 
 ## DLT Compliance & Segment Rules
