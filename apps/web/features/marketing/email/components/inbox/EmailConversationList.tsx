@@ -3,7 +3,7 @@
 // ============================================================================
 
 import React, { useState } from 'react';
-import { Search, Mail, Plus } from 'lucide-react';
+import { Search, Mail, Plus, Filter } from 'lucide-react';
 import type { EmailConversation } from '../../types/inbox';
 import { StartNewEmailModal } from './StartNewEmailModal';
 
@@ -16,6 +16,10 @@ interface EmailConversationListProps {
   statusFilter: 'all' | 'open' | 'pending' | 'closed';
   onStatusFilterChange: (val: 'all' | 'open' | 'pending' | 'closed') => void;
   loading?: boolean;
+  showManagerFilter?: boolean;
+  selectedAgentId?: string;
+  onAgentChange?: (agentId: string) => void;
+  agents?: Array<{ id: string; name: string }>;
 }
 
 export const EmailConversationList: React.FC<EmailConversationListProps> = ({
@@ -27,6 +31,10 @@ export const EmailConversationList: React.FC<EmailConversationListProps> = ({
   statusFilter,
   onStatusFilterChange,
   loading = false,
+  showManagerFilter = false,
+  selectedAgentId = '',
+  onAgentChange,
+  agents = [],
 }) => {
   const [isNewEmailOpen, setIsNewEmailOpen] = useState(false);
 
@@ -58,7 +66,26 @@ export const EmailConversationList: React.FC<EmailConversationListProps> = ({
   return (
     <div className="flex flex-col h-full bg-bg-surface border-r border-border-default w-full md:w-80 lg:w-96 shrink-0">
       {/* Search & New Email Header */}
-      <div className="p-3.5 border-b border-border-default space-y-3">
+      <div className="p-3.5 border-b border-border-default space-y-2.5">
+        {/* Manager Team Oversight Filter Dropdown */}
+        {showManagerFilter && agents.length > 0 && onAgentChange && (
+          <div className="flex items-center gap-2 bg-bg-base border border-border-default rounded-xl px-2.5 py-1.5">
+            <Filter className="w-3.5 h-3.5 text-text-tertiary shrink-0" />
+            <select
+              value={selectedAgentId}
+              onChange={(e) => onAgentChange(e.target.value)}
+              className="bg-transparent text-xs text-text-primary font-semibold w-full focus:outline-hidden cursor-pointer"
+            >
+              <option value="">All Team Leads & Reps</option>
+              {agents.map((ag) => (
+                <option key={ag.id} value={ag.id}>
+                  Filter: {ag.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-text-tertiary absolute left-3 top-2.5" />
@@ -129,6 +156,8 @@ export const EmailConversationList: React.FC<EmailConversationListProps> = ({
             const contactDisplayName =
               conv.contactName ||
               (conv.lead ? `${conv.lead.firstName || ''} ${conv.lead.lastName || ''}`.trim() : null) ||
+              (conv.broker ? conv.broker.companyName || conv.broker.contactPerson : null) ||
+              (conv.customer ? conv.customer.name : null) ||
               conv.contactEmail;
 
             return (
@@ -155,6 +184,42 @@ export const EmailConversationList: React.FC<EmailConversationListProps> = ({
                     <span className="text-[10px] text-text-tertiary shrink-0">
                       {formatLastMessageTime(conv.lastMessageAt || conv.updatedAt)}
                     </span>
+                  </div>
+
+                  {/* CRM Context Badges */}
+                  <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                    {(!conv.lastMessageText || conv.lastMessageText === 'Conversation started' || conv.lastMessageText === 'No messages yet') && (
+                      <span className="px-1.5 py-0.2 rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[9px] font-bold">
+                        New • Uncontacted
+                      </span>
+                    )}
+                    {conv.lead && (
+                      <>
+                        {conv.lead.temperature && (
+                          <span
+                            className={`px-1.5 py-0.2 rounded-md text-[9px] font-bold ${
+                              conv.lead.temperature === 'HOT'
+                                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                                : conv.lead.temperature === 'WARM'
+                                  ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                                  : 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                            }`}
+                          >
+                            {conv.lead.temperature}
+                          </span>
+                        )}
+                      </>
+                    )}
+                    {conv.broker && (
+                      <span className="px-1.5 py-0.2 rounded-md bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-[9px] font-bold">
+                        Broker {conv.broker.companyName ? `• ${conv.broker.companyName}` : ''}
+                      </span>
+                    )}
+                    {conv.customer && (
+                      <span className="px-1.5 py-0.2 rounded-md bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 border border-sky-200 dark:border-sky-800 text-[9px] font-bold">
+                        Customer
+                      </span>
+                    )}
                   </div>
 
                   {/* Subject Line snippet */}
