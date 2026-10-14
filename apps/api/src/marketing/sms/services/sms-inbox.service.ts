@@ -18,6 +18,9 @@ import type {
   SendSmsReplyDto,
   ListSmsMessagesQueryDto,
   DraftSmsAiReplyDto,
+  ScheduleSmsDto,
+  RescheduleSmsDto,
+  EditScheduledSmsDto,
 } from '../dto/sms-inbox.dto.js';
 import type { SmsProviderCredentials } from '@brokeros/types';
 
@@ -49,6 +52,12 @@ const SMS_CONVERSATION_INCLUDE = {
   },
   customer: {
     select: { id: true, firstName: true, lastName: true, phone: true, email: true },
+  },
+  messages: {
+    where: { status: 'SCHEDULED' },
+    orderBy: { scheduledAt: 'asc' as const },
+    take: 1,
+    select: { id: true, scheduledAt: true, bodyText: true },
   },
 };
 
@@ -407,8 +416,14 @@ export class SmsInboxService {
       this.prisma.smsConversation.count({ where }),
     ]);
 
+    const mappedItems = items.map((item: any) => ({
+      ...item,
+      nextScheduledAt: item.messages?.[0]?.scheduledAt || null,
+      scheduledCount: item.messages?.length || 0,
+    }));
+
     return {
-      items,
+      items: mappedItems,
       total,
       page,
       limit,
@@ -446,7 +461,10 @@ export class SmsInboxService {
     }
 
     const messages = await this.prisma.smsMessage.findMany({
-      where: { conversationId },
+      where: {
+        conversationId,
+        status: { not: 'CANCELLED' },
+      },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -806,4 +824,166 @@ export class SmsInboxService {
       modelUsed: aiRes.modelUsed,
     };
   }
+
+  /**
+   * Schedule an SMS reply for future delivery
+   */
+  async scheduleMessage(
+    conversationId: string,
+    dto: ScheduleSmsDto,
+    senderUser?: { id: string; name?: string; email?: string },
+  ) {
+    const conv = await this.prisma.smsConversation.findUnique({
+      where: { id: conversationId },
+    });
+    if (!conv) {
+      throw new NotFoundException(`SMS Conversation #${conversationId} not found`);
+    }
+
+    const scheduledDate = new Date(dto.scheduledAt);
+    if (isNaN(scheduledDate.getTime()) || scheduledDate.getTime() <= Date.now() + 5000) {
+      throw new BadRequestException('Scheduled time must be at least 10 seconds in the future');
+    }
+
+    let textContent = dto.text?.trim() || '';
+    if (dto.mediaUrl && !textContent.includes(dto.mediaUrl)) {
+      textContent = textContent ? `${textContent}\n${dto.mediaUrl}` : dto.mediaUrl;
+    }
+    if (!textContent) {
+      throw new BadRequestException('Message text cannot be empty');
+    }
+
+    const provider = conv.assignedProvider;
+    const fromPhone = conv.assignedSenderPhone;
+    const fromName = senderUser?.name || 'Sales Team';
+    const { segments } = calculateSmsSegments(textContent);
+
+    const scheduledMessage = await this.prisma.smsMessage.create({
+      data: {
+        conversationId,
+        direction: 'OUTBOUND',
+        senderType: 'agent',
+        senderName: fromName,
+        fromPhone: fromPhone || '',
+        toPhone: conv.contactPhone,
+        bodyText: textContent,
+        segmentsCount: segments,
+        status: 'SCHEDULED',
+        provider,
+        scheduledAt: scheduledDate,
+        scheduledBy: senderUser?.id || null,
+        isScheduled: true,
+      },
+    });
+
+    return scheduledMessage;
+  }
+
+  /**
+   * Get all pending scheduled SMS messages for a conversation
+   */
+  async getScheduledMessages(conversationId: string) {
+    return this.prisma.smsMessage.findMany({
+      where: {
+        conversationId,
+        status: 'SCHEDULED',
+      },
+      orderBy: { scheduledAt: 'asc' },
+    });
+  }
+
+  /**
+   * Reschedule an existing scheduled SMS message
+   */
+  async rescheduleMessage(messageId: string, newScheduledAt: string) {
+    const msg = await this.prisma.smsMessage.findUnique({ where: { id: messageId } });
+    if (!msg || msg.status !== 'SCHEDULED') {
+      throw new NotFoundException(`Scheduled SMS message #${messageId} not found`);
+    }
+
+    const scheduledDate = new Date(newScheduledAt);
+    if (isNaN(scheduledDate.getTime()) || scheduledDate.getTime() <= Date.now() + 5000) {
+      throw new BadRequestException('Scheduled time must be in the future');
+    }
+
+    return this.prisma.smsMessage.update({
+      where: { id: messageId },
+      data: { scheduledAt: scheduledDate },
+    });
+  }
+
+  /**
+   * Edit content and/or date of a scheduled SMS message
+   */
+  async editScheduledMessage(messageId: string, dto: EditScheduledSmsDto) {
+    const msg = await this.prisma.smsMessage.findUnique({ where: { id: messageId } });
+    if (!msg || msg.status !== 'SCHEDULED') {
+      throw new NotFoundException(`Scheduled SMS message #${messageId} not found`);
+    }
+
+    const data: any = {};
+    if (dto.text?.trim()) {
+      let textContent = dto.text.trim();
+      if (dto.mediaUrl && !textContent.includes(dto.mediaUrl)) {
+        textContent = `${textContent}\n${dto.mediaUrl}`;
+      }
+      data.bodyText = textContent;
+      const { segments } = calculateSmsSegments(textContent);
+      data.segmentsCount = segments;
+    }
+    if (dto.scheduledAt) {
+      const scheduledDate = new Date(dto.scheduledAt);
+      if (isNaN(scheduledDate.getTime()) || scheduledDate.getTime() <= Date.now() + 5000) {
+        throw new BadRequestException('Scheduled time must be in the future');
+      }
+      data.scheduledAt = scheduledDate;
+    }
+
+    return this.prisma.smsMessage.update({
+      where: { id: messageId },
+      data,
+    });
+  }
+
+  /**
+   * Cancel a scheduled SMS message
+   */
+  async cancelScheduledMessage(messageId: string) {
+    const msg = await this.prisma.smsMessage.findUnique({ where: { id: messageId } });
+    if (!msg || msg.status !== 'SCHEDULED') {
+      throw new NotFoundException(`Scheduled SMS message #${messageId} not found`);
+    }
+
+    return this.prisma.smsMessage.update({
+      where: { id: messageId },
+      data: { status: 'CANCELLED' },
+    });
+  }
+
+  /**
+   * Immediately dispatch a scheduled SMS message
+   */
+  async sendScheduledMessageNow(
+    messageId: string,
+    senderUser?: { id: string; name?: string; email?: string },
+  ) {
+    const msg = await this.prisma.smsMessage.findUnique({
+      where: { id: messageId },
+    });
+    if (!msg || msg.status !== 'SCHEDULED') {
+      throw new NotFoundException(`Scheduled SMS message #${messageId} not found or already sent`);
+    }
+
+    const dispatched = await this.sendReply(
+      msg.conversationId,
+      { text: msg.bodyText },
+      senderUser || (msg.scheduledBy ? { id: msg.scheduledBy, name: msg.senderName || 'Agent' } : undefined),
+    );
+
+    // Remove the scheduled row so it doesn't double-dispatch
+    await this.prisma.smsMessage.delete({ where: { id: messageId } }).catch(() => null);
+
+    return dispatched;
+  }
 }
+
