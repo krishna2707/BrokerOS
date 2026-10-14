@@ -13,18 +13,23 @@ import {
   Lock,
   Paperclip,
   X,
+  CalendarClock,
 } from 'lucide-react';
 import { calculateSmsSegments, DEFAULT_SMS_QUICK_REPLIES } from '@brokeros/constants';
 import { SmsQuickReplyModal } from './SmsQuickReplyModal';
 import { SmsTemplatePickerModal } from './SmsTemplatePickerModal';
+import { ScheduleMessageModal } from '../../../components/ScheduleMessageModal';
 import type { SmsQuickReplyItem } from '../../types/inbox';
 import { toast } from 'sonner';
 
 interface SmsMessageComposerProps {
   onSendMessage: (payload: { text: string; mediaUrl?: string }) => Promise<any>;
+  onScheduleMessage?: (payload: { scheduledAt: string; text?: string; mediaUrl?: string }) => Promise<any>;
   onDraftAi: () => Promise<{ text: string }>;
   assignedProvider?: string;
   assignedSenderPhone?: string | null;
+  recipientName?: string;
+  recipientPhone?: string;
   sending?: boolean;
   draftingAi?: boolean;
   disabled?: boolean;
@@ -32,9 +37,12 @@ interface SmsMessageComposerProps {
 
 export const SmsMessageComposer: React.FC<SmsMessageComposerProps> = ({
   onSendMessage,
+  onScheduleMessage,
   onDraftAi,
   assignedProvider = 'TWILIO',
   assignedSenderPhone,
+  recipientName,
+  recipientPhone,
   sending = false,
   draftingAi = false,
   disabled = false,
@@ -42,6 +50,7 @@ export const SmsMessageComposer: React.FC<SmsMessageComposerProps> = ({
   const [text, setText] = useState('');
   const [isQuickReplyModalOpen, setIsQuickReplyModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [attachedMedia, setAttachedMedia] = useState<{
     name: string;
     url: string;
@@ -272,6 +281,18 @@ export const SmsMessageComposer: React.FC<SmsMessageComposerProps> = ({
             <span>Templates</span>
           </button>
 
+          {/* Schedule Message Button */}
+          <button
+            type="button"
+            onClick={() => setIsScheduleModalOpen(true)}
+            disabled={disabled}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-text-secondary hover:text-text-primary hover:bg-bg-subtle transition-colors"
+            title="Schedule SMS for future delivery"
+          >
+            <CalendarClock className="w-3.5 h-3.5 text-amber-500" />
+            <span>Schedule</span>
+          </button>
+
           {/* Media Attachment Button */}
           <button
             type="button"
@@ -379,15 +400,27 @@ export const SmsMessageComposer: React.FC<SmsMessageComposerProps> = ({
           className="flex-1 bg-transparent resize-none border-none outline-hidden px-3 py-2 text-sm text-text-primary placeholder:text-text-muted max-h-40 leading-relaxed font-medium"
         />
 
-        <button
-          type="button"
-          onClick={handleSend}
-          disabled={!text.trim() || sending || disabled}
-          className="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold disabled:opacity-40 transition-colors shrink-0 shadow-sm"
-          title="Send SMS Reply (Enter)"
-        >
-          {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-        </button>
+        {/* Split Send / Schedule Button */}
+        <div className="flex items-center shrink-0">
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={!text.trim() || sending || disabled}
+            className="p-2.5 rounded-l-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold disabled:opacity-40 transition-colors shadow-sm"
+            title="Send SMS Reply (Enter)"
+          >
+            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsScheduleModalOpen(true)}
+            disabled={!text.trim() || sending || disabled}
+            className="p-2.5 rounded-r-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold border-l border-amber-600/30 disabled:opacity-40 transition-colors shadow-sm"
+            title="Schedule for later..."
+          >
+            <CalendarClock className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Modals */}
@@ -407,6 +440,26 @@ export const SmsMessageComposer: React.FC<SmsMessageComposerProps> = ({
           setText((prev) => (prev ? `${prev}\n\n${content}` : content));
           if (textareaRef.current) textareaRef.current.focus();
         }}
+      />
+
+      <ScheduleMessageModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        onSchedule={async (payload) => {
+          if (onScheduleMessage) {
+            await onScheduleMessage({
+              scheduledAt: payload.scheduledAt,
+              text: payload.text || text,
+              mediaUrl: attachedMedia?.url,
+            });
+            setText('');
+            setAttachedMedia(null);
+          }
+        }}
+        initialText={text}
+        channel="sms"
+        recipientName={recipientName}
+        recipientTarget={recipientPhone || assignedSenderPhone || undefined}
       />
     </div>
   );

@@ -14,7 +14,9 @@ import { SmsConversationList } from './SmsConversationList';
 import { SmsConversationHeader } from './SmsConversationHeader';
 import { SmsConversationThread } from './SmsConversationThread';
 import { SmsMessageComposer } from './SmsMessageComposer';
-import type { SmsConversation } from '../../types/inbox';
+import { ScheduledMessagesDock } from '../../../components/ScheduledMessagesDock';
+import { ScheduleMessageModal } from '../../../components/ScheduleMessageModal';
+import type { SmsConversation, SmsMessage } from '../../types/inbox';
 
 interface SmsInboxViewProps {
   initialAccountId?: string;
@@ -95,8 +97,16 @@ export const SmsInboxView: React.FC<SmsInboxViewProps> = ({
     sending,
     draftingAi,
     sendMessage,
+    scheduleMessage,
+    rescheduleMessage,
+    editScheduledMessage,
+    cancelScheduledMessage,
+    sendScheduledMessageNow,
     draftReplyWithAi,
   } = useSmsMessages(activeConversation?.id || null);
+
+  const [editingScheduledMessage, setEditingScheduledMessage] = useState<SmsMessage | null>(null);
+  const scheduledMessages = messages.filter((m) => m.status === 'SCHEDULED');
 
   // Auto-select deep-linked conversation, lead, broker, customer, or first conversation if available
   useEffect(() => {
@@ -226,16 +236,56 @@ export const SmsInboxView: React.FC<SmsInboxViewProps> = ({
             <SmsConversationThread
               messages={messages}
               loading={messagesLoading}
+              onSendNow={sendScheduledMessageNow}
+              onEdit={(msg) => setEditingScheduledMessage(msg)}
+              onCancel={cancelScheduledMessage}
+            />
+
+            <ScheduledMessagesDock
+              messages={scheduledMessages}
+              channel="sms"
+              onSendNow={sendScheduledMessageNow}
+              onEdit={(msg) => setEditingScheduledMessage(msg)}
+              onCancel={cancelScheduledMessage}
             />
 
             <SmsMessageComposer
               onSendMessage={sendMessage}
+              onScheduleMessage={scheduleMessage}
               onDraftAi={() => draftReplyWithAi(session?.user?.name || undefined)}
               assignedProvider={activeConversation.assignedProvider}
               assignedSenderPhone={activeConversation.assignedSenderPhone}
+              recipientName={
+                activeConversation.contactName ||
+                (activeConversation.lead ? `${activeConversation.lead.firstName || ''} ${activeConversation.lead.lastName || ''}`.trim() : undefined)
+              }
+              recipientPhone={activeConversation.contactPhone}
               sending={sending}
               draftingAi={draftingAi}
             />
+
+            {editingScheduledMessage && (
+              <ScheduleMessageModal
+                isOpen={Boolean(editingScheduledMessage)}
+                onClose={() => setEditingScheduledMessage(null)}
+                isEditing={true}
+                initialText={editingScheduledMessage.bodyText}
+                initialScheduledAt={editingScheduledMessage.scheduledAt || undefined}
+                channel="sms"
+                recipientName={
+                  activeConversation.contactName ||
+                  (activeConversation.lead ? `${activeConversation.lead.firstName || ''} ${activeConversation.lead.lastName || ''}`.trim() : undefined)
+                }
+                recipientTarget={activeConversation.contactPhone}
+                onSchedule={async (payload) => {
+                  await editScheduledMessage(editingScheduledMessage.id, {
+                    text: payload.text,
+                    scheduledAt: payload.scheduledAt,
+                  });
+                  setEditingScheduledMessage(null);
+                }}
+              />
+            )}
           </>
         ) : (
           <div className="flex flex-col items-center justify-center flex-1 text-center p-6 space-y-3">
