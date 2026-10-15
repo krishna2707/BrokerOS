@@ -18,9 +18,9 @@ import { toast } from 'sonner';
 export interface ScheduledMessagesDockProps {
   messages: Array<any>;
   channel: 'sms' | 'email' | 'whatsapp';
-  onSendNow: (messageId: string) => Promise<void>;
+  onSendNow: (messageId: string) => Promise<any>;
   onEdit: (message: any) => void;
-  onCancel: (messageId: string) => Promise<void>;
+  onCancel: (messageId: string) => Promise<any>;
 }
 
 export const ScheduledMessagesDock: React.FC<ScheduledMessagesDockProps> = ({
