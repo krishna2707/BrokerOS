@@ -38,7 +38,7 @@ sequenceDiagram
 
 ---
 
-## The 5 Core Packages
+## The 6 Core Packages
 
 ### 1. `@brokeros/constants`
 Contains pure TypeScript constants, enums, UI colors, and pure normalizer functions. It is decomposed into domain sub-modules rather than a monolithic flat file:
@@ -104,12 +104,34 @@ The centralized database package housing the Prisma ORM schema, migrations, and 
 ### 5. `@brokeros/storage`
 Centralized wrapper for cloud object storage (Vercel Blob):
 
-- Generates pre-signed upload URLs for client uploads.
-- Manages multi-part file streaming for heavy call recordings, site visit selfies, and brochures.
-- Validates media MIME types (PDF, JPG, PNG, MP3) prior to storage persistence.
+- Provides `uploadFileToBlob` for streaming files, avatars, call recordings, and brochures.
+- Provides `fetchBlobBuffer` for secure server-side binary retrieval and streaming with automatic token injection.
+- Eliminates storage token leakage and raw HTTP calls from controllers.
 
 ```typescript
-import { uploadFile, deleteFile } from '@brokeros/storage';
+import { uploadFileToBlob, fetchBlobBuffer } from '@brokeros/storage';
+
+const url = await uploadFileToBlob(buffer, 'avatars/lead-1.jpg');
+const { buffer: fileBuffer, contentType } = await fetchBlobBuffer(url);
+```
+
+---
+
+### 6. `@brokeros/messaging`
+Centralized, deep cross-channel message dispatch engine (SMS, Email, WhatsApp) providing atomic reservation, credential resolution, and provider dispatch across `apps/api` and `apps/workers`:
+
+- **Atomic Reservation**: Uses database-level conditional transitions (`SCHEDULED` -> `PROCESSING`) to eliminate double-send race conditions between background queue scanners and immediate API user actions.
+- **Lazy Adapter Registries**: Dynamically instantiates and caches provider adapters (`Twilio`, `Gupshup`, `Sinch`, `SendGrid`, `Brevo`, `AWS SES`, `Meta Cloud API`) on first use.
+- **Resilient Fallback**: Fetches stored database credentials, falling back to root environment variables when integrations are unconfigured.
+- **In-place Status Lifecycle**: Transitions message status directly (`DELIVERED`, `SENT`, `FAILED`) without deleting rows or breaking conversational audit trails.
+
+```typescript
+import { dispatchScheduledMessage } from '@brokeros/messaging';
+
+const result = await dispatchScheduledMessage({
+  messageId: 'msg_123',
+  prisma: prismaClient,
+});
 ```
 
 ---
