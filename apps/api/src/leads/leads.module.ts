@@ -28,6 +28,12 @@ import { NegotiationsModule } from './negotiations/negotiations.module.js';
   controllers: [LeadsController],
   providers: [
     LeadsService,
+    { provide: LeadsQueryService, useExisting: LeadsService },
+    { provide: LeadsManagementService, useExisting: LeadsService },
+    { provide: LeadsMediaService, useExisting: LeadsService },
+  ],
+  exports: [
+    LeadsService,
     LeadsQueryService,
     LeadsManagementService,
     LeadsMediaService,
