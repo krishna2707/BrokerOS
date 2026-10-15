@@ -9,15 +9,7 @@ import type {
   SmsProviderCredentials,
   SendSmsOptions,
 } from '@brokeros/types';
-import { TwilioSmsAdapter } from '@brokeros/int-sms-twilio';
-import { AwsSnsSmsAdapter } from '@brokeros/int-sms-aws-sns';
-import { SinchSmsAdapter } from '@brokeros/int-sms-sinch';
-import { GupshupSmsAdapter } from '@brokeros/int-sms-gupshup';
-import { InfobipSmsAdapter } from '@brokeros/int-sms-infobip';
-import { VonageSmsAdapter } from '@brokeros/int-sms-vonage';
-import { TelnyxSmsAdapter } from '@brokeros/int-sms-telnyx';
-import { PlivoSmsAdapter } from '@brokeros/int-sms-plivo';
-import { BirdSmsAdapter } from '@brokeros/int-sms-bird';
+import { getSmsProvider } from '@brokeros/messaging';
 import {
   ConnectSmsIntegrationDto,
   SendTestSmsDto,
@@ -27,40 +19,10 @@ import {
 
 @Injectable()
 export class SmsIntegrationsService {
-  private readonly twilioAdapter = new TwilioSmsAdapter();
-  private readonly awsSnsAdapter = new AwsSnsSmsAdapter();
-  private readonly sinchAdapter = new SinchSmsAdapter();
-  private readonly gupshupAdapter = new GupshupSmsAdapter();
-  private readonly infobipAdapter = new InfobipSmsAdapter();
-  private readonly vonageAdapter = new VonageSmsAdapter();
-  private readonly telnyxAdapter = new TelnyxSmsAdapter();
-  private readonly plivoAdapter = new PlivoSmsAdapter();
-  private readonly birdAdapter = new BirdSmsAdapter();
-
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   getAdapter(providerType: string): ISmsMarketingProvider {
-    switch (providerType) {
-      case 'AWS_SNS':
-        return this.awsSnsAdapter;
-      case 'SINCH':
-        return this.sinchAdapter;
-      case 'GUPSHUP':
-        return this.gupshupAdapter;
-      case 'INFOBIP':
-        return this.infobipAdapter;
-      case 'VONAGE':
-        return this.vonageAdapter;
-      case 'TELNYX':
-        return this.telnyxAdapter;
-      case 'PLIVO':
-        return this.plivoAdapter;
-      case 'BIRD':
-        return this.birdAdapter;
-      case 'TWILIO':
-      default:
-        return this.twilioAdapter;
-    }
+    return getSmsProvider(providerType);
   }
 
   private mapCredentials(
@@ -197,7 +159,7 @@ export class SmsIntegrationsService {
     if (!sendResult.success) {
       throw new BadRequestException(
         sendResult.error ||
-          'Carrier gateway rejected test SMS dispatch. Please verify your sender number and credentials.',
+        'Carrier gateway rejected test SMS dispatch. Please verify your sender number and credentials.',
       );
     }
 
@@ -410,7 +372,7 @@ export class SmsIntegrationsService {
         if (!verifyRes.isVerified) {
           throw new BadRequestException(
             verifyRes.reason ||
-              `Carrier ${integration.provider} could not verify identity "${cleanPhone || cleanSenderId}" on this account`,
+            `Carrier ${integration.provider} could not verify identity "${cleanPhone || cleanSenderId}" on this account`,
           );
         }
         if (verifyRes.formattedNumber) {
