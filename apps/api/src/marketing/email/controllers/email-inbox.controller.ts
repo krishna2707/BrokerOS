@@ -36,7 +36,10 @@ export class EmailInboxController {
     @Query() query: ListEmailConversationsQueryDto,
     @Req() req: any,
   ) {
-    return this.inboxService.listConversations(query, req?.user);
+    if (req?.user) {
+      return this.inboxService.listConversations(query, req.user);
+    }
+    return this.inboxService.listConversations(query);
   }
 
   @Post('conversations')
