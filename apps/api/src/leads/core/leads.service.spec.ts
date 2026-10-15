@@ -1,169 +1,303 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 jest.mock('@brokeros/prisma', () => ({
-  LeadStatus: { NEW: 'NEW', CONTACTED: 'CONTACTED' },
+  NotificationType: { LEAD_ASSIGNED: 'LEAD_ASSIGNED' },
+  LeadStatus: {
+    NEW: 'NEW',
+    HANDOVER: 'HANDOVER',
+    INTERESTED: 'INTERESTED',
+    CONTACTED: 'CONTACTED',
+  },
   PrismaClient: class {},
 }));
 jest.mock('expo-server-sdk', () => ({ Expo: class {} }));
-jest.mock('../../lib/database/prisma.service.js', () => ({
-  PrismaService: jest.fn().mockImplementation(() => ({})),
+jest.mock('@brokeros/storage', () => ({
+  uploadFileToBlob: jest.fn().mockResolvedValue('https://blob.vercel.com/avatar.jpg'),
+  fetchBlobBuffer: jest.fn().mockResolvedValue({
+    buffer: Buffer.from('test-image-bytes'),
+    contentType: 'image/jpeg',
+  }),
 }));
 
 import { LeadsService } from './leads.service.js';
-import { LeadsQueryService } from './leads-query.service.js';
-import { LeadsManagementService } from './leads-management.service.js';
-import { LeadsMediaService } from './leads-media.service.js';
+import { PrismaService } from '../../lib/database/prisma.service.js';
+import { NotificationsService } from '../../notifications/notifications.service.js';
 import { LeadStatus } from '@brokeros/prisma';
-import {
-  CreateLeadDto,
-  UpdateLeadDto,
-  GetLeadsFilterDto,
-} from './dto/lead.dto.js';
+import { CreateLeadDto, UpdateLeadDto } from './dto/lead.dto.js';
 
 describe('LeadsService', () => {
   let service: LeadsService;
-  let leadsQuery: LeadsQueryService;
-  let leadsManagement: LeadsManagementService;
-  let leadsMedia: LeadsMediaService;
 
-  const mockQueryService = {
-    findAll: jest.fn(),
-    findOne: jest.fn(),
+  const mockPrisma = {
+    leadSource: { findMany: jest.fn(), findFirst: jest.fn() },
+    project: { findMany: jest.fn() },
+    lead: {
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      createMany: jest.fn(),
+      update: jest.fn(),
+      updateMany: jest.fn(),
+    },
+    user: { findMany: jest.fn(), findUnique: jest.fn() },
+    role: { findUnique: jest.fn() },
+    projectAssignment: { findMany: jest.fn() },
+    booking: { findFirst: jest.fn() },
+    unit: { update: jest.fn() },
+    $transaction: jest.fn().mockImplementation(async (fn) => fn(mockPrisma)),
   };
 
-  const mockManagementService = {
-    bulkCreate: jest.fn(),
-    assignLeads: jest.fn(),
-    updateStatus: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-  };
-
-  const mockMediaService = {
-    uploadAvatar: jest.fn(),
+  const mockNotifications = {
+    createNotification: jest.fn().mockResolvedValue({ id: 'notif-1' }),
   };
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LeadsService,
-        { provide: LeadsQueryService, useValue: mockQueryService },
-        { provide: LeadsManagementService, useValue: mockManagementService },
-        { provide: LeadsMediaService, useValue: mockMediaService },
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: NotificationsService, useValue: mockNotifications },
       ],
     }).compile();
 
     service = module.get<LeadsService>(LeadsService);
-    leadsQuery = module.get<LeadsQueryService>(LeadsQueryService);
-    leadsManagement = module.get<LeadsManagementService>(
-      LeadsManagementService,
-    );
-    leadsMedia = module.get<LeadsMediaService>(LeadsMediaService);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it('should delegate findAll to leadsQuery', async () => {
-    const filters: GetLeadsFilterDto = { status: LeadStatus.CONTACTED };
-    const expected = [{ id: 'l-1' }];
-    mockQueryService.findAll.mockResolvedValue(expected);
+  describe('findAll', () => {
+    it('should find all leads and map them properly', async () => {
+      mockPrisma.lead.findMany.mockResolvedValue([
+        {
+          id: 'lead-1',
+          firstName: 'John',
+          lastName: 'Doe',
+          phone: '1234567890',
+          status: LeadStatus.NEW,
+          subStatus: null,
+          score: 85,
+          lastContactDate: null,
+          nextFollowUpDate: null,
+          createdAt: new Date(),
+          assignedUser: { name: 'Agent Smith', username: 'asmith' },
+          interestedProject: { id: 'p-1', name: 'Skyline', slug: 'skyline' },
+          siteVisits: [],
+          followUps: [],
+          customer: null,
+        },
+      ]);
 
-    const result = await service.findAll(filters);
-    expect(leadsQuery.findAll).toHaveBeenCalledWith(filters);
-    expect(result).toEqual(expected);
+      const result = await service.findAll();
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('lead-1');
+      expect(mockPrisma.lead.findMany).toHaveBeenCalled();
+    });
   });
 
-  it('should delegate findOne to leadsQuery', async () => {
-    const expected = { id: 'l-1' };
-    mockQueryService.findOne.mockResolvedValue(expected);
+  describe('findOne', () => {
+    it('should return lead by id with formatted procession and audio urls', async () => {
+      mockPrisma.lead.findFirst.mockResolvedValue({
+        id: 'lead-1',
+        firstName: 'Jane',
+        callRecords: [
+          { id: 'cr-1', recordingUrl: 'https://vercel-storage.com/rec.mp3' },
+        ],
+        customer: {
+          bookings: [
+            {
+              unit: {
+                constructionStatus: 'UNDER_CONSTRUCTION',
+                possessionTimeline: '2027',
+              },
+            },
+          ],
+        },
+      });
 
-    const result = await service.findOne('l-1', 'u-1', 'r-1');
-    expect(leadsQuery.findOne).toHaveBeenCalledWith('l-1', 'u-1', 'r-1');
-    expect(result).toEqual(expected);
+      const result = await service.findOne('lead-1');
+      expect(result.id).toBe('lead-1');
+      expect(result.callRecords[0].recordingUrl).toBe(
+        '/api/leads/call-records/cr-1/audio',
+      );
+      expect(result.processionStatus).toBe('UNDER_CONSTRUCTION');
+    });
+
+    it('should throw NotFoundException when lead is not found', async () => {
+      mockPrisma.lead.findFirst.mockResolvedValue(null);
+      await expect(service.findOne('non-existent')).rejects.toThrow();
+    });
   });
 
-  it('should delegate bulkCreate to leadsManagement', async () => {
-    const leads: CreateLeadDto[] = [{ firstName: 'Lead 1', phone: '123' }];
-    const expected = { success: true, count: 1 };
-    mockManagementService.bulkCreate.mockResolvedValue(expected);
+  describe('create', () => {
+    it('should create a lead and resolve lead source if string name provided', async () => {
+      mockPrisma.leadSource.findFirst.mockResolvedValue({
+        id: 'src-1',
+        name: 'Website',
+      });
+      mockPrisma.lead.create.mockResolvedValue({
+        id: 'lead-new',
+        firstName: 'Alice',
+        phone: '9876543210',
+      });
 
-    const result = await service.bulkCreate(leads, 'mgr-1');
-    expect(leadsManagement.bulkCreate).toHaveBeenCalledWith(leads, 'mgr-1');
-    expect(result).toEqual(expected);
+      const dto: CreateLeadDto = {
+        firstName: 'Alice',
+        phone: '9876543210',
+        source: 'Website',
+      };
+
+      const result = await service.create(dto, 'user-1');
+      expect(result.id).toBe('lead-new');
+      expect(mockPrisma.lead.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            firstName: 'Alice',
+            sourceId: 'src-1',
+            createdById: 'user-1',
+          }),
+        }),
+      );
+    });
   });
 
-  it('should delegate assignLeads to leadsManagement', async () => {
-    const expected = { success: true, assignedCount: 2 };
-    mockManagementService.assignLeads.mockResolvedValue(expected);
+  describe('bulkCreate', () => {
+    it('should bulk create leads and send notification if count > 0', async () => {
+      mockPrisma.leadSource.findMany.mockResolvedValue([]);
+      mockPrisma.project.findMany.mockResolvedValue([]);
+      mockPrisma.lead.createMany.mockResolvedValue({ count: 3 });
 
-    const result = await service.assignLeads(
-      ['l-1', 'l-2'],
-      'mgr-1',
-      'u-2',
-      false,
-    );
-    expect(leadsManagement.assignLeads).toHaveBeenCalledWith(
-      ['l-1', 'l-2'],
-      'mgr-1',
-      'u-2',
-      false,
-    );
-    expect(result).toEqual(expected);
+      const result = await service.bulkCreate(
+        [
+          { firstName: 'L1', phone: '111' },
+          { firstName: 'L2', phone: '222' },
+          { firstName: 'L3', phone: '333' },
+        ],
+        'mgr-1',
+      );
+
+      expect(result).toEqual({ success: true, count: 3 });
+      expect(mockNotifications.createNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'mgr-1',
+          metadata: { count: 3 },
+        }),
+      );
+    });
   });
 
-  it('should delegate updateStatus to leadsManagement', async () => {
-    const expected = { id: 'l-1', status: LeadStatus.CONTACTED };
-    mockManagementService.updateStatus.mockResolvedValue(expected);
+  describe('assignLeads', () => {
+    it('should assign leads to target user and notify', async () => {
+      mockPrisma.lead.updateMany.mockResolvedValue({ count: 2 });
 
-    const result = await service.updateStatus(
-      'l-1',
-      LeadStatus.CONTACTED,
-      'DONE',
-    );
-    expect(leadsManagement.updateStatus).toHaveBeenCalledWith(
-      'l-1',
-      LeadStatus.CONTACTED,
-      'DONE',
-    );
-    expect(result).toEqual(expected);
+      const result = await service.assignLeads(
+        ['l-1', 'l-2'],
+        'mgr-1',
+        'target-user',
+      );
+
+      expect(result).toEqual({ success: true, assignedCount: 2 });
+      expect(mockNotifications.createNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'target-user',
+          metadata: { count: 2 },
+        }),
+      );
+    });
+
+    it('should round-robin assign leads to active subordinates', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([
+        { id: 'sub-1' },
+        { id: 'sub-2' },
+      ]);
+      mockPrisma.lead.update.mockResolvedValue({});
+
+      const result = await service.assignLeads(
+        ['l-1', 'l-2', 'l-3'],
+        'mgr-1',
+        undefined,
+        true,
+      );
+
+      expect(result).toEqual({ success: true, assignedCount: 3 });
+      expect(mockPrisma.lead.update).toHaveBeenCalledTimes(3);
+      expect(mockNotifications.createNotification).toHaveBeenCalled();
+    });
   });
 
-  it('should delegate create to leadsManagement', async () => {
-    const data: CreateLeadDto = { firstName: 'New', phone: '999' };
-    const expected = { id: 'l-new', firstName: 'New' };
-    mockManagementService.create.mockResolvedValue(expected);
+  describe('updateStatus', () => {
+    it('should update status and mark unit SOLD on HANDOVER + DONE', async () => {
+      mockPrisma.lead.findUnique.mockResolvedValue({ id: 'l-1' });
+      mockPrisma.lead.update.mockResolvedValue({
+        id: 'l-1',
+        status: LeadStatus.HANDOVER,
+        subStatus: 'DONE',
+      });
+      mockPrisma.booking.findFirst.mockResolvedValue({
+        id: 'b-1',
+        unitId: 'unit-10',
+      });
+      mockPrisma.unit.update.mockResolvedValue({});
 
-    const result = await service.create(data, 'creator-1');
-    expect(leadsManagement.create).toHaveBeenCalledWith(data, 'creator-1');
-    expect(result).toEqual(expected);
+      const result = await service.updateStatus('l-1', LeadStatus.HANDOVER, 'DONE');
+      expect(result.status).toBe(LeadStatus.HANDOVER);
+      expect(mockPrisma.unit.update).toHaveBeenCalledWith({
+        where: { id: 'unit-10' },
+        data: { status: 'SOLD' },
+      });
+    });
   });
 
-  it('should delegate update to leadsManagement', async () => {
-    const data: UpdateLeadDto = { firstName: 'Updated' };
-    const expected = { id: 'l-1', firstName: 'Updated' };
-    mockManagementService.update.mockResolvedValue(expected);
+  describe('update', () => {
+    it('should update lead fields', async () => {
+      mockPrisma.lead.findUnique.mockResolvedValue({ id: 'l-1' });
+      mockPrisma.lead.update.mockResolvedValue({
+        id: 'l-1',
+        firstName: 'UpdatedName',
+      });
 
-    const result = await service.update('l-1', data);
-    expect(leadsManagement.update).toHaveBeenCalledWith('l-1', data);
-    expect(result).toEqual(expected);
+      const dto: UpdateLeadDto = { firstName: 'UpdatedName' };
+      const result = await service.update('l-1', dto);
+      expect(result.firstName).toBe('UpdatedName');
+    });
   });
 
-  it('should delegate uploadAvatar to leadsMedia', async () => {
-    const file = {
-      buffer: Buffer.from(''),
-      originalname: 'avatar.png',
-    } as Express.Multer.File;
-    const expected = { id: 'l-1', avatar: 'url' };
-    mockMediaService.uploadAvatar.mockResolvedValue(expected);
+  describe('uploadAvatar and getAvatarStream', () => {
+    it('should upload avatar using @brokeros/storage and update database', async () => {
+      mockPrisma.lead.findUnique.mockResolvedValue({ id: 'l-1' });
+      mockPrisma.lead.update.mockResolvedValue({
+        id: 'l-1',
+        avatar: 'https://blob.vercel.com/avatar.jpg',
+      });
 
-    const result = await service.uploadAvatar('l-1', file);
-    expect(leadsMedia.uploadAvatar).toHaveBeenCalledWith('l-1', file);
-    expect(result).toEqual(expected);
+      const file = {
+        buffer: Buffer.from('file-content'),
+        originalname: 'photo.png',
+      } as Express.Multer.File;
+
+      const result = await service.uploadAvatar('l-1', file);
+      expect(result.avatar).toBe('https://blob.vercel.com/avatar.jpg');
+    });
+
+    it('should get avatar stream returning buffer and contentType', async () => {
+      mockPrisma.lead.findUnique.mockResolvedValue({
+        id: 'l-1',
+        avatar: 'https://blob.vercel.com/avatar.jpg',
+      });
+
+      const result = await service.getAvatarStream('l-1');
+      expect(result).not.toBeNull();
+      expect(result?.contentType).toBe('image/jpeg');
+      expect(result?.buffer).toBeDefined();
+    });
+
+    it('should return null from getAvatarStream if lead has no avatar', async () => {
+      mockPrisma.lead.findUnique.mockResolvedValue({ id: 'l-2', avatar: null });
+      const result = await service.getAvatarStream('l-2');
+      expect(result).toBeNull();
+    });
   });
 });

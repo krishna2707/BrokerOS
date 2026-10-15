@@ -1,8 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-jest.mock('@brokeros/prisma', () => ({ PrismaClient: class {} }));
-jest.mock('expo-server-sdk', () => ({ Expo: class {} }));
-jest.mock('@vercel/blob', () => ({
-  put: jest.fn().mockResolvedValue({ url: 'url' }),
+jest.mock('@brokeros/prisma', () => ({ PrismaClient: class { } }));
+jest.mock('expo-server-sdk', () => ({ Expo: class { } }));
+jest.mock('@brokeros/storage', () => ({
+  uploadFileToBlob: jest.fn().mockResolvedValue('url'),
+  fetchBlobBuffer: jest.fn().mockResolvedValue({
+    buffer: Buffer.from('test-buffer'),
+    contentType: 'image/jpeg',
+  }),
 }));
 
 import { LeadsMediaService } from './leads-media.service.js';
