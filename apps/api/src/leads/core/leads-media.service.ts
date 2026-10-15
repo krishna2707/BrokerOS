@@ -1,25 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
+import { LeadsService } from './leads.service.js';
 import { PrismaService } from '../../lib/database/prisma.service.js';
-import { put } from '@vercel/blob';
+import { NotificationsService } from '../../notifications/notifications.service.js';
 
+/**
+ * @deprecated Legacy wrapper preserved for backward compatibility.
+ * All logic has been consolidated into the deep LeadsService.
+ */
 @Injectable()
-export class LeadsMediaService {
-  constructor(private prisma: PrismaService) {}
-
-  async uploadAvatar(id: string, file: Express.Multer.File) {
-    const lead = await this.prisma.lead.findUnique({ where: { id } });
-    if (!lead) throw new NotFoundException(`Lead with ID ${id} not found`);
-
-    const blob = await put(`avatars/${id}-${file.originalname}`, file.buffer, {
-      access: 'public',
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    });
-
-    return this.prisma.lead.update({
-      where: { id },
-      data: {
-        avatar: blob.url,
-      },
-    });
+export class LeadsMediaService extends LeadsService {
+  constructor(
+    prisma: PrismaService,
+    @Optional() notificationsService?: NotificationsService,
+  ) {
+    super(prisma, notificationsService || ({} as any));
   }
 }

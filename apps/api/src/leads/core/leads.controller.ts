@@ -94,31 +94,19 @@ export class LeadsController {
   @Public()
   @Get(':id/avatar-image')
   async getAvatarImage(@Param('id') id: string, @Res() res: any) {
-    const lead = await this.leadsService.findOne(id);
-    if (!lead || !lead.avatar) {
-      return res.status(404).send('No avatar found');
-    }
-
     try {
-      const blobRes = await fetch(lead.avatar, {
-        headers: {
-          Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
-        },
-      });
-
-      if (!blobRes.ok) {
-        return res.status(blobRes.status).send('Failed to fetch blob');
+      const avatar = await this.leadsService.getAvatarStream(id);
+      if (!avatar) {
+        return res.status(404).send('No avatar found');
       }
 
       res.set({
-        'Content-Type': blobRes.headers.get('content-type') || 'image/jpeg',
+        'Content-Type': avatar.contentType,
       });
 
-      const arrayBuffer = await blobRes.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      res.send(buffer);
-    } catch (e) {
-      res.status(500).send('Internal server error');
+      return res.send(avatar.buffer);
+    } catch {
+      return res.status(500).send('Internal server error');
     }
   }
 }

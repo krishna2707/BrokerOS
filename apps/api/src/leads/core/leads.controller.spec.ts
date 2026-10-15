@@ -33,6 +33,7 @@ describe('LeadsController', () => {
     create: jest.fn(),
     update: jest.fn(),
     uploadAvatar: jest.fn(),
+    getAvatarStream: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -150,4 +151,35 @@ describe('LeadsController', () => {
     expect(service.uploadAvatar).toHaveBeenCalledWith('l-1', file);
     expect(res.avatar).toBe('pic.jpg');
   });
+
+  describe('getAvatarImage', () => {
+    it('should return 404 when no avatar is found', async () => {
+      mockLeadsService.getAvatarStream.mockResolvedValue(null);
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        send: jest.fn(),
+      };
+
+      await controller.getAvatarImage('l-none', res as any);
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.send).toHaveBeenCalledWith('No avatar found');
+    });
+
+    it('should set Content-Type header and stream buffer', async () => {
+      const buffer = Buffer.from('test-image-bytes');
+      mockLeadsService.getAvatarStream.mockResolvedValue({
+        buffer,
+        contentType: 'image/png',
+      });
+      const res = {
+        set: jest.fn(),
+        send: jest.fn(),
+      };
+
+      await controller.getAvatarImage('l-1', res as any);
+      expect(res.set).toHaveBeenCalledWith({ 'Content-Type': 'image/png' });
+      expect(res.send).toHaveBeenCalledWith(buffer);
+    });
+  });
 });
+
