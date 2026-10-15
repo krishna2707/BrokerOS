@@ -35,6 +35,7 @@ apps/workers/
 │       ├── marketing-sms.processor.ts    ← SMS dispatch (Twilio, Gupshup, Sinch, AWS SNS)
 │       ├── marketing-voice.processor.ts  ← Voice AI dispatch + PSTN carrier bridge dispatcher
 │       ├── marketing-whatsapp.processor.ts ← WhatsApp Cloud API broadcast processor
+│       ├── scheduled-messages.processor.ts ← Cross-channel scheduled message scanner via @brokeros/messaging
 │       │
 │       └── whatsapp/                     ← WhatsApp runner modules
 │           ├── whatsapp-automation.runner.ts  ← Drip sequence & trigger actions

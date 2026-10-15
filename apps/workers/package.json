@@ -32,6 +32,7 @@
     "@brokeros/int-sms-vonage": "workspace:*",
     "@brokeros/int-voice": "workspace:*",
     "@brokeros/int-whatsapp": "workspace:*",
+    "@brokeros/messaging": "workspace:*",
     "@brokeros/prisma": "workspace:*",
     "@brokeros/types": "workspace:*",
     "@nestjs/common": "^11.1.28",
