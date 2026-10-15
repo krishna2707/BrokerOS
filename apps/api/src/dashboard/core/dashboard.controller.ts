@@ -178,16 +178,7 @@ export class SalesExecDashboardController {
   @Get('analytics')
   async getAnalytics(@Req() req: any) {
     const userId = req.user?.id;
-    const [financial, funnel, inventory, project, activity] = await Promise.all(
-      [
-        this.salesExecAnalytics.getFinancialMetrics(userId),
-        this.salesExecAnalytics.getFunnelMetrics(userId),
-        this.salesExecAnalytics.getInventoryAnalytics(userId),
-        this.salesExecAnalytics.getProjectAnalytics(userId),
-        this.salesExecAnalytics.getActivityAnalytics(userId),
-      ],
-    );
-    return { financial, funnel, inventory, project, activity };
+    return this.salesExecAnalytics.getAllAnalytics(userId);
   }
 }
 

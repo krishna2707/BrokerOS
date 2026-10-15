@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { PrismaService } from '../../lib/database/prisma.service.js';
 import { PreSalesDashboardService } from '../pre-sales/pre-sales-dashboard.service.js';
 import { ManagerDashboardService } from '../manager/manager-dashboard.service.js';
 import { LeaderboardService } from './leaderboard.service.js';
 import { SalesExecDashboardService } from '../sales-exec/sales-exec-dashboard.service.js';
+import { DashboardAnalyticsEngineService } from './dashboard-analytics-engine.service.js';
 import { getTodayRange } from './dashboard.utils.js';
 
 /**
@@ -18,6 +19,7 @@ export class DashboardService {
     private managerDashboard: ManagerDashboardService,
     private leaderboard: LeaderboardService,
     private salesExecDashboard: SalesExecDashboardService,
+    @Optional() private analyticsEngine?: DashboardAnalyticsEngineService,
   ) {}
 
   getPreSalesDashboard(userId: string) {
@@ -109,6 +111,10 @@ export class DashboardService {
         completedAt: new Date(),
       },
     });
+
+    if (this.analyticsEngine) {
+      await this.analyticsEngine.invalidateUser(userId);
+    }
 
     return { success: true, message: 'Follow-up confirmed successfully' };
   }

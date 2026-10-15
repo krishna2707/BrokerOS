@@ -1,5 +1,6 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 import { PrismaService } from '../../lib/database/prisma.service.js';
+import { DashboardAnalyticsEngineService } from './dashboard-analytics-engine.service.js';
 
 // Fallback target when no manager task is assigned to an agent
 const DEFAULT_COLD_CALL_TARGET = 100;
@@ -10,7 +11,10 @@ const DEFAULT_COLD_CALL_TARGET = 100;
  */
 @Injectable()
 export class SnapshotService implements OnModuleInit {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private analyticsEngine?: DashboardAnalyticsEngineService,
+  ) {}
 
   onModuleInit() {
     // Schedule midnight cron using pure Node.js timers (no @nestjs/schedule needed)
@@ -40,6 +44,15 @@ export class SnapshotService implements OnModuleInit {
 
   async midnightDailySnapshot() {
     console.log('[DailySnapshot] Starting midnight performance snapshot...');
+
+    if (this.analyticsEngine) {
+      try {
+        const cleaned = await this.analyticsEngine.cleanExpired();
+        console.log(`[DailySnapshot] Purged ${cleaned} expired DashboardCache records.`);
+      } catch (err) {
+        console.error('[DailySnapshot] Error purging expired DashboardCache:', err);
+      }
+    }
 
     // Get yesterday's date (the day that just ended)
     const yesterday = new Date();
