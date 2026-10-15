@@ -9,6 +9,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { prismaClient, type WhatsAppMessageType } from '@brokeros/prisma';
+import { dispatchScheduledMessage } from '@brokeros/messaging';
 import {
   sendTextMessage,
   sendMediaMessage,
@@ -710,43 +711,21 @@ export class WhatsAppMessagesService {
     messageId: string,
     senderUser?: { id: string; name?: string },
   ) {
-    const msg = await this.prisma.whatsAppMessage.findUnique({
-      where: { id: messageId },
-      include: { template: true },
+    const res = await dispatchScheduledMessage(this.prisma, {
+      channel: 'WHATSAPP',
+      messageId,
+      triggeredBy: senderUser?.id,
     });
-    if (!msg || msg.status !== 'SCHEDULED') {
-      throw new NotFoundException(`Scheduled WhatsApp message #${messageId} not found or already sent`);
+
+    if (!res.success) {
+      if (res.alreadyProcessed) {
+        throw new BadRequestException('WhatsApp message is already processing or sent');
+      }
+      throw new BadRequestException(res.error || 'Failed to dispatch scheduled WhatsApp message');
     }
 
-    let payload: SendWhatsAppMessageDto;
-    if (msg.type === 'TEMPLATE' && msg.template?.name) {
-      payload = {
-        type: 'template',
-        templateName: msg.template.name,
-        templateParams: msg.templateValues ? (msg.templateValues as any) : undefined,
-      };
-    } else if (['IMAGE', 'VIDEO', 'DOCUMENT', 'AUDIO'].includes(msg.type)) {
-      payload = {
-        type: 'media',
-        mediaUrl: msg.mediaUrl || undefined,
-        mediaKind: msg.type.toLowerCase() as any,
-        caption: msg.caption || undefined,
-      };
-    } else {
-      payload = {
-        type: 'text',
-        text: msg.body || '',
-      };
-    }
-
-    const dispatched = await this.sendMessage(
-      msg.conversationId,
-      payload,
-      senderUser || (msg.scheduledBy ? { id: msg.scheduledBy, name: msg.senderName || 'Agent' } : undefined),
-    );
-
-    await this.prisma.whatsAppMessage.delete({ where: { id: messageId } }).catch(() => null);
-
-    return dispatched;
+    return this.prisma.whatsAppMessage.findUnique({
+      where: { id: messageId },
+    });
   }
 }
