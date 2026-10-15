@@ -149,3 +149,71 @@ sequenceDiagram
 - **Project Assignments (`ProjectAssignment`)**: Explicitly binds a user to a project with an assigned role (`SOURCING_MANAGER`, `CLOSING_MANAGER`, or `SALES_EXECUTIVE`).
 - **Tower Assignments (`TowerAssignment`)**: Allows granular allocation where an executive is scoped to specific towers within a larger development.
 - **Workspace Cleanliness**: Prevents suburban villa specialists from seeing luxury high-rise condominium inventory, keeping dashboards, follow-ups, and matrices clutter-free.
+
+---
+
+## Inventory CSV Data Export
+
+BrokerOS enables sales executives, closing managers, and department heads to export complete project and tower inventory records to RFC-4180 compliant CSV spreadsheets.
+
+### In-App Export Flow
+
+1. **Navigate to Inventory**: Go to `Dashboard -> Inventory` to view active project cards.
+2. **Open Project Actions**: On any project card, click the three-dot action menu (`...`).
+3. **Select Export Inventory**: Click **Export Inventory (CSV)** to open the export selection modal.
+4. **Choose Towers**:
+   - Use the **Select All Towers** toggle to export the entire master community, or
+   - Select individual tower checkboxes (e.g. Tower A, Tower B) to export targeted phases.
+5. **Download Spreadsheet**: Click **Export CSV** to instantly compile and download the CSV file.
+
+### Export Architecture
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Authorized User
+    participant Modal as ExportInventoryModal
+    participant API as Inventory API
+    participant Formatter as @brokeros/constants
+    participant Browser as Browser Download
+
+    User->>Modal: Click "Export Inventory (CSV)" from Project Card
+    Modal->>API: GET /api/inventory/projects/:projectId/towers
+    API-->>Modal: Return towers with units, bookings, and agents
+    User->>Modal: Select Target Towers (e.g. Tower A)
+    User->>Modal: Click "Export CSV"
+    Modal->>Formatter: formatInventoryToCsv(selectedTowers, projectName)
+    Formatter-->>Modal: RFC-4180 CSV string
+    Modal->>Browser: Trigger Blob Download ([Project]_[Towers]_[Date].csv)
+```
+
+### Exported Data Columns
+
+The generated CSV contains comprehensive unit specifications and occupancy records:
+
+| Column Header | Description | Sample Output |
+| :--- | :--- | :--- |
+| **Project** | Development name | Grand Residency |
+| **Tower** | Tower name | Tower A |
+| **Floor** | Floor level index | 4 |
+| **Unit Number** | Physical unit code | 402 |
+| **Unit Type** | Typology label | 3 BHK |
+| **Status** | Inventory status (`AVAILABLE`, `RESERVED`, `BLOCKED`, `SOLD`) | SOLD |
+| **Carpet Area (sq.ft)** | Usable carpet area | 1250 |
+| **Built-Up Area (sq.ft)** | Plinth / built-up area | 1480 |
+| **Super Built-Up Area (sq.ft)** | Saleable area | 1720 |
+| **Facing** | Orientation direction | North-East |
+| **Balconies** | Count of private balconies | 2 |
+| **Parking Included** | Parking allotment flag | Yes |
+| **Base Price** | Base inventory rate | 12500000 |
+| **Price / Sq.Ft** | Calculated rate per square foot | 7267.44 |
+| **Total Price** | Unit total list price | 13200000 |
+| **Construction Status** | Current civil construction phase | READY_TO_MOVE |
+| **Occupant / Buyer Name** | Confirmed purchaser or reserving agent name | Rahul Sharma |
+| **Customer Phone** | Primary buyer phone number | +919876543210 |
+| **Customer Email** | Primary buyer email address | rahul.sharma@example.com |
+| **Booking Number** | System booking reference code | BK-2026-0042 |
+| **Agreed Price** | Contracted sale consideration | 13000000 |
+| **Booking / Action Date** | Date booking, reservation, or hold was executed | 2026-08-12 |
+| **Sales Executive / Agent** | Closing agent or assigned sales executive | Amit Verma |
+| **Remarks** | Architectural or commercial notes | Corner unit with park view |
