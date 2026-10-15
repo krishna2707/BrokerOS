@@ -92,7 +92,7 @@ export class TranscriptionService implements OnModuleInit {
 You are a professional Real Estate Assistant. Based on the following call transcript, you need to extract the following information.
 Current Date & Time for reference: ${new Date().toISOString()}
 
-1. "summary": A short, concise summary (2-3 sentences) focusing on the main intent, lead's interest, and action items.
+1. "summary": A clear, concise summary (2-3 sentences) of what was discussed during the call: what the lead and agent talked about, key points mentioned, and the outcome of the conversation.
 2. "nextStepSuggestion": A single, highly actionable sentence suggesting what the broker should do next with this lead. Be specific.
 3. "extractedBudget": The maximum budget mentioned by the lead as a raw number (e.g. if they say 50L or 50 lakhs, return 5000000. If 1.5 CR, return 15000000). Return null if not mentioned.
 4. "extractedProjectId": We offer the following projects: ${availableProjects.map((p) => `"${p.name}" (ID: ${p.id})`).join(', ')}. If the lead explicitly expresses interest in one of these projects, return its EXACT ID string. Otherwise, return null.
