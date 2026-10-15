@@ -1,13 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { PrismaService } from '../../lib/database/prisma.service.js';
 import { getMonthRange } from '../core/dashboard.utils.js';
+import { DashboardAnalyticsEngineService } from '../core/dashboard-analytics-engine.service.js';
 
 @Injectable()
 export class SalesExecLeaderboardService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private analyticsEngine?: DashboardAnalyticsEngineService,
+  ) {}
 
   /** Monthly leaderboard for the whole sales executive department */
   async getSalesExecLeaderboard(userId: string) {
+    if (this.analyticsEngine) {
+      const ranked = await this.analyticsEngine.getOrCompute({
+        dashboardType: 'SALES_EXEC',
+        widgetKey: 'leaderboard',
+        period: 'monthly',
+        ttlSeconds: 300,
+        compute: () => this.computeSalesExecLeaderboard(),
+      });
+
+      return {
+        leaderboard: ranked,
+        currentUserId: userId,
+      };
+    }
+
+    const ranked = await this.computeSalesExecLeaderboard();
+    return {
+      leaderboard: ranked,
+      currentUserId: userId,
+    };
+  }
+
+  private async computeSalesExecLeaderboard() {
     const { start: monthStart, end: monthEnd } = getMonthRange();
 
     // Get all sales exec users
@@ -67,9 +94,6 @@ export class SalesExecLeaderboardService {
       rank: index + 1,
     }));
 
-    return {
-      leaderboard: ranked,
-      currentUserId: userId,
-    };
+    return ranked;
   }
 }

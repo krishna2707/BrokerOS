@@ -5,9 +5,10 @@ import { SalesExecDailyTasksService } from './sales-exec-daily-tasks.service.js'
 import { SalesExecAnalyticsService } from './sales-exec-analytics.service.js';
 import { SalesExecLeaderboardService } from './sales-exec-leaderboard.service.js';
 import { PrismaModule } from '../../lib/database/prisma.module.js';
+import { DashboardAnalyticsEngineModule } from '../core/dashboard-analytics-engine.module.js';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, DashboardAnalyticsEngineModule],
   controllers: [],
   providers: [
     SalesExecDashboardService,

@@ -1,9 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { PrismaService } from '../../lib/database/prisma.service.js';
+import { DashboardAnalyticsEngineService } from '../core/dashboard-analytics-engine.service.js';
 
 @Injectable()
 export class PreSalesAnalyticsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private analyticsEngine?: DashboardAnalyticsEngineService,
+  ) {}
 
   private getStartDate(range?: string): Date | undefined {
     if (range === 'all-time') return undefined;
@@ -23,6 +27,19 @@ export class PreSalesAnalyticsService {
   }
 
   async getPreSalesAnalytics(userId: string, timeRange?: string) {
+    if (this.analyticsEngine) {
+      return this.analyticsEngine.getOrCompute({
+        dashboardType: 'PRE_SALES',
+        widgetKey: `analytics:${userId}`,
+        period: timeRange || 'monthly',
+        ttlSeconds: 300,
+        compute: () => this.computePreSalesAnalytics(userId, timeRange),
+      });
+    }
+    return this.computePreSalesAnalytics(userId, timeRange);
+  }
+
+  async computePreSalesAnalytics(userId: string, timeRange?: string) {
     const startDate = this.getStartDate(timeRange);
     const dateFilter = { gte: startDate };
 

@@ -1,13 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { PrismaService } from '../../lib/database/prisma.service.js';
 import { getMonthRange } from '../core/dashboard.utils.js';
+import { DashboardAnalyticsEngineService } from '../core/dashboard-analytics-engine.service.js';
 
 @Injectable()
 export class PreSalesLeaderboardService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private analyticsEngine?: DashboardAnalyticsEngineService,
+  ) {}
 
   /** Monthly leaderboard for the whole pre-sales department */
   async getPreSalesLeaderboard(userId: string) {
+    if (this.analyticsEngine) {
+      const ranked = await this.analyticsEngine.getOrCompute({
+        dashboardType: 'PRE_SALES',
+        widgetKey: 'leaderboard',
+        period: 'monthly',
+        ttlSeconds: 300,
+        compute: () => this.computePreSalesLeaderboard(),
+      });
+
+      return {
+        leaderboard: ranked,
+        currentUserId: userId,
+      };
+    }
+
+    const ranked = await this.computePreSalesLeaderboard();
+    return {
+      leaderboard: ranked,
+      currentUserId: userId,
+    };
+  }
+
+  private async computePreSalesLeaderboard() {
     const { start: monthStart, end: monthEnd } = getMonthRange();
 
     // Get all pre-sales users
@@ -70,14 +97,24 @@ export class PreSalesLeaderboardService {
       rank: index + 1,
     }));
 
-    return {
-      leaderboard: ranked,
-      currentUserId: userId,
-    };
+    return ranked;
   }
 
   /** Monthly leaderboard scoped to a manager's subordinates */
   async getPreSalesManagerLeaderboard(managerId: string) {
+    if (this.analyticsEngine) {
+      return this.analyticsEngine.getOrCompute({
+        dashboardType: 'PRE_SALES',
+        widgetKey: `manager-leaderboard:${managerId}`,
+        period: 'monthly',
+        ttlSeconds: 300,
+        compute: () => this.computePreSalesManagerLeaderboard(managerId),
+      });
+    }
+    return this.computePreSalesManagerLeaderboard(managerId);
+  }
+
+  private async computePreSalesManagerLeaderboard(managerId: string) {
     const { start: monthStart, end: monthEnd } = getMonthRange();
 
     const subs = await this.prisma.user.findMany({

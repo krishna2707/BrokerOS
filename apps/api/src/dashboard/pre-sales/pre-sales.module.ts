@@ -6,9 +6,10 @@ import { PreSalesDailyTasksService } from './pre-sales-daily-tasks.service.js';
 import { PreSalesAnalyticsService } from './pre-sales-analytics.service.js';
 import { PreSalesLeaderboardService } from './pre-sales-leaderboard.service.js';
 import { PrismaModule } from '../../lib/database/prisma.module.js';
+import { DashboardAnalyticsEngineModule } from '../core/dashboard-analytics-engine.module.js';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, DashboardAnalyticsEngineModule],
   controllers: [],
   providers: [
     PreSalesDashboardService,

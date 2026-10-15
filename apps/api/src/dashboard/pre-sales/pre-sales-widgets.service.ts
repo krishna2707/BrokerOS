@@ -1,12 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { PrismaService } from '../../lib/database/prisma.service.js';
 import { getTodayRange, getMonthRange } from '../core/dashboard.utils.js';
+import { DashboardAnalyticsEngineService } from '../core/dashboard-analytics-engine.service.js';
 
 @Injectable()
 export class PreSalesWidgetsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private analyticsEngine?: DashboardAnalyticsEngineService,
+  ) {}
 
   async getWidgets(userId: string) {
+    if (this.analyticsEngine) {
+      return this.analyticsEngine.getPreSalesWidgets(userId);
+    }
+    return this.computeWidgets(userId);
+  }
+
+  async computeWidgets(userId: string) {
     const { start: todayStart, end: todayEnd } = getTodayRange();
     const { start: monthStart, end: monthEnd } = getMonthRange();
 

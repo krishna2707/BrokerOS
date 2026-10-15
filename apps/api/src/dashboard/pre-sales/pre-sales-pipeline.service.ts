@@ -1,12 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { PrismaService } from '../../lib/database/prisma.service.js';
 import { getMonthRange } from '../core/dashboard.utils.js';
+import { DashboardAnalyticsEngineService } from '../core/dashboard-analytics-engine.service.js';
 
 @Injectable()
 export class PreSalesPipelineService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private analyticsEngine?: DashboardAnalyticsEngineService,
+  ) {}
 
   async getPipeline(userId: string) {
+    if (this.analyticsEngine) {
+      return this.analyticsEngine.getPreSalesPipeline(userId);
+    }
+    return this.computePipeline(userId);
+  }
+
+  async computePipeline(userId: string) {
     const { start: monthStart, end: monthEnd } = getMonthRange();
 
     const pipelineCounts = await this.prisma.lead.groupBy({

@@ -29,10 +29,13 @@ import {
   PostSalesManagerEmployeesController,
 } from './core/dashboard.controller.js';
 
+import { DashboardAnalyticsEngineModule } from './core/dashboard-analytics-engine.module.js';
+
 @Module({
   imports: [
     PrismaModule,
     NotificationsModule,
+    DashboardAnalyticsEngineModule,
     BusinessManagerDashboardModule,
     ChannelPartnerDashboardModule,
     ClosingManagerDashboardModule,
@@ -61,5 +64,6 @@ import {
     EmployeesService,
     EmployeeCardsService,
   ],
+  exports: [DashboardAnalyticsEngineModule],
 })
 export class DashboardModule {}
