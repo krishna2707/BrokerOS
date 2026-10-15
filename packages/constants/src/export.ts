@@ -83,6 +83,45 @@ export const LEAD_EXPORT_HEADERS = [
   { key: 'brokerName', label: 'Broker / CP Partner' },
 ] as const;
 
+export const INVENTORY_EXPORT_HEADERS = [
+  { key: 'projectName', label: 'Project' },
+  { key: 'towerName', label: 'Tower' },
+  { key: 'floorNumber', label: 'Floor' },
+  { key: 'unitNumber', label: 'Unit Number' },
+  { key: 'unitType', label: 'Unit Type' },
+  { key: 'status', label: 'Status' },
+  { key: 'carpetArea', label: 'Carpet Area (sq.ft)' },
+  { key: 'builtUpArea', label: 'Built-Up Area (sq.ft)' },
+  { key: 'superBuiltUpArea', label: 'Super Built-Up Area (sq.ft)' },
+  { key: 'facing', label: 'Facing' },
+  { key: 'balconies', label: 'Balconies' },
+  { key: 'parkingIncluded', label: 'Parking Included' },
+  { key: 'basePrice', label: 'Base Price' },
+  { key: 'pricePerSqFt', label: 'Price / Sq.Ft' },
+  { key: 'totalPrice', label: 'Total Price' },
+  { key: 'constructionStatus', label: 'Construction Status' },
+  { key: 'occupantName', label: 'Occupant / Buyer Name' },
+  { key: 'customerPhone', label: 'Customer Phone' },
+  { key: 'customerEmail', label: 'Customer Email' },
+  { key: 'bookingNumber', label: 'Booking Number' },
+  { key: 'agreedPrice', label: 'Agreed Price' },
+  { key: 'actionDate', label: 'Booking / Action Date' },
+  { key: 'salesAgent', label: 'Sales Executive / Agent' },
+  { key: 'remarks', label: 'Remarks' },
+] as const;
+
+export const UNIT_TYPE_DISPLAY_NAMES: Record<string, string> = {
+  STUDIO: 'Studio',
+  ONE_BHK: '1 BHK',
+  TWO_BHK: '2 BHK',
+  THREE_BHK: '3 BHK',
+  FOUR_BHK: '4 BHK',
+  PENTHOUSE: 'Penthouse',
+  VILLA: 'Villa',
+  SHOP: 'Shop',
+  OFFICE: 'Office',
+};
+
 export const TIME_RANGE_LABELS: Record<string, string> = {
   weekly: 'Last 7 Days (Weekly)',
   monthly: 'Last 30 Days (Monthly)',
@@ -174,6 +213,278 @@ export function formatLeadsToCsv(leads: any[]): string {
   return [headers.join(','), ...rows].join('\r\n');
 }
 
+const CONSTRUCTION_STATUS_DISPLAY_MAP: Record<string, string> = {
+  READY_TO_MOVE: 'Ready to Move',
+  UNDER_CONSTRUCTION: 'Under Construction',
+  SUPER_STRUCTURE: 'Super Structure',
+  READY_FOR_POSSESSION: 'Ready for Possession',
+  COMPLETED: 'Completed',
+  UPCOMING: 'Upcoming',
+  NOT_STARTED: 'Not Started',
+  EXCAVATION: 'Excavation',
+  FOUNDATION: 'Foundation',
+  BRICKWORK: 'Brickwork',
+  PLASTERING: 'Plastering',
+  FINISHING: 'Finishing',
+  HANDOVER: 'Handover',
+};
+
+function formatConstructionStatus(status: any): string {
+  if (!status) return 'Ready to Move';
+  const str = String(status).trim();
+  if (CONSTRUCTION_STATUS_DISPLAY_MAP[str]) {
+    return CONSTRUCTION_STATUS_DISPLAY_MAP[str];
+  }
+  return str.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/**
+ * RFC-4180 compliant CSV string formatter for Project and Tower Inventory
+ */
+export function formatInventoryToCsv(towers: any[], defaultProjectName = ''): string {
+  const headers = INVENTORY_EXPORT_HEADERS.map((h) => h.label);
+
+  const escapeCsvCell = (val: any): string => {
+    if (val === null || val === undefined) return '';
+    const str = String(val).trim();
+    if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  const formatDateVal = (dateVal: any): string => {
+    if (!dateVal) return '';
+    try {
+      const d = new Date(dateVal);
+      return isNaN(d.getTime()) ? String(dateVal) : d.toISOString().split('T')[0];
+    } catch {
+      return String(dateVal);
+    }
+  };
+
+  const rows: string[] = [];
+
+  const processUnit = (
+    unit: any,
+    towerName: string,
+    floorNum: any,
+    projName: string,
+    towerObj?: any,
+  ) => {
+    const rawType = unit.type || '';
+    const unitTypeDisplay = UNIT_TYPE_DISPLAY_NAMES[rawType] || rawType.replace(/_/g, ' ');
+    const status = unit.status || 'AVAILABLE';
+
+    // 1. Pricing Calculations (Fallback totalPrice to basePrice, derive pricePerSqFt if null)
+    const basePriceNum = unit.basePrice != null ? Number(unit.basePrice) : null;
+    const totalPriceNum = unit.totalPrice != null ? Number(unit.totalPrice) : basePriceNum;
+    const basePriceStr = basePriceNum != null ? String(basePriceNum) : '';
+    const totalPriceStr = totalPriceNum != null ? String(totalPriceNum) : '';
+
+    const areaNum = Number(unit.carpetArea || unit.builtUpArea || unit.superBuiltUpArea || 0);
+    let pricePerSqFtStr = '';
+    if (unit.pricePerSqFt != null && String(unit.pricePerSqFt).trim() !== '') {
+      pricePerSqFtStr = String(unit.pricePerSqFt);
+    } else if (totalPriceNum && areaNum > 0) {
+      pricePerSqFtStr = String(Math.round(totalPriceNum / areaNum));
+    } else if (basePriceNum && areaNum > 0) {
+      pricePerSqFtStr = String(Math.round(basePriceNum / areaNum));
+    }
+
+    // 2. Construction Status Hierarchy
+    const rawConstructionStatus =
+      unit.constructionStatus ||
+      towerObj?.constructionStatus ||
+      unit.tower?.constructionStatus ||
+      towerObj?.project?.constructionStatus ||
+      towerObj?.project?.status ||
+      unit.project?.constructionStatus ||
+      unit.project?.status ||
+      'READY_TO_MOVE';
+    const constructionStatusDisplay = formatConstructionStatus(rawConstructionStatus);
+
+    // 3. Occupant, Booking, Agent & Commercial Details
+    let occupantName = '';
+    let customerPhone = '';
+    let customerEmail = '';
+    let bookingNumber = '';
+    let agreedPrice = '';
+    let actionDate = '';
+    let salesAgent = '';
+    let remarks = unit.remarks || '';
+
+    const booking =
+      Array.isArray(unit.bookings) && unit.bookings.length > 0 ? unit.bookings[0] : null;
+
+    if (booking) {
+      bookingNumber = booking.bookingNumber || '';
+      agreedPrice = booking.agreedPrice != null ? String(booking.agreedPrice) : totalPriceStr;
+      actionDate = formatDateVal(
+        booking.bookingDate || unit.soldAt || unit.reservedAt || booking.createdAt,
+      );
+
+      if (booking.customer) {
+        occupantName = `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim();
+        customerPhone = booking.customer.phone || '';
+        customerEmail = booking.customer.email || '';
+      }
+
+      salesAgent =
+        booking.salesExec?.name ||
+        booking.salesExec?.username ||
+        booking.closingManager?.name ||
+        booking.closingManager?.username ||
+        booking.assignedPostSales?.name ||
+        booking.assignedPostSales?.username ||
+        '';
+
+      if (!remarks) {
+        remarks =
+          booking.remarks ||
+          booking.cancelReason ||
+          (booking.status ? `Booking: ${booking.status.replace(/_/g, ' ')}` : '');
+      }
+    }
+
+    // Fallback occupant details from reservedFor
+    if (!occupantName && unit.reservedFor) {
+      occupantName = unit.reservedFor.name || unit.reservedFor.username || '';
+      customerPhone = customerPhone || unit.reservedFor.phoneNumber || unit.reservedFor.phone || '';
+      customerEmail = customerEmail || unit.reservedFor.email || '';
+      salesAgent = salesAgent || unit.reservedFor.name || unit.reservedFor.username || '';
+      actionDate = actionDate || formatDateVal(unit.reservedAt || unit.updatedAt);
+      if (!remarks) remarks = 'Reserved by Sales Agent';
+    }
+
+    // Fallback occupant details from blockedBy
+    if (!occupantName && unit.blockedBy) {
+      occupantName = unit.blockedBy.name || unit.blockedBy.username || '';
+      customerPhone = customerPhone || unit.blockedBy.phoneNumber || unit.blockedBy.phone || '';
+      customerEmail = customerEmail || unit.blockedBy.email || '';
+      salesAgent = salesAgent || unit.blockedBy.name || unit.blockedBy.username || '';
+      actionDate = actionDate || formatDateVal(unit.blockedAt || unit.updatedAt);
+      if (!remarks) remarks = 'Temporarily Blocked';
+    }
+
+    if (!actionDate && unit.soldAt) {
+      actionDate = formatDateVal(unit.soldAt);
+    }
+
+    // Fallback sales agent from tower assignments if still unassigned
+    if (!salesAgent && towerObj?.towerAssignments && Array.isArray(towerObj.towerAssignments)) {
+      const seAssign = towerObj.towerAssignments.find(
+        (ta: any) => ta.role === 'SALES_EXECUTIVE' && ta.user,
+      );
+      const cmAssign = towerObj.towerAssignments.find(
+        (ta: any) => ta.role === 'CLOSING_MANAGER' && ta.user,
+      );
+      const smAssign = towerObj.towerAssignments.find(
+        (ta: any) => ta.role === 'SOURCING_MANAGER' && ta.user,
+      );
+      const anyAssign = towerObj.towerAssignments.find((ta: any) => ta.user);
+      const targetUser = seAssign?.user || cmAssign?.user || smAssign?.user || anyAssign?.user;
+      if (targetUser) {
+        salesAgent = targetUser.name || targetUser.username || '';
+      }
+    }
+
+    // Defaults for available or non-booked inventory
+    if (!agreedPrice) {
+      agreedPrice = totalPriceStr || basePriceStr || '—';
+    }
+
+    if (!actionDate) {
+      actionDate = formatDateVal(unit.updatedAt || unit.createdAt || new Date());
+    }
+
+    if (!salesAgent) {
+      salesAgent = 'Unassigned';
+    }
+
+    if (!occupantName) {
+      occupantName = status === 'AVAILABLE' ? '—' : 'Pending Allocation';
+    }
+
+    if (!customerPhone) {
+      customerPhone = '—';
+    }
+
+    if (!customerEmail) {
+      customerEmail = '—';
+    }
+
+    if (!bookingNumber) {
+      bookingNumber = status === 'RESERVED' ? `RES-${unit.unitNumber}` : '—';
+    }
+
+    if (!remarks) {
+      if (status === 'AVAILABLE') remarks = 'Available for Sale';
+      else if (status === 'RESERVED') remarks = 'Unit Reserved';
+      else if (status === 'BLOCKED') remarks = 'Unit Blocked';
+      else if (status === 'SOLD') remarks = 'Unit Sold';
+      else remarks = 'Active Inventory';
+    }
+
+    const rowValues = [
+      projName || unit.projectName || '',
+      towerName || unit.towerName || '',
+      floorNum !== undefined && floorNum !== null ? String(floorNum) : '',
+      unit.unitNumber || '',
+      unitTypeDisplay,
+      status,
+      unit.carpetArea !== undefined && unit.carpetArea !== null ? String(unit.carpetArea) : '',
+      unit.builtUpArea !== undefined && unit.builtUpArea !== null ? String(unit.builtUpArea) : '',
+      unit.superBuiltUpArea !== undefined && unit.superBuiltUpArea !== null
+        ? String(unit.superBuiltUpArea)
+        : '',
+      unit.facing || '',
+      unit.balconies !== undefined && unit.balconies !== null ? String(unit.balconies) : '0',
+      unit.parkingIncluded ? 'Yes' : 'No',
+      basePriceStr,
+      pricePerSqFtStr,
+      totalPriceStr,
+      constructionStatusDisplay,
+      occupantName,
+      customerPhone,
+      customerEmail,
+      bookingNumber,
+      agreedPrice,
+      actionDate,
+      salesAgent,
+      remarks,
+    ];
+
+    rows.push(rowValues.map(escapeCsvCell).join(','));
+  };
+
+  (towers || []).forEach((item: any) => {
+    const projName = defaultProjectName || item.projectName || item.project?.name || '';
+    const towerName = item.name || item.towerName || '';
+
+    if (Array.isArray(item.floors) && item.floors.length > 0) {
+      item.floors.forEach((floor: any) => {
+        const floorNum = floor.floorNumber !== undefined ? floor.floorNumber : floor.name;
+        if (Array.isArray(floor.units)) {
+          floor.units.forEach((unit: any) => {
+            processUnit(unit, towerName, floorNum, projName, item);
+          });
+        }
+      });
+    } else if (Array.isArray(item.units) && item.units.length > 0) {
+      item.units.forEach((unit: any) => {
+        const floorNum =
+          unit.floor?.floorNumber !== undefined ? unit.floor.floorNumber : unit.floorNumber;
+        processUnit(unit, towerName, floorNum, projName, item);
+      });
+    } else if (item.unitNumber) {
+      processUnit(item, item.towerName || '', item.floorNumber, projName, item);
+    }
+  });
+
+  return [headers.join(','), ...rows].join('\r\n');
+}
+
 /**
  * Standalone responsive HTML report generator for department analytics
  */
@@ -221,16 +532,16 @@ export function generateAnalyticsHtmlReport(payload: AnalyticsReportPayload): st
         ${sec.description ? `<p class="section-desc">${escapeHtml(sec.description)}</p>` : ''}
         <div class="metrics-grid">
           ${sec.metrics
-            .map(
-              (m: AnalyticsMetricItem) => `
+          .map(
+            (m: AnalyticsMetricItem) => `
             <div class="metric-item">
               <span class="metric-label">${escapeHtml(m.label)}</span>
               <span class="metric-value">${escapeHtml(String(m.value))}</span>
               ${m.subtitle ? `<span class="metric-sub">${escapeHtml(m.subtitle)}</span>` : ''}
             </div>
           `,
-            )
-            .join('')}
+          )
+          .join('')}
         </div>
       </div>
     `,
@@ -243,16 +554,16 @@ export function generateAnalyticsHtmlReport(payload: AnalyticsReportPayload): st
       <h3 class="section-title">Activity & Telephonic Performance</h3>
       <div class="metrics-grid">
         ${payload.activityMetrics!
-          .map(
-            (m: AnalyticsMetricItem) => `
+      .map(
+        (m: AnalyticsMetricItem) => `
           <div class="metric-item">
             <span class="metric-label">${escapeHtml(m.label)}</span>
             <span class="metric-value">${escapeHtml(String(m.value))}</span>
             ${m.subtitle ? `<span class="metric-sub">${escapeHtml(m.subtitle)}</span>` : ''}
           </div>
         `,
-          )
-          .join('')}
+      )
+      .join('')}
       </div>
     </div>
   `
@@ -264,16 +575,16 @@ export function generateAnalyticsHtmlReport(payload: AnalyticsReportPayload): st
       <h3 class="section-title">Financial & Revenue Metrics</h3>
       <div class="metrics-grid">
         ${payload.financialMetrics!
-          .map(
-            (m: AnalyticsMetricItem) => `
+      .map(
+        (m: AnalyticsMetricItem) => `
           <div class="metric-item highlight">
             <span class="metric-label">${escapeHtml(m.label)}</span>
             <span class="metric-value">${escapeHtml(String(m.value))}</span>
             ${m.subtitle ? `<span class="metric-sub">${escapeHtml(m.subtitle)}</span>` : ''}
           </div>
         `,
-          )
-          .join('')}
+      )
+      .join('')}
       </div>
     </div>
   `
@@ -558,9 +869,8 @@ export function generateAnalyticsHtmlReport(payload: AnalyticsReportPayload): st
     </div>
 
     <!-- Funnel Breakdown if present -->
-    ${
-      funnelStagesHtml
-        ? `
+    ${funnelStagesHtml
+      ? `
       <div class="section-card">
         <h3 class="section-title">Pipeline & Conversion Funnel</h3>
         <p class="section-desc">Stage-by-stage lead progression through the pipeline.</p>
@@ -569,7 +879,7 @@ export function generateAnalyticsHtmlReport(payload: AnalyticsReportPayload): st
         </div>
       </div>
     `
-        : ''
+      : ''
     }
 
     <!-- Financial Metrics if present -->
