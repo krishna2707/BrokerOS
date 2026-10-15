@@ -11,6 +11,7 @@ import {
 import { PrismaService } from '../../../lib/database/prisma.service.js';
 import { EmailIntegrationsService } from './email-integrations.service.js';
 import { EmailAiService } from '../ai/email-ai.service.js';
+import { dispatchScheduledMessage } from '@brokeros/messaging';
 import type {
   ListEmailConversationsQueryDto,
   StartEmailConversationDto,
@@ -1050,27 +1051,22 @@ export class EmailInboxService {
     messageId: string,
     senderUser?: { id: string; name?: string; email?: string },
   ) {
-    const msg = await this.prisma.emailMessage.findUnique({
-      where: { id: messageId },
+    const res = await dispatchScheduledMessage(this.prisma, {
+      channel: 'EMAIL',
+      messageId,
+      triggeredBy: senderUser?.id,
     });
-    if (!msg || msg.status !== 'SCHEDULED') {
-      throw new NotFoundException(`Scheduled Email message #${messageId} not found or already sent`);
+
+    if (!res.success) {
+      if (res.alreadyProcessed) {
+        throw new BadRequestException('Email is already processing or sent');
+      }
+      throw new BadRequestException(res.error || 'Failed to dispatch scheduled Email');
     }
 
-    const dispatched = await this.sendReply(
-      msg.conversationId,
-      {
-        text: msg.bodyText || undefined,
-        html: msg.bodyHtml || undefined,
-        subject: msg.subject || undefined,
-        attachments: (msg.attachments as any) || undefined,
-      },
-      senderUser || (msg.scheduledBy ? { id: msg.scheduledBy, name: msg.senderName || 'Agent' } : undefined),
-    );
-
-    await this.prisma.emailMessage.delete({ where: { id: messageId } }).catch(() => null);
-
-    return dispatched;
+    return this.prisma.emailMessage.findUnique({
+      where: { id: messageId },
+    });
   }
 }
 

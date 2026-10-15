@@ -12,6 +12,7 @@ import { PrismaService } from '../../../lib/database/prisma.service.js';
 import { SmsIntegrationsService } from './sms-integrations.service.js';
 import { SmsAiService } from '../ai/sms-ai.service.js';
 import { calculateSmsSegments } from '@brokeros/constants';
+import { dispatchScheduledMessage } from '@brokeros/messaging';
 import type {
   ListSmsConversationsQueryDto,
   StartSmsConversationDto,
@@ -69,7 +70,7 @@ export class SmsInboxService {
     private readonly prisma: PrismaService,
     private readonly integrationsService: SmsIntegrationsService,
     private readonly aiService: SmsAiService,
-  ) {}
+  ) { }
 
   /**
    * Auto-provision uncontacted leads and brokers who possess a phone number
@@ -806,10 +807,10 @@ export class SmsInboxService {
       originalCampaignTitle: campaignTitle,
       project: conv.lead?.interestedProject
         ? {
-            name: conv.lead.interestedProject.name,
-            city: conv.lead.interestedProject.city || undefined,
-            description: conv.lead.interestedProject.description || undefined,
-          }
+          name: conv.lead.interestedProject.name,
+          city: conv.lead.interestedProject.city || undefined,
+          description: conv.lead.interestedProject.description || undefined,
+        }
         : null,
       messages: chronological.map((m) => ({
         direction: m.direction,
@@ -967,23 +968,22 @@ export class SmsInboxService {
     messageId: string,
     senderUser?: { id: string; name?: string; email?: string },
   ) {
-    const msg = await this.prisma.smsMessage.findUnique({
-      where: { id: messageId },
+    const res = await dispatchScheduledMessage(this.prisma, {
+      channel: 'SMS',
+      messageId,
+      triggeredBy: senderUser?.id,
     });
-    if (!msg || msg.status !== 'SCHEDULED') {
-      throw new NotFoundException(`Scheduled SMS message #${messageId} not found or already sent`);
+
+    if (!res.success) {
+      if (res.alreadyProcessed) {
+        throw new BadRequestException('Message is already processing or sent');
+      }
+      throw new BadRequestException(res.error || 'Failed to dispatch scheduled SMS');
     }
 
-    const dispatched = await this.sendReply(
-      msg.conversationId,
-      { text: msg.bodyText },
-      senderUser || (msg.scheduledBy ? { id: msg.scheduledBy, name: msg.senderName || 'Agent' } : undefined),
-    );
-
-    // Remove the scheduled row so it doesn't double-dispatch
-    await this.prisma.smsMessage.delete({ where: { id: messageId } }).catch(() => null);
-
-    return dispatched;
+    return this.prisma.smsMessage.findUnique({
+      where: { id: messageId },
+    });
   }
 }
 

@@ -9,14 +9,7 @@ import type {
   ProviderCredentials,
   SendEmailOptions,
 } from '@brokeros/types';
-import { SesAdapter } from '@brokeros/int-mail-ses';
-import { SendgridAdapter } from '@brokeros/int-mail-sendgrid';
-import { BrevoAdapter } from '@brokeros/int-mail-brevo';
-import { MailchimpAdapter } from '@brokeros/int-mail-mailchimp';
-import { MailgunAdapter } from '@brokeros/int-mail-mailgun';
-import { GmailAdapter } from '@brokeros/int-mail-gmail';
-import { OutlookAdapter } from '@brokeros/int-mail-outlook';
-import { ConstantContactAdapter } from '@brokeros/int-mail-constant-contact';
+import { getEmailProvider } from '@brokeros/messaging';
 import {
   ConnectIntegrationDto,
   SendTestEmailDto,
@@ -26,38 +19,14 @@ import {
 
 @Injectable()
 export class EmailIntegrationsService {
-  private readonly sesAdapter = new SesAdapter();
-  private readonly sendgridAdapter = new SendgridAdapter();
-  private readonly brevoAdapter = new BrevoAdapter();
-  private readonly mailchimpAdapter = new MailchimpAdapter();
-  private readonly mailgunAdapter = new MailgunAdapter();
-  private readonly gmailAdapter = new GmailAdapter();
-  private readonly outlookAdapter = new OutlookAdapter();
-  private readonly constantContactAdapter = new ConstantContactAdapter();
-
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   getAdapter(providerType: string): IEmailMarketingProvider {
-    switch (providerType) {
-      case 'SENDGRID':
-        return this.sendgridAdapter;
-      case 'BREVO':
-        return this.brevoAdapter;
-      case 'MAILCHIMP':
-        return this.mailchimpAdapter;
-      case 'MAILGUN':
-        return this.mailgunAdapter;
-      case 'GMAIL':
-        return this.gmailAdapter;
-      case 'OUTLOOK':
-        return this.outlookAdapter;
-      case 'CONSTANT_CONTACT':
-        return this.constantContactAdapter;
-      case 'AWS_SES':
-      case 'SYSTEM_DEFAULT':
-      default:
-        return this.sesAdapter;
-    }
+    return getEmailProvider(providerType);
+  }
+
+  get sesAdapter(): IEmailMarketingProvider {
+    return getEmailProvider('AWS_SES');
   }
 
   private mapCredentials(intOrDto: any): ProviderCredentials {
@@ -178,8 +147,8 @@ export class EmailIntegrationsService {
 
     const resolvedFromEmail =
       dto.fromEmail &&
-      dto.fromEmail.includes('@') &&
-      dto.fromEmail !== 'marketing@example.com'
+        dto.fromEmail.includes('@') &&
+        dto.fromEmail !== 'marketing@example.com'
         ? dto.fromEmail
         : credentials?.fromEmail || dto.fromEmail || 'marketing@example.com';
 
@@ -436,7 +405,7 @@ export class EmailIntegrationsService {
         if (!verifyRes.isVerified) {
           throw new BadRequestException(
             verifyRes.reason ||
-              `Email provider ${integration.provider} could not verify identity "${email}" on this account`,
+            `Email provider ${integration.provider} could not verify identity "${email}" on this account`,
           );
         }
         isProviderVerified = true;
