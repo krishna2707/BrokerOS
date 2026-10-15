@@ -4,7 +4,7 @@ import { UpdateUnitStatusDto, UpdatePossessionDto } from './dto/unit.dto.js';
 
 @Injectable()
 export class InventoryUnitsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async updateUnitStatus(
     unitId: string,
@@ -66,6 +66,8 @@ export class InventoryUnitsService {
           include: { lead: true },
         },
         salesExec: true,
+        closingManager: true,
+        assignedPostSales: true,
         loanCase: true,
         agreement: true,
         possession: true,
