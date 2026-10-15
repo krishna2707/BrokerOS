@@ -21,7 +21,7 @@ import { DashboardPageWrapper } from "@/components/dashboard/DashboardPageWrappe
 import { StatCards } from "@/components/dashboard/StatCards";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { CampaignListTable } from "@/features/marketing/components/CampaignListTable";
+import { EmailCampaignListTable as CampaignListTable } from "@/features/marketing/email/components/EmailCampaignListTable";
 import type { CampaignItem } from "@/features/marketing/types";
 
 export default function EmailMarketingDashboard() {

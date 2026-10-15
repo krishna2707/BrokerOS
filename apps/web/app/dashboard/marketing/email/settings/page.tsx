@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { DashboardPageWrapper } from "@/components/dashboard/DashboardPageWrapper";
 import { Button } from "@/components/ui/Button";
-import { ProviderConfigCard, IntegrationRecord } from "@/features/marketing/components/ProviderConfigCard";
+import { EmailProviderConfigCard as ProviderConfigCard, type IntegrationRecord } from "@/features/marketing/email/components/EmailProviderConfigCard";
 import { EmailAiConfigCard } from "@/features/marketing/email/components/settings/EmailAiConfigCard";
 import { EmailTagsManager } from "@/features/marketing/email/components/settings/EmailTagsManager";
 import { EmailWebhookDiagnostics } from "@/features/marketing/email/components/settings/EmailWebhookDiagnostics";
