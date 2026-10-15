@@ -167,20 +167,84 @@ export class InventoryProjectsService {
     return this.prisma.tower.findMany({
       where: whereClause,
       include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            constructionStatus: true,
+          },
+        },
+        towerAssignments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                username: true,
+                email: true,
+                phoneNumber: true,
+              },
+            },
+          },
+        },
         floors: {
           include: {
             units: {
               orderBy: { unitNumber: 'asc' },
               include: {
+                reservedFor: {
+                  select: {
+                    id: true,
+                    name: true,
+                    username: true,
+                    email: true,
+                    phoneNumber: true,
+                  },
+                },
+                blockedBy: {
+                  select: {
+                    id: true,
+                    name: true,
+                    username: true,
+                    email: true,
+                    phoneNumber: true,
+                  },
+                },
                 bookings: {
                   where: { status: { notIn: ['CANCELLED'] } },
+                  orderBy: { createdAt: 'desc' },
+                  take: 1,
                   include: {
                     customer: true,
+                    salesExec: {
+                      select: {
+                        id: true,
+                        name: true,
+                        username: true,
+                        email: true,
+                      },
+                    },
+                    closingManager: {
+                      select: {
+                        id: true,
+                        name: true,
+                        username: true,
+                        email: true,
+                      },
+                    },
+                    assignedPostSales: {
+                      select: {
+                        id: true,
+                        name: true,
+                        username: true,
+                        email: true,
+                      },
+                    },
                     loanCase: true,
                     agreement: true,
                     possession: true,
                   },
-                  take: 1,
                 },
               },
             },
