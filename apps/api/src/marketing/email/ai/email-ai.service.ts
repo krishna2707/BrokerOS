@@ -177,35 +177,43 @@ export class EmailAiService {
       args.project?.amenities?.join(', ') ||
       'Clubhouse, Swimming Pool, High-speed Elevators, 24/7 Security';
 
-    const systemPrompt = config?.systemPrompt || this.getDefaultSystemPrompt();
+    const defaultBasePrompt = `You are ${advisorName}, a senior real estate advisor and concierge with BrokerOS Realty & Advisory representing *${projectName}* in ${projectCity}.
+Client / Lead Name: ${clientName}
 
-    const injectedSystemPrompt = `${systemPrompt}
+PRIMARY OBJECTIVE:
+Respond to prospective home buyers and investors with executive warmth, provide transparent property insights, qualify buying intent (BHK configuration, budget, move-in timeline), and guide them toward scheduling a private walkthrough of our model residences or a brief consultation call. Real estate transactions are sealed through in-person experience.
 
-REAL ESTATE CONTEXT:
-- Brokerage: BrokerOS Realty & Advisory
-- Advisor Name: ${advisorName}
-- Project Name: ${projectName}
-- City / Location: ${projectCity}
-- Key Highlights & Amenities: ${amenities}
-- Recipient / Client Name: ${clientName}
-${args.project?.brochureUrl ? `- Digital Brochure Link: ${args.project.brochureUrl}` : ''}
-
-CRITICAL RULES FOR EMAIL DRAFTS:
-1. Tone: Warm, executive, courteous, and professional.
-2. Context Sensitivity: If the client asked a question, answer it directly and concisely. Keep the body between 60 to 140 words unless detailed specifications are requested.
-3. ABSOLUTELY ZERO PLACEHOLDERS:
-   - CRITICAL: NEVER output placeholders such as [Your Name], **Your Name**, [Agent Name], [Company Name], [Phone Number], [Insert Link], etc.
-   - Always sign off directly as:
+TACTICAL EMAIL CONVERSATION RULES:
+1. STRUCTURE & BREVITY (70 to 140 WORDS):
+   - Keep paragraphs short (2 to 3 sentences each) for effortless mobile reading.
+   - Paragraph 1: Warm personalized opening acknowledging their specific inquiry regarding ${projectName}.
+   - Paragraph 2: Direct, transparent insights covering key highlights (${amenities}) and transparent starting pricing.
+   - Paragraph 3: Consultative, low-friction call-to-action proposing a private sample flat tour or brief discussion.
+2. THE ASSUMPTIVE SITE VISIT CLOSE:
+   - Propose specific viewing windows: "We are coordinating private guided tours of the model residences this Thursday and over the weekend. Would morning or late afternoon suit your schedule best?"
+3. PRICING & PAYMENT PLANS:
+   - State transparent starting prices when available. For discounts, customized payment milestone plans (e.g. flexible construction-linked schemes), or floor rise charges, invite them to explore spot-booking advantages during their private viewing.
+4. BROCHURES & FLOOR PLANS:
+   - If the client requests layouts or brochures, confirm that detailed floor plans and current availability are shared, and follow up with a preference question (e.g. 2 vs 3 BHK, or preferred floor levels).
+5. ABSOLUTELY ZERO PLACEHOLDERS (CRITICAL):
+   - NEVER output bracketed placeholders like [Your Name], **Your Name**, [Agent Name], [Company Name], [Phone Number], or [Insert Link].
+   - Always sign off cleanly as:
      Warm regards,
      ${advisorName}
      BrokerOS Advisory Team
-4. VARIETY: Provide fresh phrasing and a distinct tone each time.
-5. FORMAT: Return your answer strictly as a JSON object with:
-   {
-     "subject": "accurate email subject line (e.g. Re: ...)",
-     "body": "email body text in clean paragraphs"
-   }
-${args.customInstructions ? `\nADDITIONAL PERSONA INSTRUCTIONS:\n${args.customInstructions}` : ''}`.trim();
+6. TONE & VARIETY:
+   - Executive, consultative, articulate, and welcoming. Never pushy or robotic.
+   - Provide fresh phrasing and distinct tone each time.
+7. FORMAT:
+   - Return your answer strictly as a JSON object:
+     {
+       "subject": "compelling, personalized subject line",
+       "body": "email text in clean paragraphs separated by double newlines"
+     }`;
+
+    const injectedSystemPrompt = config?.systemPrompt
+      ? `${config.systemPrompt}\n\nREAL ESTATE CONTEXT:\n- Brokerage: BrokerOS Realty & Advisory\n- Advisor Name: ${advisorName}\n- Project Name: ${projectName} (${projectCity})\n- Highlights & Amenities: ${amenities}\n- Client Name: ${clientName}\n${args.project?.brochureUrl ? `- Digital Brochure Link: ${args.project.brochureUrl}\n` : ''}CRITICAL: Never output placeholders like [Your Name]. Always propose a private site tour or 10-minute briefing.`
+      : defaultBasePrompt;
 
     let userPrompt = '';
     if (args.messages && args.messages.length > 0) {
@@ -221,17 +229,19 @@ ${args.customInstructions ? `\nADDITIONAL PERSONA INSTRUCTIONS:\n${args.customIn
 
 ${threadHistory}
 
-Draft the next email response from Advisor "${advisorName}" to client "${clientName}". Return strictly JSON: { "subject": "...", "body": "..." }.`;
+Draft the next executive email response from Advisor "${advisorName}" to client "${clientName}". Return strictly JSON: { "subject": "...", "body": "..." }.`;
     } else if (args.inboundBody) {
-      userPrompt = `Inbound email from "${clientName}":
+      userPrompt = `Inbound email inquiry from "${clientName}":
 Subject: ${args.inboundSubject || args.originalSubject || 'Property Inquiry'}
 Body:
 "${args.inboundBody}"
 
-Draft the next email reply from Advisor "${advisorName}". Return strictly JSON: { "subject": "...", "body": "..." }.`;
+Project: ${projectName} (${projectCity})
+${args.customInstructions ? `Special Instructions: ${args.customInstructions}\n` : ''}
+Draft a professional, helpful email reply answering their inquiry directly and inviting them to an on-site sample flat viewing. Return strictly JSON: { "subject": "...", "body": "..." }.`;
     } else {
-      userPrompt = `Draft an initial outreach email to prospective homebuyer "${clientName}" from Advisor "${advisorName}" regarding ${projectName}.
-Return strictly JSON: { "subject": "...", "body": "..." }.`;
+      userPrompt = `Draft an initial outreach email to prospective homebuyer "${clientName}" from Advisor "${advisorName}" regarding ${projectName} (${projectCity}).
+Highlight key amenities (${amenities}), offer priority floor plans, and invite them for a private walkthrough this week. Return strictly JSON: { "subject": "...", "body": "..." }.`;
     }
 
     if (rawApiKey) {
@@ -322,9 +332,9 @@ Return strictly JSON: { "subject": "...", "body": "..." }.`;
 
     // Dynamic contextual fallback
     const fallbackSubjects = [
-      `Exclusive Insights: ${projectName} Details`,
-      `Re: Your inquiry on ${projectName}`,
-      `Floor Plans & Site Visit for ${clientName}`,
+      `${projectName} (${projectCity}) - Pricing & Sample Flat Walkthrough for ${clientName}`,
+      `Re: Your inquiry regarding ${projectName}`,
+      `Exclusive Floor Plans & Availability: ${projectName}`,
     ];
     const pickedSubject = args.inboundSubject?.startsWith('Re:')
       ? args.inboundSubject
@@ -334,8 +344,8 @@ Return strictly JSON: { "subject": "...", "body": "..." }.`;
           fallbackSubjects[Math.floor(Math.random() * fallbackSubjects.length)];
 
     const fallbackBodies = [
-      `Hello ${clientName},\n\nThank you for connecting regarding ${projectName}. We have detailed floor plans and current availability ready for your review.\n\nWould you have 10 minutes this week for a brief call or a scheduled site walkthrough?\n\nWarm regards,\n${advisorName}\nBrokerOS Advisory Team`,
-      `Dear ${clientName},\n\nFollowing up on our discussions regarding ${projectName}, I wanted to share our latest pricing options and payment schedules.\n\nPlease let me know if tomorrow or this weekend works best for a private tour.\n\nBest regards,\n${advisorName}\nBrokerOS Advisory Team`,
+      `Hello ${clientName},\n\nThank you for reaching out regarding ${projectName} in ${projectCity}. We have newly released inventory featuring spacious layouts, premium finishes, and world-class amenities including ${amenities}.\n\nWe are currently hosting private guided walkthroughs of our model residences. Would Thursday afternoon or this weekend work best for you to visit the property?\n\nWarm regards,\n${advisorName}\nBrokerOS Advisory Team`,
+      `Dear ${clientName},\n\nFollowing up on your interest in ${projectName}, I wanted to share our latest availability sheet and customized payment milestone options.\n\nSeeing the actual space and sample flat makes evaluating the layout much easier. Would you have 15 minutes this weekend for a brief private tour?\n\nWarm regards,\n${advisorName}\nBrokerOS Advisory Team`,
     ];
     const pickedBody =
       fallbackBodies[Math.floor(Math.random() * fallbackBodies.length)];
@@ -365,7 +375,12 @@ Return strictly JSON: { "subject": "...", "body": "..." }.`;
   }
 
   private getDefaultSystemPrompt(): string {
-    return `You are an elite real estate sales advisor and concierge for an enterprise brokerage.
-Your role is to assist prospective buyers courteously, provide crisp property insights, answer pricing, configuration, and site visit scheduling queries, and encourage booking an on-site visit.`;
+    return `You are a senior real estate sales advisor and concierge with BrokerOS Realty & Advisory.
+Your role is to respond to prospective home buyers with executive warmth, provide transparent property insights, answer pricing and floor plan questions, qualify buying intent (BHK/timeline), and invite them for an on-site sample flat walkthrough.
+Rules:
+1. Keep email bodies between 70 to 140 words in 2-3 clean, readable paragraphs.
+2. Never output bracketed placeholders like [Your Name] or [Phone Number].
+3. Always include a consultative call-to-action (e.g. proposing a private viewing this week).
+4. For discounts or customized payment schemes, invite the client to explore spot-booking advantages during their visit.`;
   }
 }
