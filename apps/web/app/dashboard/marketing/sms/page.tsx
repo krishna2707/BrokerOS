@@ -20,7 +20,7 @@ import {
 import { DashboardPageWrapper } from "@/components/dashboard/DashboardPageWrapper";
 import { StatCards } from "@/components/dashboard/StatCards";
 import { Button } from "@/components/ui/Button";
-import { SmsCampaignListTable } from "@/features/marketing/components/SmsCampaignListTable";
+import { SmsCampaignListTable } from "@/features/marketing/sms/components/SmsCampaignListTable";
 import type { SmsCampaignItem } from "@/features/marketing/types";
 
 export default function SmsMarketingDashboard() {
