@@ -74,11 +74,10 @@ All worker processors live in [`apps/workers/src/processors/`](https://github.co
 ### 5. `scheduled-messages.processor.ts`
 - Processes scheduled 1-on-1 team inbox messages across SMS, Email, and WhatsApp.
 - Runs on a high-frequency 10-second interval scanner to pick up due messages promptly.
-- Employs atomic status locking (`updateMany` with `status: 'SCHEDULED'` transitioning to `status: 'PROCESSING'`) inside database transactions. This guarantees zero race conditions even across multiple worker instances.
-- Directly invokes channel-specific provider adapters:
-  - SMS: Dispatches text payloads through the active gateway credentials (`Twilio`, `Gupshup`, `Sinch`, `AWS SNS`).
-  - Email: Transmits MIME messages with preserved subject lines and attachments via SendGrid, Brevo, AWS SES, or Mailgun.
-  - WhatsApp: Calls Meta Cloud API for free-form session messages or approved templates, depending on session state.
+- Delegates dispatch execution directly to the deep `@brokeros/messaging` module (`dispatchScheduledMessage`):
+  - **Atomic Reservation**: Acquires a mutex lock via conditional database transition (`status: 'SCHEDULED'` transitioning to `status: 'PROCESSING'`), preventing race conditions with concurrent worker nodes or immediate API triggers.
+  - **Provider Execution**: Dispatches via cached adapter instances across SMS (Twilio, Gupshup, Sinch, AWS SNS), Email (SendGrid, Brevo, AWS SES), or WhatsApp (Meta Cloud API).
+  - **Audit Preservation**: Transitions message state in-place to `DELIVERED`, `SENT`, or `FAILED` while maintaining thread conversation summaries without deleting audit rows.
 - Resilient against worker restarts and power cycles: any message in `SCHEDULED` status with `scheduledAt <= NOW()` is picked up immediately upon restart.
 
 ---
