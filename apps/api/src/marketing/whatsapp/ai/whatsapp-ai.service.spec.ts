@@ -1,6 +1,11 @@
+jest.mock('@brokeros/prisma', () => ({
+  PrismaClient: class { },
+  prismaClient: {},
+}));
+
 jest.mock('@thallesp/nestjs-better-auth', () => ({
-  Public: () => () => {},
-  AuthGuard: class {},
+  Public: () => () => { },
+  AuthGuard: class { },
 }));
 
 jest.mock('@brokeros/int-whatsapp', () => ({
