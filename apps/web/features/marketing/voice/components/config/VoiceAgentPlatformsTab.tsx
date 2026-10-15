@@ -250,7 +250,7 @@ export const VoiceAgentPlatformsTab: React.FC<VoiceAgentPlatformsTabProps> = ({
               name: platform,
               badge: 'AI Voice Engine',
               description: 'Conversational voice agent engine',
-              docsUrl: 'https://docs.brokeros.com',
+              docsUrl: 'https://brokeros.mintlify.site',
             };
 
             return (
@@ -377,20 +377,20 @@ export const VoiceAgentPlatformsTab: React.FC<VoiceAgentPlatformsTabProps> = ({
 
               {(selectedAgentPlatform === 'PIPECAT' ||
                 selectedAgentPlatform === 'LIVEKIT') && (
-                <div>
-                  <label className="block text-xs font-extrabold text-[var(--text-primary)] mb-1.5">
-                    Server Endpoint / Runner URL <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={agentServerUrl}
-                    onChange={(e) => setAgentServerUrl(e.target.value)}
-                    placeholder="https://livekit.yourcloud.com or http://localhost:8765"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all shadow-xs"
-                  />
-                </div>
-              )}
+                  <div>
+                    <label className="block text-xs font-extrabold text-[var(--text-primary)] mb-1.5">
+                      Server Endpoint / Runner URL <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={agentServerUrl}
+                      onChange={(e) => setAgentServerUrl(e.target.value)}
+                      placeholder="https://livekit.yourcloud.com or http://localhost:8765"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all shadow-xs"
+                    />
+                  </div>
+                )}
 
               <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
                 <Button
