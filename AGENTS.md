@@ -49,6 +49,7 @@ We are migrating shared business logic out of the apps and into the `packages/` 
 - **`@brokeros/validators`**: Shared Zod schemas for form validation and API payloads.
 - **`@brokeros/prisma`**: The central Prisma ORM client, schema, and migrations.
 - **`@brokeros/storage`**: Centralized Vercel Blob storage wrappers.
+- **`@brokeros/messaging`**: Centralized, deep cross-channel message dispatch engine (SMS, Email, WhatsApp) providing atomic reservation, credential resolution, and provider dispatch.
 
 **CRITICAL RULES FOR AGENTS:**
 
@@ -188,7 +189,7 @@ As BrokerOS grows to include background workers, 3rd-party integrations, and new
   - `ads/` — Meta & Google ad account connector, campaign sync, KPI overview.
 - Mobile route groups (`apps/mobile/app/`): `(auth)` (login/signup), `(dashboard)` (role-specific screen views + native auto-dialer module).
 - Workers (`apps/workers/src/`): BullMQ processors for async jobs — `marketing-email.processor.ts`, `marketing-sms.processor.ts`, `marketing-voice.processor.ts`, `marketing-whatsapp.processor.ts`.
-- Shared packages: `packages/prisma/` (Schema & DB Client), `packages/storage/` (Blob wrappers), `packages/types/` (TS interfaces with domain sub-modules), `packages/validators/` (Zod schemas), `packages/constants/` (Pure constants with domain sub-modules).
+- Shared packages: `packages/prisma/` (Schema & DB Client), `packages/storage/` (Blob wrappers), `packages/messaging/` (Dispatch engine), `packages/types/` (TS interfaces with domain sub-modules), `packages/validators/` (Zod schemas), `packages/constants/` (Pure constants with domain sub-modules).
 - Integrations: `integrations/voice/` (AI agents + PSTN carriers), `integrations/mail/` (email providers), `integrations/sms/` (SMS gateways), `integrations/whatsapp/` (WhatsApp Cloud API), `integrations/ads/` (Google & Meta Ads lead webhooks).
 - Skills: `.agents/skills/` (root), `apps/api/.agents/skills/`, `apps/web/.agents/skills/`, `apps/mobile/.agents/skills/`.
 
