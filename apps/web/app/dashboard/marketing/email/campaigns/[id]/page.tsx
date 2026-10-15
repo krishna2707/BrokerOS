@@ -17,9 +17,8 @@ import {
 } from "lucide-react";
 import { DashboardPageWrapper } from "@/components/dashboard/DashboardPageWrapper";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { CampaignFunnelAnalytics } from "@/features/marketing/components/CampaignFunnelAnalytics";
-import { RecipientActivityTable } from "@/features/marketing/components/RecipientActivityTable";
+import { EmailFunnelAnalytics as CampaignFunnelAnalytics } from "@/features/marketing/email/components/EmailFunnelAnalytics";
+import { EmailRecipientTable as RecipientActivityTable } from "@/features/marketing/email/components/EmailRecipientTable";
 import type { CampaignAnalyticsSummary } from "@brokeros/types";
 
 export default function CampaignDetailPage() {

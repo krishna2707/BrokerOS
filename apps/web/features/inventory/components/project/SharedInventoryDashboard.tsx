@@ -1,15 +1,16 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import React, { useEffect, useState, Fragment } from "react";
+import React, { useEffect, useState, useCallback, Fragment } from "react";
 import { useRouter } from "next/navigation";
-import { Building, MapPin, Grid, Plus, MoreVertical, Calendar, UserPlus } from "lucide-react";
+import { Building, MapPin, Grid, Plus, MoreVertical, Calendar, UserPlus, Download } from "lucide-react";
 import Link from "next/link";
 import PossessionModal, {
   ConstructionStatus,
 } from "@/features/inventory/components/modals/PossessionModal";
 import NewProjectModal from "@/features/inventory/components/modals/NewProjectModal";
 import AssignmentModal from "@/features/inventory/components/modals/AssignmentModal";
+import { ExportInventoryModal } from "@/features/inventory/components/modals/ExportInventoryModal";
 import { Menu, Transition } from "@headlessui/react";
 
 interface SharedInventoryDashboardProps {
@@ -22,6 +23,23 @@ interface SharedInventoryDashboardProps {
   emptyStateTitle: string;
   emptyStateSubtitle: string;
   apiEndpoint?: string;
+}
+
+interface ProjectItem {
+  id: string;
+  name: string;
+  constructionStatus?: ConstructionStatus;
+  possessionTimeline?: { value: number; unit: "MONTHS" | "YEARS" };
+  builder?: { name?: string };
+  city?: string | null;
+  totalTowers?: number | null;
+  totalUnits?: number | null;
+  _count?: {
+    towers?: number;
+    leads?: number;
+    units?: number;
+  };
+  [key: string]: unknown;
 }
 
 export function SharedInventoryDashboard({
@@ -38,7 +56,7 @@ export function SharedInventoryDashboard({
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
@@ -57,6 +75,29 @@ export function SharedInventoryDashboard({
     projectName: string;
   }>({ isOpen: false, projectId: "", projectName: "" });
 
+  const [exportModal, setExportModal] = useState<{
+    isOpen: boolean;
+    projectId: string;
+    projectName: string;
+  }>({ isOpen: false, projectId: "", projectName: "" });
+
+  const loadProjects = useCallback(
+    async (baseUrl: string) => {
+      try {
+        setLoading(true);
+        const res = await fetch(baseUrl + apiEndpoint);
+        if (!res.ok) throw new Error("Failed to fetch projects");
+        const data = await res.json();
+        setProjects(data);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Failed to load inventory");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [apiEndpoint]
+  );
+
   useEffect(() => {
     if (!isPending && !session) {
       router.replace("/login");
@@ -64,13 +105,13 @@ export function SharedInventoryDashboard({
     }
     if (isAuthorized) return;
 
-    const user = session?.user as any;
+    const user = session?.user as { roleId?: string } | undefined;
     if (user?.roleId) {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "/api/proxy";
       fetch(`${baseUrl}/roles`)
         .then((res) => res.json())
         .then((roles) => {
-          const role = roles.find((r: any) => r.id === user.roleId);
+          const role = roles.find((r: { id: string; code: string }) => r.id === user.roleId);
           if (role && role.code === roleCode) {
             setIsAuthorized(true);
             loadProjects(baseUrl);
@@ -80,21 +121,7 @@ export function SharedInventoryDashboard({
         })
         .catch(console.error);
     }
-  }, [session, isPending, router, isAuthorized, roleCode]);
-
-  const loadProjects = async (baseUrl: string) => {
-    try {
-      setLoading(true);
-      const res = await fetch(baseUrl + apiEndpoint);
-      if (!res.ok) throw new Error("Failed to fetch projects");
-      const data = await res.json();
-      setProjects(data);
-    } catch (e: any) {
-      setError(e?.message || "Failed to load inventory");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [session, isPending, router, isAuthorized, roleCode, loadProjects]);
 
   if (isPending || loading) {
     return (
@@ -157,39 +184,37 @@ export function SharedInventoryDashboard({
                     Active
                   </span>
 
-                  {canSetPossession && (
-                    <Menu as="div" className="relative inline-block text-left">
-                      <Menu.Button
-                        onClick={(e: any) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                        className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-[var(--brand-700)] hover:bg-purple-50 rounded-lg transition-colors cursor-pointer"
-                      >
-                        <MoreVertical size={14} />
-                      </Menu.Button>
-                      <Transition
-                        as={Fragment}
-                        enter="transition ease-out duration-100"
-                        enterFrom="transform opacity-0 scale-95"
-                        enterTo="transform opacity-100 scale-100"
-                        leave="transition ease-in duration-75"
-                        leaveFrom="transform opacity-100 scale-100"
-                        leaveTo="transform opacity-0 scale-95"
-                      >
-                        <Menu.Items className="absolute right-0 mt-1 w-52 origin-top-right divide-y divide-slate-100 rounded-2xl bg-white shadow-xl ring-1 ring-black/5 focus:outline-none z-50 p-1 border border-slate-200/80">
+                  <Menu as="div" className="relative inline-block text-left">
+                    <Menu.Button
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-[var(--brand-700)] hover:bg-purple-50 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <MoreVertical size={14} />
+                    </Menu.Button>
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-100"
+                      enterFrom="transform opacity-0 scale-95"
+                      enterTo="transform opacity-100 scale-100"
+                      leave="transition ease-in duration-75"
+                      leaveFrom="transform opacity-100 scale-100"
+                      leaveTo="transform opacity-0 scale-95"
+                    >
+                      <Menu.Items className="absolute right-0 mt-1 w-52 origin-top-right divide-y divide-slate-100 rounded-2xl bg-white shadow-xl ring-1 ring-black/5 focus:outline-none z-50 p-1 border border-slate-200/80">
+                        <div className="py-0.5">
                           <Menu.Item>
                             {({ active }) => (
                               <button
-                                onClick={(e: any) => {
+                                onClick={(e: React.MouseEvent) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  setPossessionModal({
+                                  setExportModal({
                                     isOpen: true,
                                     projectId: project.id,
                                     projectName: project.name,
-                                    initialStatus: project.constructionStatus,
-                                    initialTimeline: project.possessionTimeline,
                                   });
                                 }}
                                 className={`${
@@ -198,42 +223,75 @@ export function SharedInventoryDashboard({
                                     : "text-[var(--text-primary)]"
                                 } flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-colors cursor-pointer`}
                               >
-                                <Calendar size={13} />
-                                <span>Set Possession Timeline</span>
+                                <Download size={13} className="text-[var(--brand-600)]" />
+                                <span>Export Inventory (CSV)</span>
                               </button>
                             )}
                           </Menu.Item>
-                          {["CHANNEL_PARTNER", "SALES_MANAGER"].includes(
-                            roleCode
-                          ) && (
-                            <Menu.Item>
-                              {({ active }) => (
-                                <button
-                                  onClick={(e: any) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setAssignmentModal({
-                                      isOpen: true,
-                                      projectId: project.id,
-                                      projectName: project.name,
-                                    });
-                                  }}
-                                  className={`${
-                                    active
-                                      ? "bg-purple-50 text-[var(--brand-700)]"
-                                      : "text-[var(--text-primary)]"
-                                  } flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-colors cursor-pointer mt-0.5`}
-                                >
-                                  <UserPlus size={13} />
-                                  <span>Assign Project Team</span>
-                                </button>
-                              )}
-                            </Menu.Item>
-                          )}
-                        </Menu.Items>
-                      </Transition>
-                    </Menu>
-                  )}
+                        </div>
+
+                        {(canSetPossession ||
+                          ["CHANNEL_PARTNER", "SALES_MANAGER"].includes(roleCode)) && (
+                          <div className="py-0.5">
+                            {canSetPossession && (
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={(e: React.MouseEvent) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      setPossessionModal({
+                                        isOpen: true,
+                                        projectId: project.id,
+                                        projectName: project.name,
+                                        initialStatus: project.constructionStatus,
+                                        initialTimeline: project.possessionTimeline,
+                                      });
+                                    }}
+                                    className={`${
+                                      active
+                                        ? "bg-purple-50 text-[var(--brand-700)]"
+                                        : "text-[var(--text-primary)]"
+                                    } flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-colors cursor-pointer`}
+                                  >
+                                    <Calendar size={13} />
+                                    <span>Set Possession Timeline</span>
+                                  </button>
+                                )}
+                              </Menu.Item>
+                            )}
+                            {["CHANNEL_PARTNER", "SALES_MANAGER"].includes(
+                              roleCode
+                            ) && (
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={(e: React.MouseEvent) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      setAssignmentModal({
+                                        isOpen: true,
+                                        projectId: project.id,
+                                        projectName: project.name,
+                                      });
+                                    }}
+                                    className={`${
+                                      active
+                                        ? "bg-purple-50 text-[var(--brand-700)]"
+                                        : "text-[var(--text-primary)]"
+                                    } flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold transition-colors cursor-pointer mt-0.5`}
+                                  >
+                                    <UserPlus size={13} />
+                                    <span>Assign Project Team</span>
+                                  </button>
+                                )}
+                              </Menu.Item>
+                            )}
+                          </div>
+                        )}
+                      </Menu.Items>
+                    </Transition>
+                  </Menu>
                 </div>
               </div>
 
@@ -318,6 +376,17 @@ export function SharedInventoryDashboard({
             const baseUrl = process.env.NEXT_PUBLIC_API_URL || "/api/proxy";
             loadProjects(baseUrl);
           }}
+        />
+      )}
+
+      {exportModal.isOpen && (
+        <ExportInventoryModal
+          isOpen={exportModal.isOpen}
+          onClose={() =>
+            setExportModal({ isOpen: false, projectId: "", projectName: "" })
+          }
+          projectId={exportModal.projectId}
+          projectName={exportModal.projectName}
         />
       )}
     </div>
