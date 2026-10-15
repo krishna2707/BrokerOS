@@ -1,9 +1,44 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { PrismaService } from '../../lib/database/prisma.service.js';
+import { DashboardAnalyticsEngineService } from '../core/dashboard-analytics-engine.service.js';
 
 @Injectable()
 export class SalesExecAnalyticsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private analyticsEngine?: DashboardAnalyticsEngineService,
+  ) {}
+
+  async getAllAnalytics(userId: string) {
+    if (this.analyticsEngine) {
+      return this.analyticsEngine.getOrCompute({
+        dashboardType: 'SALES_EXEC',
+        widgetKey: `analytics:${userId}`,
+        period: 'all',
+        ttlSeconds: 300,
+        compute: async () => {
+          const [financial, funnel, inventory, project, activity] =
+            await Promise.all([
+              this.getFinancialMetrics(userId),
+              this.getFunnelMetrics(userId),
+              this.getInventoryAnalytics(userId),
+              this.getProjectAnalytics(userId),
+              this.getActivityAnalytics(userId),
+            ]);
+          return { financial, funnel, inventory, project, activity };
+        },
+      });
+    }
+
+    const [financial, funnel, inventory, project, activity] = await Promise.all([
+      this.getFinancialMetrics(userId),
+      this.getFunnelMetrics(userId),
+      this.getInventoryAnalytics(userId),
+      this.getProjectAnalytics(userId),
+      this.getActivityAnalytics(userId),
+    ]);
+    return { financial, funnel, inventory, project, activity };
+  }
 
   async getFinancialMetrics(userId: string) {
     // We only care about units that are 'SOLD' for revenue, and 'RESERVED' + 'SOLD' for commission
