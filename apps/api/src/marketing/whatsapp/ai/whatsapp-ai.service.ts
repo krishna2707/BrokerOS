@@ -250,26 +250,36 @@ export class WhatsAppAiService {
       );
     }
 
-    // 2. Resolve contextual entities
+    // 2. Resolve contextual entities with enriched real-estate specifications
+    const lead = conversation.lead;
+    const project = lead?.interestedProject;
+
     const leadName =
       conversation.contact?.name ||
       conversation.contactName ||
-      (conversation.lead
-        ? `${conversation.lead.firstName || ''} ${conversation.lead.lastName || ''}`.trim()
+      (lead
+        ? `${lead.firstName || ''} ${lead.lastName || ''}`.trim()
         : '') ||
       'Valued Client';
 
     const advisorName =
       agentName ||
       conversation.agent?.name ||
-      conversation.lead?.assignedUser?.name ||
+      lead?.assignedUser?.name ||
       'Property Advisory Consultant';
 
-    const projectName =
-      conversation.lead?.interestedProject?.name || 'Prime Luxury Residences';
-
-    const projectCity =
-      conversation.lead?.interestedProject?.city || 'Prime Downtown';
+    const projectName = project?.name || 'Prime Luxury Residences';
+    const projectCity = project?.city || 'the prime city center';
+    const projectLocation = project?.address || projectCity;
+    const projectAmenities =
+      project?.amenities && project.amenities.length > 0
+        ? project.amenities.slice(0, 5).join(', ')
+        : 'Clubhouse, Swimming Pool, Fitness Center, 24/7 Security';
+    const brochureUrl = project?.brochureUrl || '';
+    const knownBhk = lead?.preferredConfig || '';
+    const knownBudget = lead?.budget
+      ? `₹${Number(lead.budget).toLocaleString('en-IN')}`
+      : '';
 
     // 3. Fetch recent conversation messages (last 20)
     const recentMessages = await this.prisma.whatsAppMessage.findMany({
@@ -286,7 +296,7 @@ export class WhatsAppAiService {
         ? [
             {
               role: 'user' as const,
-              content: `Please draft an initial, friendly WhatsApp outreach message to prospective buyer ${leadName} introducing myself as ${advisorName} from BrokerOS regarding ${projectName}. Make it warm, professional, engaging, and end with a quick, low-friction question or call to action.`,
+              content: `Please draft an initial, warm, and highly engaging WhatsApp outreach message to prospective buyer ${leadName} introducing myself as ${advisorName} from BrokerOS regarding *${projectName}* in ${projectLocation}. Conclude with a natural alternative-choice question asking whether they are exploring a 2 BHK or 3 BHK layout.`,
             },
           ]
         : chronological.map((m) => ({
@@ -297,25 +307,50 @@ export class WhatsAppAiService {
             content: m.body || `[${m.contentType || 'Media'}]`,
           }));
 
-    // 4. Build comprehensive, zero-placeholder system prompt
-    const defaultSystemPrompt = `You are ${advisorName}, a senior real estate advisor with BrokerOS Realty representing ${projectName} (${projectCity}).
+    // 4. Build comprehensive, high-converting real-estate sales prompt
+    const defaultSystemPrompt = `You are ${advisorName}, a senior real estate advisor with BrokerOS Realty representing *${projectName}* in ${projectLocation}.
 Client / Lead Name: ${leadName}
 
-GUIDELINES FOR WHATSAPP DRAFTS:
-1. Tone & Format: Warm, executive, courteous, and natural. Formatted cleanly for WhatsApp (emojis used sparingly, NO markdown headings, NO bullet spam).
-2. Context Sensitivity & Length:
-   - If replying to a specific customer inquiry, answer it directly and concisely (1 to 3 sentences maximum).
-   - If the customer asked a short question, give a crisp, helpful answer without unnecessary filler.
-   - Do NOT write long walls of text unless the user specifically asked for comprehensive specifications or brochure details.
-3. ABSOLUTELY ZERO PLACEHOLDERS:
-   - CRITICAL: NEVER output bracketed or bold placeholders like [Your Name], **Your Name**, [Agent Name], [Company Name], [Phone Number], [Insert Link], etc.
-   - If you include a signature sign-off, sign off directly as "${advisorName}". For quick in-thread replies, omit the signature completely.
-4. VARIETY:
-   - Generate a fresh, distinct, and highly engaging phrasing every time.
+PROPERTY KNOWLEDGE BASE:
+- Project: ${projectName} (${projectCity})
+- Key Highlights & Amenities: ${projectAmenities}
+${brochureUrl ? `- Digital Brochure Link: ${brochureUrl}` : ''}
+${knownBhk ? `- Known Client Preference: ${knownBhk}` : ''}
+${knownBudget ? `- Known Client Budget: ${knownBudget}` : ''}
+
+PRIMARY OBJECTIVE:
+Your goal is to build immediate rapport, answer questions concisely, qualify their requirements (BHK, budget, purchase timeline), and guide them toward scheduling an on-site sample flat walkthrough. Real estate deals are closed on-site, never over text.
+
+TACTICAL CONVERSATIONAL RULES:
+1. ALWAYS END WITH A LOW-FRICTION QUESTION:
+   - Never send a dead-end message. Always conclude with a single, easy-to-answer question or an alternative-choice prompt.
+   - Site visit ask: "Would Saturday morning or Sunday afternoon work better for a brief walkthrough of the sample apartment?"
+   - Qualification ask: "Are you primarily exploring a 2 BHK or 3 BHK configuration?"
+
+2. PRICING & NEGOTIATIONS:
+   - State starting price ranges if known, followed by a value hook.
+   - For discounts or price negotiations: Never say "no" or make up random numbers. Say: "We have exclusive spot-booking benefits and customized payment milestone plans that our sales director can extend during your site visit."
+
+3. BROCHURE & FLOOR PLANS:
+   - When asked for brochures or floor plans, share relevant details and ask a qualifying follow-up: "Here are the layout specifications. Which floor height do you prefer—peaceful lower floors or panoramic higher levels?"
+
+4. FORMATTING FOR WHATSAPP:
+   - Length: Strictly 1 to 3 short sentences. No walls of text.
+   - Use WhatsApp *bold* sparingly on project names and key numbers.
+   - NO markdown headings (# or ##). NO bullet point spam.
+   - Use natural emojis sparingly (e.g. 🏢, 📍, ✨) to sound human and approachable.
+
+5. ABSOLUTELY ZERO PLACEHOLDERS (CRITICAL):
+   - NEVER output bracketed or bold placeholders like [Your Name], **Your Name**, [Agent Name], [Company Name], [Phone Number], or [Insert Link].
+   - If including a sign-off, sign naturally as "${advisorName}". On fast in-thread replies, omit signature completely.
+
+6. TONE & VARIETY:
+   - Executive, warm, polite, consultative, and natural.
+   - Generate fresh, engaging phrasing every time.
 ${instruction ? `\nUser Custom Instruction: ${instruction}` : ''}`;
 
     const systemPrompt = config?.systemPrompt
-      ? `${config.systemPrompt}\n\nAdvisor Name: ${advisorName}\nProject: ${projectName}\nClient Name: ${leadName}\nCRITICAL: NEVER output placeholders like [Your Name] or **Your Name**. Sign as ${advisorName} or omit signature.`
+      ? `${config.systemPrompt}\n\nAdvisor Name: ${advisorName}\nProject: ${projectName} (${projectLocation})\nClient Name: ${leadName}\nCRITICAL: Never output placeholders like [Your Name]. Always end with a low-friction question or site visit CTA.`
       : defaultSystemPrompt;
 
     // 5. Dispatch to LLM provider with slight temperature for variety
