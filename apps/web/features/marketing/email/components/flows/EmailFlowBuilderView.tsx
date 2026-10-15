@@ -5,22 +5,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  ArrowLeft,
-  Save,
-  Plus,
-  Loader2,
-  Sparkles,
-  Play,
-  Layers,
-  Radio,
-  Globe,
-  History,
-} from 'lucide-react';
+import { Plus, Loader2, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Switch } from '@/components/ui/switch';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,13 +19,17 @@ import type { EmailFlow, CampaignItem } from '@/features/marketing/types';
 import type { EmailFlowNodeType, EmailFlowNode } from './builder/types';
 import { EMAIL_NODE_TYPES_META } from './builder/types';
 import { FlowNodeCard } from './builder/FlowNodeCard';
+import {
+  EmailFlowHeaderBar,
+  EmailFlowTriggerConfigCard,
+  EmailFlowSimulationModal,
+} from './builder-view';
 
 interface EmailFlowBuilderViewProps {
   id: string;
 }
 
 export function EmailFlowBuilderView({ id }: EmailFlowBuilderViewProps) {
-  const router = useRouter();
   const [flow, setFlow] = useState<EmailFlow | null>(null);
   const [campaigns, setCampaigns] = useState<CampaignItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,15 +149,15 @@ export function EmailFlowBuilderView({ id }: EmailFlowBuilderViewProps) {
         break;
       case 'send_email':
         defaultConfig = {
-          subject: 'Re: Your inquiry regarding {{project_name}}',
-          bodyHtml: '<p>Hello {{lead_name}},</p><p>Thank you for reaching out. Here are the requested property details and pricing highlights...</p>',
+          subject: 'Re: Inquiring about {{projectName}}',
+          bodyHtml: '<p>Hi {{firstName}},</p><p>Thank you for reaching out regarding {{projectName}}. We would be delighted to assist you with the brochure and floor plans.</p><p>Best regards,<br/>Skyline Realty Team</p>',
         };
         break;
       case 'ai_agent':
         defaultConfig = {
           provider: 'groq',
           model: 'openai/gpt-oss-120b',
-          instructions: 'Respond courteously, answering real estate pricing or scheduling questions, and recommend booking an on-site flat tour.',
+          instructions: 'Respond courteously and professionally, answering property pricing and scheduling queries, and offer to schedule an in-person site visit.',
           maxTurns: 3,
           stopIfHumanActive: true,
           handoffOnMax: true,
@@ -176,13 +166,13 @@ export function EmailFlowBuilderView({ id }: EmailFlowBuilderViewProps) {
       case 'condition':
         defaultConfig = {
           criteriaType: 'keywords',
-          keywords: 'visit, price, flat, tour, brochure',
+          keywords: 'visit, price, cost, schedule, brochure',
           branches: { yes: [], no: [] },
         };
         break;
       case 'add_tag':
         defaultConfig = {
-          tagName: existingTags[0]?.name || 'SITE_VISIT_REQ',
+          tagName: existingTags[0]?.name || 'INTERESTED_VISIT',
           color: existingTags[0]?.color || '#8B5CF6',
         };
         break;
@@ -322,15 +312,11 @@ export function EmailFlowBuilderView({ id }: EmailFlowBuilderViewProps) {
         }),
       });
 
-      const res = await fetch(`${baseUrl}/api/marketing/email/inbound/simulate`, {
+      const res = await fetch(`${baseUrl}/api/marketing/email/flows/${id}/simulate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          flowId: id,
-          leadEmail: 'prospect-tester@example.com',
-          senderEmail: 'sales@brokeros.com',
-          subject: 'Inquiry regarding property and visit',
           bodyText: testInput,
         }),
       });
@@ -363,234 +349,34 @@ export function EmailFlowBuilderView({ id }: EmailFlowBuilderViewProps) {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-16">
-      {/* ── Top Header (WhatsApp Visual Parity) ── */}
-      <header className="sticky top-0 z-20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border-default bg-bg-surface px-5 py-3.5 rounded-2xl shadow-xs">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <button
-            type="button"
-            onClick={() => router.push('/dashboard/marketing/email/flows')}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border-default bg-bg-surface text-text-muted hover:bg-bg-subtle hover:text-text-primary transition-colors shrink-0"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Flow bot name..."
-              className="text-base font-bold text-text-primary bg-transparent focus:bg-bg-subtle rounded px-1.5 py-0.5 focus:outline-none w-full max-w-md"
-            />
-            <p className="text-[11px] text-text-tertiary px-1.5">
-              {nodes.length} automation step{nodes.length !== 1 ? 's' : ''} in sequence
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 shrink-0">
-          {/* Run History Button */}
-          <button
-            type="button"
-            onClick={() => router.push(`/dashboard/marketing/email/flows/${id}/runs`)}
-            className="flex items-center gap-1.5 text-xs font-semibold text-text-muted hover:text-brand-600 transition-colors px-2.5 py-1.5 rounded-lg border border-border-default bg-bg-surface"
-          >
-            <History className="h-3.5 w-3.5" />
-            <span>Run History</span>
-          </button>
-
-          {/* Active / Draft Switch */}
-          <div className="flex items-center gap-2 rounded-lg border border-border-default bg-bg-subtle px-3 py-1 text-xs font-semibold">
-            <span>{status === 'active' ? 'Active' : 'Draft'}</span>
-            <Switch
-              checked={status === 'active'}
-              onCheckedChange={(v) => setStatus(v ? 'active' : 'draft')}
-            />
-          </div>
-
-          {/* Test Flow Button */}
-          <Button
-            onClick={() => setTestModalOpen(true)}
-            variant="outline"
-            size="sm"
-            className="gap-1.5 text-xs font-semibold h-8"
-          >
-            <Play className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Test Flow</span>
-          </Button>
-
-          {/* Save Button */}
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            size="sm"
-            className="bg-brand-600 text-white hover:bg-brand-700 text-xs h-8 font-semibold px-4"
-          >
-            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
-            <span>Save Flow</span>
-          </Button>
-        </div>
-      </header>
+      {/* ── Top Header ── */}
+      <EmailFlowHeaderBar
+        id={id}
+        name={name}
+        setName={setName}
+        nodeCount={nodes.length}
+        status={status}
+        setStatus={setStatus}
+        onOpenTestModal={() => setTestModalOpen(true)}
+        onSave={handleSave}
+        saving={saving}
+      />
 
       {/* ── Trigger & Scope Settings Card ── */}
-      <div className="rounded-2xl border border-brand-500/30 bg-bg-surface p-5 shadow-xs space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-500/10 text-brand-600 shrink-0">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600">
-              Trigger & Scope Settings
-            </span>
-            <h3 className="text-xs font-bold text-text-primary">
-              Inbound Prospect Email Reply Listener
-            </h3>
-          </div>
-        </div>
-
-        {/* Global vs Campaign Scoping */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-          <div
-            onClick={() => setIsGlobal(true)}
-            className={cn(
-              'p-3.5 rounded-xl border cursor-pointer transition-all',
-              isGlobal
-                ? 'border-brand-600 bg-brand-500/5 ring-1 ring-brand-600/30'
-                : 'border-border-default bg-bg-surface hover:border-border-hover',
-            )}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold text-text-primary flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-blue-500" />
-                <span>Global Scope (All Broadcasts)</span>
-              </span>
-              <input type="radio" checked={isGlobal} onChange={() => {}} className="text-brand-600" />
-            </div>
-            <p className="text-[11px] text-text-secondary">
-              Listens for replies across all present and future email campaigns.
-            </p>
-          </div>
-
-          <div
-            onClick={() => setIsGlobal(false)}
-            className={cn(
-              'p-3.5 rounded-xl border cursor-pointer transition-all',
-              !isGlobal
-                ? 'border-purple-600 bg-purple-500/5 ring-1 ring-purple-600/30'
-                : 'border-border-default bg-bg-surface hover:border-border-hover',
-            )}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold text-text-primary flex items-center gap-1.5">
-                <Radio className="w-3.5 h-3.5 text-purple-500" />
-                <span>Specific Campaigns Only</span>
-              </span>
-              <input type="radio" checked={!isGlobal} onChange={() => {}} className="text-purple-600" />
-            </div>
-            <p className="text-[11px] text-text-secondary">
-              Restrict this automation only to designated marketing campaigns.
-            </p>
-          </div>
-        </div>
-
-        {/* Campaign Selection Checkboxes (if not global) */}
-        {!isGlobal && (
-          <div className="p-3.5 rounded-xl bg-bg-subtle border border-border-default space-y-2.5">
-            <label className="block text-xs font-semibold text-text-secondary">
-              Designated Campaigns ({selectedCampaignIds.length} selected):
-            </label>
-            {campaigns.length === 0 ? (
-              <p className="text-xs text-text-tertiary">No campaigns found in database.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                {campaigns.map((c) => {
-                  const checked = selectedCampaignIds.includes(c.id);
-                  return (
-                    <label
-                      key={c.id}
-                      className="flex items-center gap-2 p-2 rounded-lg bg-bg-surface border border-border-subtle hover:border-border-default cursor-pointer text-xs"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedCampaignIds([...selectedCampaignIds, c.id]);
-                          } else {
-                            setSelectedCampaignIds(selectedCampaignIds.filter((id) => id !== c.id));
-                          }
-                        }}
-                        className="rounded text-brand-600 focus:ring-brand-500"
-                      />
-                      <span className="font-medium text-text-primary truncate">{c.title}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Trigger Type Selection */}
-        <div className="space-y-2.5 pt-1 border-t border-border-subtle">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <button
-              type="button"
-              onClick={() => setTriggerType('keyword_match')}
-              className={cn(
-                'p-2.5 rounded-xl border text-left text-xs transition-all',
-                triggerType === 'keyword_match'
-                  ? 'border-brand-600 bg-brand-500/5 font-semibold text-brand-700 dark:text-brand-400'
-                  : 'border-border-default text-text-secondary hover:border-border-hover',
-              )}
-            >
-              Keyword Match (Contains specific words)
-            </button>
-            <button
-              type="button"
-              onClick={() => setTriggerType('any_reply')}
-              className={cn(
-                'p-2.5 rounded-xl border text-left text-xs transition-all',
-                triggerType === 'any_reply'
-                  ? 'border-brand-600 bg-brand-500/5 font-semibold text-brand-700 dark:text-brand-400'
-                  : 'border-border-default text-text-secondary hover:border-border-hover',
-              )}
-            >
-              Any Inbound Reply (Catch-all)
-            </button>
-          </div>
-
-          {triggerType === 'keyword_match' && (
-            <div className="space-y-2 pt-1">
-              <label className="block text-xs font-semibold text-text-secondary">
-                Trigger Keywords (Type word & press Enter to add)
-              </label>
-              <div className="flex flex-wrap items-center gap-2 p-2 rounded-xl bg-bg-subtle border border-border-default min-h-[42px]">
-                {keywords.map((kw) => (
-                  <span
-                    key={kw}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-purple-500/10 text-purple-600 text-xs font-mono font-semibold"
-                  >
-                    <span>{kw}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveKeyword(kw)}
-                      className="hover:text-purple-800 text-sm leading-none"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-                <input
-                  value={newKeyword}
-                  onChange={(e) => setNewKeyword(e.target.value)}
-                  onKeyDown={handleAddKeyword}
-                  placeholder="e.g. visit, price, brochure, tour..."
-                  className="bg-transparent border-none outline-none text-xs flex-1 min-w-[130px] text-text-primary px-1"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <EmailFlowTriggerConfigCard
+        isGlobal={isGlobal}
+        setIsGlobal={setIsGlobal}
+        campaigns={campaigns}
+        selectedCampaignIds={selectedCampaignIds}
+        setSelectedCampaignIds={setSelectedCampaignIds}
+        triggerType={triggerType}
+        setTriggerType={setTriggerType}
+        keywords={keywords}
+        newKeyword={newKeyword}
+        setNewKeyword={setNewKeyword}
+        onAddKeyword={handleAddKeyword}
+        onRemoveKeyword={handleRemoveKeyword}
+      />
 
       {/* ── Action Nodes Canvas ── */}
       <div className="space-y-3.5">
@@ -626,7 +412,7 @@ export function EmailFlowBuilderView({ id }: EmailFlowBuilderViewProps) {
           </div>
         )}
 
-        {/* ── Add Node Dropdown (WhatsApp Parity) ── */}
+        {/* ── Add Node Dropdown ── */}
         <div className="flex justify-center pt-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -673,107 +459,15 @@ export function EmailFlowBuilderView({ id }: EmailFlowBuilderViewProps) {
       </div>
 
       {/* ── Test Simulator Modal ── */}
-      {testModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="bg-bg-surface border border-border-default rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-border-subtle pb-3">
-              <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
-                <Play className="w-4 h-4 text-emerald-500" />
-                <span>Simulate Inbound Prospect Reply</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setTestModalOpen(false)}
-                className="text-text-tertiary hover:text-text-primary text-base font-bold"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Inbound Reply Message Body:
-                </label>
-                <textarea
-                  rows={3}
-                  value={testInput}
-                  onChange={(e) => setTestInput(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-bg-subtle border border-border-default rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-500 font-sans"
-                />
-              </div>
-
-              <Button
-                onClick={handleRunTest}
-                disabled={testing || !testInput.trim()}
-                className="w-full gap-2 text-xs font-semibold"
-              >
-                {testing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                <span>Execute Simulation Test</span>
-              </Button>
-
-              {testResult && (
-                <div className="p-3.5 rounded-xl bg-bg-subtle border border-border-default space-y-3 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-text-primary">Simulation Result:</span>
-                    <span
-                      className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                        testResult.matchedFlowId && testResult.triggerMatched !== false
-                          ? 'bg-emerald-500/10 text-emerald-600'
-                          : 'bg-amber-500/10 text-amber-600'
-                      }`}
-                    >
-                      {testResult.matchedFlowId && testResult.triggerMatched !== false ? 'Flow Matched & Executed' : 'Trigger Not Matched'}
-                    </span>
-                  </div>
-
-                  {testResult.flowName && (
-                    <p className="text-[11px] text-text-secondary">
-                      <strong>Target Flow:</strong> {testResult.flowName}
-                    </p>
-                  )}
-
-                  {testResult.triggerReason && (
-                    <div className="p-2 rounded-lg bg-bg-surface border border-border-subtle text-[11px] text-text-secondary">
-                      <strong>Trigger Status:</strong> {testResult.triggerReason}
-                    </div>
-                  )}
-
-                  {testResult.actionsExecuted && testResult.actionsExecuted.length > 0 && (
-                    <div>
-                      <p className="text-[11px] font-semibold text-text-secondary mb-1">Execution Steps Timeline:</p>
-                      <div className="space-y-1">
-                        {testResult.actionsExecuted.map((act: string, i: number) => (
-                          <div key={i} className="flex items-start gap-1.5 text-[11px] text-text-primary bg-bg-surface p-1.5 rounded-lg border border-border-subtle">
-                            <span className="font-bold text-brand-600">✓</span>
-                            <span>{act}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {(testResult.renderedSubject || testResult.outboundReply || testResult.renderedBody) && (
-                    <div className="mt-2 pt-2 border-t border-border-subtle space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <p className="text-[11px] font-bold text-brand-600">Generated Email Response Preview:</p>
-                        {testResult.renderedSubject && (
-                          <span className="text-[10px] font-mono text-text-secondary bg-bg-surface px-1.5 py-0.5 rounded border border-border-subtle">
-                            Subject: {testResult.renderedSubject}
-                          </span>
-                        )}
-                      </div>
-                      <div className="p-3 rounded-xl bg-bg-surface border border-border-subtle text-xs whitespace-pre-wrap font-sans text-text-primary shadow-2xs">
-                        {testResult.outboundReply || testResult.renderedBody}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <EmailFlowSimulationModal
+        isOpen={testModalOpen}
+        onClose={() => setTestModalOpen(false)}
+        testInput={testInput}
+        setTestInput={setTestInput}
+        onRunTest={handleRunTest}
+        testing={testing}
+        testResult={testResult}
+      />
     </div>
   );
 }
