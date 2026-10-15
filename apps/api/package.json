@@ -48,6 +48,7 @@
     "@brokeros/int-sms-vonage": "workspace:*",
     "@brokeros/int-voice": "workspace:*",
     "@brokeros/int-whatsapp": "workspace:*",
+    "@brokeros/messaging": "workspace:*",
     "@brokeros/prisma": "workspace:*",
     "@brokeros/storage": "workspace:*",
     "@brokeros/types": "workspace:*",
@@ -134,6 +135,8 @@
       "^@brokeros/types$": "<rootDir>/../../../packages/types/src/index.ts",
       "^@brokeros/validators$": "<rootDir>/../../../packages/validators/src/index.ts",
       "^@brokeros/prisma$": "<rootDir>/../../../packages/prisma/src/index.ts",
+      "^@brokeros/messaging$": "<rootDir>/../../../packages/messaging/src/index.ts",
+      "^@brokeros/storage$": "<rootDir>/../../../packages/storage/src/index.ts",
       "^(\\.{1,2}/.*)\\.js$": "$1"
     }
   },
