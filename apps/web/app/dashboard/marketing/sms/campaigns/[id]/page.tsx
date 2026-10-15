@@ -13,8 +13,8 @@ import {
 } from "lucide-react";
 import { DashboardPageWrapper } from "@/components/dashboard/DashboardPageWrapper";
 import { Button } from "@/components/ui/Button";
-import { SmsFunnelAnalytics } from "@/features/marketing/components/SmsFunnelAnalytics";
-import { SmsRecipientActivityTable } from "@/features/marketing/components/SmsRecipientActivityTable";
+import { SmsFunnelAnalytics } from "@/features/marketing/sms/components/SmsFunnelAnalytics";
+import { SmsRecipientTable as SmsRecipientActivityTable } from "@/features/marketing/sms/components/SmsRecipientTable";
 import { CAMPAIGN_STATUS_CONFIG, SMS_PROVIDERS } from "@brokeros/constants";
 import type { SmsAnalyticsSummary, SmsRecipientItem } from "@/features/marketing/types";
 
