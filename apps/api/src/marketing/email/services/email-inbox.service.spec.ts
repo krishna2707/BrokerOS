@@ -83,6 +83,11 @@ describe('EmailInboxService', () => {
       expect(res.items).toHaveLength(1);
       expect(res.total).toBe(1);
       expect(res.totalPages).toBe(1);
+      expect(mockPrisma.emailConversation.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: [{ lastMessageAt: { sort: 'desc', nulls: 'last' } }, { updatedAt: 'desc' }],
+        }),
+      );
     });
   });
 

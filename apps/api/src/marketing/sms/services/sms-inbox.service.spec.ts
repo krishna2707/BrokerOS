@@ -81,6 +81,11 @@ describe('SmsInboxService', () => {
       });
       expect(res.items.length).toBe(1);
       expect(res.total).toBe(1);
+      expect(mockPrisma.smsConversation.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: [{ lastMessageAt: { sort: 'desc', nulls: 'last' } }, { updatedAt: 'desc' }],
+        }),
+      );
     });
   });
 

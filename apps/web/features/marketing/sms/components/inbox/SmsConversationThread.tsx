@@ -24,10 +24,20 @@ export const SmsConversationThread: React.FC<SmsConversationThreadProps> = ({
 }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
+  const lastThreadKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    // A new conversation (or first load) jumps straight to the bottom; later
+    // arrivals while reading stream smoothly. Scrolls the thread container
+    // only (never the page) and waits two frames so layout and images settle
+    // before measuring — the sync version fired too early and missed bottom.
+    const key = messages.length ? messages[0]!.id : null;
+    const fresh = key !== lastThreadKeyRef.current;
+    lastThreadKeyRef.current = key;
+    const el = scrollRef.current;
+    if (!el) return;
+    const run = () => el.scrollTo({ top: el.scrollHeight, behavior: fresh ? 'auto' : 'smooth' });
+    requestAnimationFrame(() => requestAnimationFrame(run));
   }, [messages]);
 
   return (

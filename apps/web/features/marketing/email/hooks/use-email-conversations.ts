@@ -62,19 +62,22 @@ export function useEmailConversations(options?: UseEmailConversationsOptions) {
     loadConversations();
   }, [loadConversations]);
 
+  // Missing timestamps — and malformed ones that parse to NaN — sort as oldest.
+  const timeOrZero = (value: unknown): number => {
+    if (value === null || value === undefined) return 0;
+    const t = new Date(value as string).getTime();
+    return Number.isNaN(t) ? 0 : t;
+  };
+
   const handleLiveConversationUpdate = useCallback((updated: EmailConversation) => {
     setConversations((prev) => {
-      const idx = prev.findIndex((c) => c.id === updated.id);
-      if (idx >= 0) {
-        const next = [...prev];
-        next[idx] = { ...next[idx], ...updated };
-        return next.sort((a, b) => {
-          const tA = new Date(a.lastMessageAt || a.updatedAt).getTime();
-          const tB = new Date(b.lastMessageAt || b.updatedAt).getTime();
-          return tB - tA;
-        });
-      }
-      return [updated, ...prev];
+      const previous = prev.find((c) => c.id === updated.id);
+      const next = prev.filter((c) => c.id !== updated.id);
+      return [{ ...previous, ...updated }, ...next].sort((a, b) => {
+        const tA = timeOrZero(a.lastMessageAt) || timeOrZero(a.updatedAt);
+        const tB = timeOrZero(b.lastMessageAt) || timeOrZero(b.updatedAt);
+        return tB - tA;
+      });
     });
   }, []);
 
