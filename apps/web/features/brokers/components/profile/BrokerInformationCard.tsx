@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Card } from "@/components/ui/Card";
 import {
@@ -15,15 +17,24 @@ import {
   UserCheck,
   Navigation,
 } from "lucide-react";
+import type { BrokerDto, UserSummaryDto } from "@brokeros/types";
 
 interface BrokerInformationCardProps {
-  broker: any;
+  broker: BrokerDto & { alternatePhone?: string | null; address?: string | null };
   isEditingBrokerInfo: boolean;
   setIsEditingBrokerInfo: (val: boolean) => void;
-  brokerInfoData: any;
+  brokerInfoData: {
+    companyName: string;
+    reraNumber: string;
+    gstNumber: string;
+    serviceAreas: string;
+    sourcingManagerId: string;
+    city: string;
+    address: string;
+  };
   setBrokerInfoData: (data: any) => void;
   handleBrokerInfoSave: () => void;
-  availableSourcingManagers: any[];
+  availableSourcingManagers: UserSummaryDto[];
   isCP?: boolean;
 }
 
@@ -64,10 +75,9 @@ export function BrokerInformationCard({
                     companyName: broker.companyName || "",
                     reraNumber: broker.reraNumber || "",
                     gstNumber: broker.gstNumber || "",
-                    serviceAreas:
-                      broker.serviceAreas && broker.serviceAreas.length > 0
-                        ? broker.serviceAreas.join(", ")
-                        : "",
+                    serviceAreas: Array.isArray(broker.serviceAreas)
+                      ? broker.serviceAreas.join(", ")
+                      : (broker.serviceAreas || ""),
                     sourcingManagerId: broker.sourcingManagerId || "",
                     city: broker.city || "",
                     address: broker.address || "",
@@ -148,14 +158,14 @@ export function BrokerInformationCard({
               <span
                 className="font-semibold text-[var(--text-primary)] text-right max-w-[150px] truncate"
                 title={
-                  broker.serviceAreas && broker.serviceAreas.length > 0
+                  Array.isArray(broker.serviceAreas)
                     ? broker.serviceAreas.join(", ")
-                    : "—"
+                    : (broker.serviceAreas || "—")
                 }
               >
-                {broker.serviceAreas && broker.serviceAreas.length > 0
+                {Array.isArray(broker.serviceAreas)
                   ? broker.serviceAreas.join(", ")
-                  : "—"}
+                  : (broker.serviceAreas || "—")}
               </span>
             </div>
 
