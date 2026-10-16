@@ -421,7 +421,7 @@ export class EmailInboxService {
       this.prisma.emailConversation.findMany({
         where,
         include: EMAIL_CONVERSATION_INCLUDE,
-        orderBy: [{ lastMessageAt: 'desc' }, { updatedAt: 'desc' }],
+        orderBy: [{ lastMessageAt: { sort: 'desc', nulls: 'last' } }, { updatedAt: 'desc' }],
         skip,
         take: limit,
       }),

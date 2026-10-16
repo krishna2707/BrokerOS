@@ -24,10 +24,16 @@ export const EmailConversationThread: React.FC<EmailConversationThreadProps> = (
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const lastThreadKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    // A new conversation (or first load) jumps straight to the bottom; later
+    // arrivals while reading stream smoothly so layout and images settle.
+    const key = messages.length ? `${messages[0]!.id}:${messages.length}` : null;
+    const fresh = key !== lastThreadKeyRef.current;
+    lastThreadKeyRef.current = key;
+    messagesEndRef.current?.scrollIntoView({ behavior: fresh ? 'auto' : 'smooth', block: 'end' });
   }, [messages]);
 
   return (
@@ -61,6 +67,7 @@ export const EmailConversationThread: React.FC<EmailConversationThreadProps> = (
           />
         ))
       )}
+      <div ref={messagesEndRef} />
     </div>
   );
 };

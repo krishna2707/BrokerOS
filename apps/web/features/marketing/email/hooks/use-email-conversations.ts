@@ -64,17 +64,21 @@ export function useEmailConversations(options?: UseEmailConversationsOptions) {
 
   const handleLiveConversationUpdate = useCallback((updated: EmailConversation) => {
     setConversations((prev) => {
-      const idx = prev.findIndex((c) => c.id === updated.id);
-      if (idx >= 0) {
-        const next = [...prev];
-        next[idx] = { ...next[idx], ...updated };
-        return next.sort((a, b) => {
-          const tA = new Date(a.lastMessageAt || a.updatedAt).getTime();
-          const tB = new Date(b.lastMessageAt || b.updatedAt).getTime();
-          return tB - tA;
-        });
-      }
-      return [updated, ...prev];
+      const previous = prev.find((c) => c.id === updated.id);
+      const next = prev.filter((c) => c.id !== updated.id);
+      return [{ ...previous, ...updated }, ...next].sort((a, b) => {
+        const tA = a.lastMessageAt
+          ? new Date(a.lastMessageAt).getTime()
+          : a.updatedAt
+            ? new Date(a.updatedAt).getTime()
+            : 0;
+        const tB = b.lastMessageAt
+          ? new Date(b.lastMessageAt).getTime()
+          : b.updatedAt
+            ? new Date(b.updatedAt).getTime()
+            : 0;
+        return tB - tA;
+      });
     });
   }, []);
 

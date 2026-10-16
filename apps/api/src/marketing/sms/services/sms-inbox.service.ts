@@ -410,7 +410,7 @@ export class SmsInboxService {
       this.prisma.smsConversation.findMany({
         where,
         include: SMS_CONVERSATION_INCLUDE,
-        orderBy: [{ lastMessageAt: 'desc' }, { updatedAt: 'desc' }],
+        orderBy: [{ lastMessageAt: { sort: 'desc', nulls: 'last' } }, { updatedAt: 'desc' }],
         skip,
         take: limit,
       }),
