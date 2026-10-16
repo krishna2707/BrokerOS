@@ -93,7 +93,7 @@ export default function SchedulesTimeline({ siteVisits, followUps, onEditSiteVis
                     )}
                   </View>
                   <Text className="text-xs text-gray-500 mt-1 mb-1">
-                    <Feather name="calendar" size={10} /> {new Date(sv.scheduledDate).toLocaleString()}
+                    <Feather name="calendar" size={10} /> {new Date(sv.scheduledDate || '').toLocaleString()}
                   </Text>
                   {sv.arrivedAt && (
                     <View className="mt-1">
@@ -150,7 +150,7 @@ export default function SchedulesTimeline({ siteVisits, followUps, onEditSiteVis
                     )}
                   </View>
                   <Text className="text-xs text-gray-500 mt-1 mb-1">
-                    <Feather name="clock" size={10} /> {new Date(fu.scheduledDate).toLocaleString()}
+                    <Feather name="clock" size={10} /> {new Date(fu.scheduledDate || fu.scheduledAt || '').toLocaleString()}
                   </Text>
                   {fu.remarks && (
                     <Text className="text-xs text-gray-600 mt-1 border-t border-gray-100 pt-1">{fu.remarks}</Text>
