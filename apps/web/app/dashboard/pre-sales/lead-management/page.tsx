@@ -3,7 +3,7 @@
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LeadTableClient } from "@/features/leads/components/tables/LeadTableClient";
+import { LeadTableClient } from "@/features/leads";
 
 export default function PreSalesLeadManagement() {
   const router = useRouter();
