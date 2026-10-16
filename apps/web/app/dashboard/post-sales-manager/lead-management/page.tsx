@@ -3,7 +3,7 @@
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { PostSalesLeadTableClient } from "@/features/leads/components/tables/PostSalesLeadTableClient";
+import { PostSalesLeadTableClient } from "@/features/leads";
 
 export default function PostSalesLeadManagement() {
   const router = useRouter();
