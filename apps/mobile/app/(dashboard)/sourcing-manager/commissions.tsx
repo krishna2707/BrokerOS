@@ -4,7 +4,7 @@ import Toast from 'react-native-toast-message';
 import { Feather } from '@expo/vector-icons';
 import { CommissionCompleteModal } from '@/components/commissions/CommissionCompleteModal';
 import { useFocusEffect } from 'expo-router';
-import { authClient } from '../../../../lib/auth-client';
+import { authClient } from '@/lib/auth-client';
 
 export default function CommissionsScreen() {
   const [commissions, setCommissions] = useState<any[]>([]);
