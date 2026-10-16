@@ -2,7 +2,7 @@ import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, TextInput } 
 import { Feather } from '@expo/vector-icons';
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { authClient } from '../../../../lib/auth-client';
+import { authClient } from '@/lib/auth-client';
 
 export default function BookingScreen() {
   const [bookings, setBookings] = useState<any[]>([]);

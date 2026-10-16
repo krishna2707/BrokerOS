@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
 import { authClient } from '@/lib/auth-client';
-import { FinancialOverview } from '../../sales-executive/analytics/components/FinancialOverview';
-import { ConversionFunnel } from '../../sales-executive/analytics/components/ConversionFunnel';
-import { TowerHeatmap } from '../../sales-executive/analytics/components/TowerHeatmap';
+import { FinancialOverview } from '@/components/dashboards/sales-executive/analytics/FinancialOverview';
+import { ConversionFunnel } from '@/components/dashboards/sales-executive/analytics/ConversionFunnel';
+import { TowerHeatmap } from '@/components/dashboards/sales-executive/analytics/TowerHeatmap';
 import { SharedLeaderboard } from '@/components/shared/SharedLeaderboard';
-import { DetailedMetricsGrid } from './components/DetailedMetricsGrid';
+import { DetailedMetricsGrid } from '@/components/dashboards/sales-manager/analytics/DetailedMetricsGrid';
 import { Users, Award } from 'lucide-react-native';
 import { Feather } from '@expo/vector-icons';
 import { exportAnalyticsHtmlMobile } from '@/lib/export-utils';
@@ -111,7 +111,7 @@ export default function SalesManagerAnalyticsScreen() {
           <Text className="text-3xl font-extrabold text-slate-900 tracking-tight">Team Analytics</Text>
         </View>
         <Text className="text-sm font-medium text-slate-500">
-          Track your team's aggregate revenue, pipeline conversion, and project inventory velocity.
+          Track your team&apos;s aggregate revenue, pipeline conversion, and project inventory velocity.
         </Text>
       </View>
 
