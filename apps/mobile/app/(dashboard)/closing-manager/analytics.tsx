@@ -1,8 +1,8 @@
 import { View, Text, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { useEffect, useState, useCallback } from 'react';
-import { authClient } from '../../../../lib/auth-client';
-import { exportAnalyticsHtmlMobile } from '../../../../lib/export-utils';
+import { authClient } from '@/lib/auth-client';
+import { exportAnalyticsHtmlMobile } from '@/lib/export-utils';
 
 export default function ClosingAnalyticsScreen() {
   const [timeRange, setTimeRange] = useState("all-time");
