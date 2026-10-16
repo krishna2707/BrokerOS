@@ -22,12 +22,13 @@ import {
   Bell,
   MessageSquare,
 } from 'lucide-react-native';
+import type { SystemRoleCode } from '@brokeros/constants';
 
 export type ScreenDefinition = {
   name: string;
   title: string;
   icon: string;
-  roles: string[];
+  roles: (SystemRoleCode | string)[];
 };
 
 export type NavLinkItem = {
@@ -92,7 +93,7 @@ export const ALL_POSSIBLE_SCREENS: ScreenDefinition[] = [
   { name: 'pre-sales/settings', title: 'Settings', icon: 'settings', roles: ['PRE_SALES'] },
   { name: 'pre-sales-manager/index', title: 'Overview', icon: 'layout', roles: ['PRE_SALES_MANAGER'] },
   { name: 'pre-sales-manager/lead-management', title: 'Leads', icon: 'list', roles: ['PRE_SALES_MANAGER'] },
-  { name: 'pre-sales-manager/employees', title: 'Employees', icon: 'users', roles: ['PRE_SALES_MANAGER'] },
+  { name: 'pre-sales-manager/employees/index', title: 'Employees', icon: 'users', roles: ['PRE_SALES_MANAGER'] },
   { name: 'pre-sales-manager/employees/[employeeId]', title: 'Employee Details', icon: 'user', roles: ['PRE_SALES_MANAGER'] },
   { name: 'pre-sales-manager/new-leads', title: 'New Leads', icon: 'star', roles: ['PRE_SALES_MANAGER'] },
   { name: 'pre-sales-manager/analytics', title: 'Analytics', icon: 'bar-chart-2', roles: ['PRE_SALES_MANAGER'] },
@@ -100,31 +101,30 @@ export const ALL_POSSIBLE_SCREENS: ScreenDefinition[] = [
   { name: 'sales-executive/index', title: 'Dashboard', icon: 'layout', roles: ['SALES_EXECUTIVE'] },
   { name: 'sales-executive/lead-management', title: 'Leads', icon: 'list', roles: ['SALES_EXECUTIVE'] },
   { name: 'sales-executive/lead-management/[id]', title: 'Lead Profile', icon: 'user', roles: ['SALES_EXECUTIVE'] },
-  { name: 'sales-executive/approval/index', title: 'Approval', icon: 'check-circle', roles: ['SALES_EXECUTIVE'] },
-  { name: 'sales-executive/booking/index', title: 'Booking', icon: 'calendar', roles: ['SALES_EXECUTIVE'] },
-  { name: 'sales-executive/more/index', title: 'More', icon: 'menu', roles: ['SALES_EXECUTIVE'] },
+  { name: 'sales-executive/approval', title: 'Approval', icon: 'check-circle', roles: ['SALES_EXECUTIVE'] },
+  { name: 'sales-executive/booking', title: 'Booking', icon: 'calendar', roles: ['SALES_EXECUTIVE'] },
+  { name: 'sales-executive/more', title: 'More', icon: 'menu', roles: ['SALES_EXECUTIVE'] },
   { name: 'sales-executive/inventory/index', title: 'Inventory', icon: 'package', roles: ['SALES_EXECUTIVE'] },
   { name: 'sales-executive/inventory/[projectId]', title: 'Project Details', icon: 'package', roles: ['SALES_EXECUTIVE'] },
-  { name: 'sales-executive/analytics/index', title: 'Analytics', icon: 'pie-chart', roles: ['SALES_EXECUTIVE'] },
-  { name: 'sales-executive/settings/index', title: 'Settings', icon: 'settings', roles: ['SALES_EXECUTIVE'] },
+  { name: 'sales-executive/analytics', title: 'Analytics', icon: 'pie-chart', roles: ['SALES_EXECUTIVE'] },
+  { name: 'sales-executive/settings', title: 'Settings', icon: 'settings', roles: ['SALES_EXECUTIVE'] },
   { name: 'sales-manager/index', title: 'Overview', icon: 'layout', roles: ['SALES_MANAGER'] },
   { name: 'sales-manager/employees/index', title: 'Employees', icon: 'users', roles: ['SALES_MANAGER'] },
   { name: 'sales-manager/employees/[employeeId]', title: 'Employee Details', icon: 'user', roles: ['SALES_MANAGER'] },
   { name: 'sales-manager/lead-management/index', title: 'Leads', icon: 'list', roles: ['SALES_MANAGER'] },
-  { name: 'sales-manager/approval/index', title: 'Approval', icon: 'check-circle', roles: ['SALES_MANAGER'] },
-  { name: 'sales-manager/more/index', title: 'More', icon: 'menu', roles: ['SALES_MANAGER'] },
+  { name: 'sales-manager/approval', title: 'Approval', icon: 'check-circle', roles: ['SALES_MANAGER'] },
+  { name: 'sales-manager/more', title: 'More', icon: 'menu', roles: ['SALES_MANAGER'] },
   { name: 'sales-manager/inventory/index', title: 'Inventory', icon: 'package', roles: ['SALES_MANAGER'] },
   { name: 'sales-manager/inventory/[projectId]', title: 'Project Details', icon: 'package', roles: ['SALES_MANAGER'] },
-  { name: 'sales-manager/booking/index', title: 'Booking', icon: 'calendar', roles: ['SALES_MANAGER'] },
-  { name: 'sales-manager/analytics/index', title: 'Analytics', icon: 'pie-chart', roles: ['SALES_MANAGER'] },
-  { name: 'sales-manager/settings/index', title: 'Settings', icon: 'settings', roles: ['SALES_MANAGER'] },
-  { name: 'sales/index', title: 'Sales', icon: 'briefcase', roles: ['SALES_EXECUTIVE'] },
+  { name: 'sales-manager/booking', title: 'Booking', icon: 'calendar', roles: ['SALES_MANAGER'] },
+  { name: 'sales-manager/analytics', title: 'Analytics', icon: 'pie-chart', roles: ['SALES_MANAGER'] },
+  { name: 'sales-manager/settings', title: 'Settings', icon: 'settings', roles: ['SALES_MANAGER'] },
   { name: 'post-sales/index', title: 'Overview', icon: 'layout', roles: ['POST_SALES'] },
   { name: 'post-sales/lead-management', title: 'Leads', icon: 'list', roles: ['POST_SALES'] },
   { name: 'post-sales/inventory/index', title: 'Inventory', icon: 'package', roles: ['POST_SALES'] },
   { name: 'post-sales/inventory/[projectId]', title: 'Project Details', icon: 'package', roles: ['POST_SALES'] },
-  { name: 'post-sales/commissions/index', title: 'Commissions', icon: 'credit-card', roles: ['POST_SALES'] },
-  { name: 'post-sales/more/index', title: 'More', icon: 'menu', roles: ['POST_SALES'] },
+  { name: 'post-sales/commissions', title: 'Commissions', icon: 'credit-card', roles: ['POST_SALES'] },
+  { name: 'post-sales/more', title: 'More', icon: 'menu', roles: ['POST_SALES'] },
   { name: 'post-sales/handover', title: 'Handover', icon: 'clipboard', roles: ['POST_SALES'] },
   { name: 'post-sales/analytics', title: 'Analytics', icon: 'pie-chart', roles: ['POST_SALES'] },
   { name: 'post-sales/settings', title: 'Settings', icon: 'settings', roles: ['POST_SALES'] },
@@ -134,8 +134,8 @@ export const ALL_POSSIBLE_SCREENS: ScreenDefinition[] = [
   { name: 'post-sales-manager/lead-management', title: 'Leads', icon: 'list', roles: ['POST_SALES_MANAGER'] },
   { name: 'post-sales-manager/inventory/index', title: 'Inventory', icon: 'package', roles: ['POST_SALES_MANAGER'] },
   { name: 'post-sales-manager/inventory/[projectId]', title: 'Project Details', icon: 'package', roles: ['POST_SALES_MANAGER'] },
-  { name: 'post-sales-manager/commissions/index', title: 'Commissions', icon: 'credit-card', roles: ['POST_SALES_MANAGER'] },
-  { name: 'post-sales-manager/more/index', title: 'More', icon: 'menu', roles: ['POST_SALES_MANAGER'] },
+  { name: 'post-sales-manager/commissions', title: 'Commissions', icon: 'credit-card', roles: ['POST_SALES_MANAGER'] },
+  { name: 'post-sales-manager/more', title: 'More', icon: 'menu', roles: ['POST_SALES_MANAGER'] },
   { name: 'post-sales-manager/handover', title: 'Handover', icon: 'clipboard', roles: ['POST_SALES_MANAGER'] },
   { name: 'post-sales-manager/analytics', title: 'Analytics', icon: 'pie-chart', roles: ['POST_SALES_MANAGER'] },
   { name: 'post-sales-manager/settings', title: 'Settings', icon: 'settings', roles: ['POST_SALES_MANAGER'] },
@@ -145,30 +145,30 @@ export const ALL_POSSIBLE_SCREENS: ScreenDefinition[] = [
   { name: 'admin/index', title: 'Admin', icon: 'settings', roles: ['ADMIN'] },
   { name: 'sourcing-manager/index', title: 'Overview', icon: 'layout', roles: ['SOURCING_MANAGER'] },
   { name: 'sourcing-manager/broker-management/index', title: 'Brokers', icon: 'users', roles: ['SOURCING_MANAGER'] },
-  { name: 'sourcing-manager/commissions/index', title: 'Commissions', icon: 'dollar-sign', roles: ['SOURCING_MANAGER'] },
+  { name: 'sourcing-manager/commissions', title: 'Commissions', icon: 'dollar-sign', roles: ['SOURCING_MANAGER'] },
   { name: 'sourcing-manager/inventory/index', title: 'Inventory', icon: 'package', roles: ['SOURCING_MANAGER'] },
   { name: 'sourcing-manager/inventory/[projectId]', title: 'Project Details', icon: 'package', roles: ['SOURCING_MANAGER'] },
-  { name: 'sourcing-manager/analytics/index', title: 'Analytics', icon: 'pie-chart', roles: ['SOURCING_MANAGER'] },
-  { name: 'sourcing-manager/settings/index', title: 'Settings', icon: 'settings', roles: ['SOURCING_MANAGER'] },
+  { name: 'sourcing-manager/analytics', title: 'Analytics', icon: 'pie-chart', roles: ['SOURCING_MANAGER'] },
+  { name: 'sourcing-manager/settings', title: 'Settings', icon: 'settings', roles: ['SOURCING_MANAGER'] },
   { name: 'closing-manager/index', title: 'Overview', icon: 'layout', roles: ['CLOSING_MANAGER'] },
   { name: 'closing-manager/inventory/index', title: 'Inventory', icon: 'package', roles: ['CLOSING_MANAGER'] },
   { name: 'closing-manager/inventory/[projectId]', title: 'Project Details', icon: 'package', roles: ['CLOSING_MANAGER'] },
   { name: 'closing-manager/lead-management/index', title: 'Leads', icon: 'list', roles: ['CLOSING_MANAGER'] },
-  { name: 'closing-manager/more/index', title: 'More', icon: 'menu', roles: ['CLOSING_MANAGER'] },
+  { name: 'closing-manager/more', title: 'More', icon: 'menu', roles: ['CLOSING_MANAGER'] },
   { name: 'closing-manager/broker-management/index', title: 'Brokers', icon: 'users', roles: ['CLOSING_MANAGER'] },
-  { name: 'closing-manager/handover/index', title: 'Handover', icon: 'clipboard', roles: ['CLOSING_MANAGER'] },
-  { name: 'closing-manager/analytics/index', title: 'Analytics', icon: 'pie-chart', roles: ['CLOSING_MANAGER'] },
-  { name: 'closing-manager/settings/index', title: 'Settings', icon: 'settings', roles: ['CLOSING_MANAGER'] },
+  { name: 'closing-manager/handover', title: 'Handover', icon: 'clipboard', roles: ['CLOSING_MANAGER'] },
+  { name: 'closing-manager/analytics', title: 'Analytics', icon: 'pie-chart', roles: ['CLOSING_MANAGER'] },
+  { name: 'closing-manager/settings', title: 'Settings', icon: 'settings', roles: ['CLOSING_MANAGER'] },
   { name: 'channel-partner/index', title: 'Overview', icon: 'layout', roles: ['CHANNEL_PARTNER'] },
   { name: 'channel-partner/customer-management/index', title: 'Customers', icon: 'users', roles: ['CHANNEL_PARTNER'] },
   { name: 'channel-partner/employees/index', title: 'Employees', icon: 'users', roles: ['CHANNEL_PARTNER'] },
   { name: 'channel-partner/employees/[employeeId]', title: 'Employee Details', icon: 'user', roles: ['CHANNEL_PARTNER'] },
-  { name: 'channel-partner/more/index', title: 'More', icon: 'menu', roles: ['CHANNEL_PARTNER'] },
+  { name: 'channel-partner/more', title: 'More', icon: 'menu', roles: ['CHANNEL_PARTNER'] },
   { name: 'channel-partner/inventory/index', title: 'Inventory', icon: 'package', roles: ['CHANNEL_PARTNER'] },
   { name: 'channel-partner/inventory/[projectId]', title: 'Project Details', icon: 'package', roles: ['CHANNEL_PARTNER'] },
   { name: 'channel-partner/broker-management/index', title: 'Brokers', icon: 'users', roles: ['CHANNEL_PARTNER'] },
-  { name: 'channel-partner/analytics/index', title: 'Analytics', icon: 'pie-chart', roles: ['CHANNEL_PARTNER'] },
-  { name: 'channel-partner/settings/index', title: 'Settings', icon: 'settings', roles: ['CHANNEL_PARTNER'] },
+  { name: 'channel-partner/analytics', title: 'Analytics', icon: 'pie-chart', roles: ['CHANNEL_PARTNER'] },
+  { name: 'channel-partner/settings', title: 'Settings', icon: 'settings', roles: ['CHANNEL_PARTNER'] },
   { name: 'index', title: 'Dashboard', icon: 'layout', roles: [] },
   { name: 'notifications', title: 'Notifications', icon: 'bell', roles: [] },
   { name: 'chat/index', title: 'Messages', icon: 'message-circle', roles: [] },
@@ -188,7 +188,7 @@ export function getNavLinksForRole(userRole: string): NavLinkItem[] {
       return [
         { name: 'pre-sales-manager/index', title: 'Overview', icon: 'layout' },
         { name: 'pre-sales-manager/lead-management', title: 'Leads', icon: 'list' },
-        { name: 'pre-sales-manager/employees', title: 'Employees', icon: 'users' },
+        { name: 'pre-sales-manager/employees/index', title: 'Employees', icon: 'users' },
         { name: 'pre-sales-manager/new-leads', title: 'New Leads', icon: 'star' },
         { name: 'pre-sales-manager/analytics', title: 'Analytics', icon: 'bar-chart-2' },
         { name: 'pre-sales-manager/settings', title: 'Settings', icon: 'settings' },
@@ -197,25 +197,25 @@ export function getNavLinksForRole(userRole: string): NavLinkItem[] {
       return [
         { name: 'sales-executive/index', title: 'Dashboard', icon: 'layout' },
         { name: 'sales-executive/lead-management', title: 'Leads', icon: 'list' },
-        { name: 'sales-executive/approval/index', title: 'Approval', icon: 'check-circle' },
-        { name: 'sales-executive/booking/index', title: 'Booking', icon: 'calendar' },
-        { name: 'sales-executive/more/index', title: 'More', icon: 'menu' },
+        { name: 'sales-executive/approval', title: 'Approval', icon: 'check-circle' },
+        { name: 'sales-executive/booking', title: 'Booking', icon: 'calendar' },
+        { name: 'sales-executive/more', title: 'More', icon: 'menu' },
       ];
     case 'SALES_MANAGER':
       return [
         { name: 'sales-manager/index', title: 'Dashboard', icon: 'layout' },
         { name: 'sales-manager/employees/index', title: 'Employees', icon: 'users' },
         { name: 'sales-manager/lead-management/index', title: 'Leads', icon: 'list' },
-        { name: 'sales-manager/approval/index', title: 'Approval', icon: 'check-circle' },
-        { name: 'sales-manager/more/index', title: 'More', icon: 'menu' },
+        { name: 'sales-manager/approval', title: 'Approval', icon: 'check-circle' },
+        { name: 'sales-manager/more', title: 'More', icon: 'menu' },
       ];
     case 'POST_SALES':
       return [
         { name: 'post-sales/index', title: 'Overview', icon: 'layout' },
         { name: 'post-sales/lead-management', title: 'Leads', icon: 'list' },
         { name: 'post-sales/inventory/index', title: 'Inventory', icon: 'package' },
-        { name: 'post-sales/commissions/index', title: 'Commissions', icon: 'credit-card' },
-        { name: 'post-sales/more/index', title: 'More', icon: 'menu' },
+        { name: 'post-sales/commissions', title: 'Commissions', icon: 'credit-card' },
+        { name: 'post-sales/more', title: 'More', icon: 'menu' },
       ];
     case 'POST_SALES_MANAGER':
       return [
@@ -223,30 +223,30 @@ export function getNavLinksForRole(userRole: string): NavLinkItem[] {
         { name: 'post-sales-manager/employees/index', title: 'Employees', icon: 'users' },
         { name: 'post-sales-manager/lead-management', title: 'Leads', icon: 'list' },
         { name: 'post-sales-manager/inventory/index', title: 'Inventory', icon: 'package' },
-        { name: 'post-sales-manager/more/index', title: 'More', icon: 'menu' },
+        { name: 'post-sales-manager/more', title: 'More', icon: 'menu' },
       ];
     case 'SOURCING_MANAGER':
       return [
         { name: 'sourcing-manager/index', title: 'Overview', icon: 'layout' },
         { name: 'sourcing-manager/broker-management/index', title: 'Brokers', icon: 'users' },
-        { name: 'sourcing-manager/commissions/index', title: 'Commissions', icon: 'dollar-sign' },
+        { name: 'sourcing-manager/commissions', title: 'Commissions', icon: 'dollar-sign' },
         { name: 'sourcing-manager/inventory/index', title: 'Inventory', icon: 'package' },
-        { name: 'sourcing-manager/analytics/index', title: 'Analytics', icon: 'pie-chart' },
-        { name: 'sourcing-manager/settings/index', title: 'Settings', icon: 'settings' },
+        { name: 'sourcing-manager/analytics', title: 'Analytics', icon: 'pie-chart' },
+        { name: 'sourcing-manager/settings', title: 'Settings', icon: 'settings' },
       ];
     case 'CLOSING_MANAGER':
       return [
         { name: 'closing-manager/index', title: 'Overview', icon: 'layout' },
         { name: 'closing-manager/inventory/index', title: 'Inventory', icon: 'package' },
         { name: 'closing-manager/lead-management/index', title: 'Leads', icon: 'list' },
-        { name: 'closing-manager/more/index', title: 'More', icon: 'menu' },
+        { name: 'closing-manager/more', title: 'More', icon: 'menu' },
       ];
     case 'CHANNEL_PARTNER':
       return [
         { name: 'channel-partner/index', title: 'Overview', icon: 'layout' },
         { name: 'channel-partner/customer-management/index', title: 'Customers', icon: 'users' },
         { name: 'channel-partner/employees/index', title: 'Employees', icon: 'users' },
-        { name: 'channel-partner/more/index', title: 'More', icon: 'menu' },
+        { name: 'channel-partner/more', title: 'More', icon: 'menu' },
       ];
     default:
       return [];
