@@ -3,10 +3,11 @@ import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import { authClient } from '../../../lib/auth-client';
+import type { UnitDto, BookingDto, BrokerageRecordDto } from '@brokeros/types';
 
 interface UnitDetailsPostSalesProps {
-  unit: any;
-  bookingData?: any;
+  unit: UnitDto;
+  bookingData?: BookingDto | null;
   handleCancelBooking?: () => void;
   isCancelling?: boolean;
   onUpdateTimelinePress: () => void;
@@ -20,7 +21,7 @@ export function UnitDetailsPostSales({ unit, bookingData, handleCancelBooking, i
   ].includes(role as string);
 
   // Fallback to unit.bookings[0] if bookingData isn't provided (for backward compatibility if needed)
-  const activeBooking = bookingData || (unit.bookings && unit.bookings.length > 0 ? unit.bookings[0] : null);
+  const activeBooking: any = bookingData || (unit.bookings && unit.bookings.length > 0 ? unit.bookings[0] : null);
 
   const renderField = (label: string, value: any) => (
     <View className="mb-3 w-1/2 pr-2">
