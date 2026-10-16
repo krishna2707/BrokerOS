@@ -1,57 +1,11 @@
-export interface DashboardData {
-  widgets: {
-    newLeads: number;
-    hotLeads: number;
-    warmLeads: number;
-    coldLeads: number;
-    todayFollowUps: number;
-    missedFollowUps: number;
-    siteVisitsScheduled: number;
-    bookingsGenerated: number;
-  };
-  pipeline: Record<string, number>;
-  dailyTasks: {
-    coldCall: { target: number; done: number; backlog: number };
-    followUp: { target: number; done: number; backlog: number };
-  };
-  backlogs: {
-    coldCallBacklogCount: number;
-    missedFollowUps: Array<{
-      id: string;
-      scheduledDate: string;
-      lead: {
-        id: string;
-        firstName: string;
-        lastName?: string;
-        temperature?: string;
-        status: string;
-      } | null;
-    }>;
-  };
-  todayFollowUpList: Array<{
-    id: string;
-    scheduledDate: string;
-    status: string;
-    lead: {
-      id: string;
-      firstName: string;
-      lastName?: string;
-      temperature?: string;
-      status: string;
-    } | null;
-  }>;
-}
+// ============================================================================
+// BrokerOS — Pre-Sales Workspace Dashboard Types
+// ============================================================================
 
-export interface LeaderboardEntry {
-  rank: number;
-  userId: string;
-  name: string;
-  image?: string;
-  coldCalls: number;
-  followUps: number;
-  siteVisits: number;
-  score: number;
-}
+import type { PreSalesDashboardData, LeaderboardEntry } from '@brokeros/types';
+
+export type DashboardData = PreSalesDashboardData;
+export type { LeaderboardEntry };
 
 export interface Announcement {
   id: string;
