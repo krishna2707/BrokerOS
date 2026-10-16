@@ -1,8 +1,9 @@
 import React, { RefObject } from "react";
 import { Camera, Loader2 } from "lucide-react";
+import type { LeadDetailsDto } from "@brokeros/types";
 
 interface LeadHeaderAvatarProps {
-  lead: any;
+  lead: LeadDetailsDto;
   leadId: string;
   isEditing: boolean;
   uploading: boolean;

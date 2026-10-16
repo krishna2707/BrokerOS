@@ -1,9 +1,10 @@
 import React from "react";
 import { Phone } from "lucide-react";
+import type { LeadDetailsDto } from "@brokeros/types";
 
 interface LeadHeaderEditProps {
-  formData: any;
-  setFormData: (data: any) => void;
+  formData: Partial<LeadDetailsDto>;
+  setFormData: (data: Partial<LeadDetailsDto>) => void;
   leadPhone: string;
 }
 
@@ -34,7 +35,7 @@ export function LeadHeaderEdit({
         </label>
         <input
           className="w-full h-9 px-3 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-base sm:text-xs font-semibold text-[var(--text-primary)] outline-none focus:border-[var(--brand-600)] focus:ring-2 focus:ring-purple-500/15 transition-all"
-          value={formData.lastName}
+          value={formData.lastName || ""}
           onChange={(e) =>
             setFormData({ ...formData, lastName: e.target.value })
           }
@@ -49,7 +50,7 @@ export function LeadHeaderEdit({
         <input
           type="email"
           className="w-full h-9 px-3 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-base sm:text-xs font-semibold text-[var(--text-primary)] outline-none focus:border-[var(--brand-600)] focus:ring-2 focus:ring-purple-500/15 transition-all"
-          value={formData.email}
+          value={formData.email || ""}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           placeholder="email@example.com"
         />
@@ -61,7 +62,7 @@ export function LeadHeaderEdit({
         </label>
         <input
           className="w-full h-9 px-3 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-base sm:text-xs font-semibold text-[var(--text-primary)] outline-none focus:border-[var(--brand-600)] focus:ring-2 focus:ring-purple-500/15 transition-all"
-          value={formData.preferredLocation}
+          value={formData.preferredLocation || ""}
           onChange={(e) =>
             setFormData({ ...formData, preferredLocation: e.target.value })
           }

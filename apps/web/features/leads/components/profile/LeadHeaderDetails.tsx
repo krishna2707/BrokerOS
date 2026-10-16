@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
@@ -13,9 +15,14 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useTelephony } from "@/features/telephony/context/TelephonyContext";
+import type { LeadDetailsDto } from "@brokeros/types";
+import {
+  normalizePhoneNumber,
+  sanitizePhoneForMeta,
+} from "@brokeros/constants";
 
 interface LeadHeaderDetailsProps {
-  lead: any;
+  lead: LeadDetailsDto;
   isPreSales: boolean;
   isPostSales: boolean;
   displayName: string;
@@ -289,7 +296,7 @@ export function LeadHeaderDetails({
                 id: lead.id,
                 name: displayName,
                 phone: lead.phone,
-                temperature: lead.temperature,
+                temperature: lead.temperature || undefined,
               });
             }
           }}
@@ -313,7 +320,9 @@ export function LeadHeaderDetails({
         <button
           onClick={(e) => {
             if (e.altKey && lead.phone) {
-              const cleanPhone = lead.phone.replace(/[^0-9]/g, "");
+              const cleanPhone = sanitizePhoneForMeta(
+                normalizePhoneNumber(lead.phone),
+              );
               window.open(`https://wa.me/${cleanPhone}`, "_blank");
               return;
             }
