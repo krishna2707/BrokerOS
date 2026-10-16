@@ -47,7 +47,7 @@ sequenceDiagram
     
     Note over SalesExec,PostSales: Unit Booked -> Booking Confirmed
     SalesExec->>CRM: Creates Booking -> Customer Profile Generated
-    CRM->>PostSales: Routes to Post-Sales Inbox (/dashboard/post-sales/email)
+    CRM->>PostSales: Routes to Post-Sales Inbox (/dashboard/inbox/email)
     PostSales->>Buyer: Automated Demand Note and Welcome Letter via Default Email Service
 ```
 
@@ -59,17 +59,20 @@ The backend enforces data isolation through [email-inbox.service.ts](file:///c:/
 
 | Department Role | Scope Filter | Visible Entities | In-App UI Route |
 | :--- | :--- | :--- | :--- |
-| **Pre-Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`NEW`, `CONTACTED`, `INTERESTED`) with valid email | `/dashboard/pre-sales/email` |
-| **Pre-Sales Manager** | `team` | All leads assigned to direct subordinates, with executive dropdown filter | `/dashboard/pre-sales-manager/email` |
-| **Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`SITE_VISIT_SCHEDULED`, `NEGOTIATION`, `BOOKING`) with valid email | `/dashboard/sales-executive/email` |
-| **Sales Manager** | `team` | All leads assigned to subordinate sales executives, with deal velocity tracking | `/dashboard/sales-manager/email` |
-| **Post-Sales Executive** | `my` | Customers where `booking.assignedPostSalesId = currentUser.id` with valid email | `/dashboard/post-sales/email` |
-| **Post-Sales Manager** | `team` | All post-booking customer threads across all team post-sales executives | `/dashboard/post-sales-manager/email` |
-| **Sourcing Manager** | `my` | External CP Brokers where `broker.sourcingManagerId = currentUser.id` with valid email | `/dashboard/sourcing-manager/email` |
-| **Closing Manager** | `my` | Walk-in leads created on-site or leads assigned at their project sales gallery | `/dashboard/closing-manager/email` |
-| **Finance Department** | `all` | Customers with payment transactions and Brokers with commission claims | `/dashboard/finance/email` |
-| **Business Manager** | `all` | Enterprise-wide operational visibility across both Brokerage and CP network | `/dashboard/business-manager/email` |
-| **Director and Admin** | `all` | Full organizational oversight with real-time audit capabilities | `/dashboard/director/email` |
+| **Pre-Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`NEW`, `CONTACTED`, `INTERESTED`) with valid email | `/dashboard/inbox/email` |
+| **Pre-Sales Manager** | `team` | All leads assigned to direct subordinates, with executive dropdown filter | `/dashboard/inbox/email` |
+| **Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`SITE_VISIT_SCHEDULED`, `NEGOTIATION`, `BOOKING`) with valid email | `/dashboard/inbox/email` |
+| **Sales Manager** | `team` | All leads assigned to subordinate sales executives, with deal velocity tracking | `/dashboard/inbox/email` |
+| **Post-Sales Executive** | `my` | Customers where `booking.assignedPostSalesId = currentUser.id` with valid email | `/dashboard/inbox/email` |
+| **Post-Sales Manager** | `team` | All post-booking customer threads across all team post-sales executives | `/dashboard/inbox/email` |
+| **Sourcing Manager** | `my` | External CP Brokers where `broker.sourcingManagerId = currentUser.id` with valid email | `/dashboard/inbox/email` |
+| **Closing Manager** | `my` | Walk-in leads created on-site or leads assigned at their project sales gallery | `/dashboard/inbox/email` |
+| **Finance Department** | `all` | Customers with payment transactions and Brokers with commission claims | `/dashboard/inbox/email` |
+| **Business Manager** | `all` | Enterprise-wide operational visibility across both Brokerage and CP network | `/dashboard/inbox/email` |
+| **Director and Admin** | `all` | Full organizational oversight with real-time audit capabilities | `/dashboard/inbox/email` |
+
+> [!NOTE]
+> All roles access the unified route `/dashboard/inbox/email`. The page dynamically resolves department scope from the user authenticated session. Legacy role-specific URLs (such as `/dashboard/sales-manager/email`) automatically redirect to `/dashboard/inbox/email`.
 
 ---
 
