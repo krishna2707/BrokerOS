@@ -1,4 +1,4 @@
-import { LeadProfileClient } from "@/features/leads/components/profile/LeadProfileClient";
+import { LeadProfileClient } from "@/features/leads";
 
 export default async function PostSalesLeadProfile({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;

@@ -3,7 +3,7 @@
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { PostSalesLeadTableClient } from "@/features/leads/components/tables/PostSalesLeadTableClient";
+import { PostSalesLeadTableClient } from "@/features/leads";
 import { Key, Loader2 } from "lucide-react";
 
 export default function PostSalesHandoverManagement() {
