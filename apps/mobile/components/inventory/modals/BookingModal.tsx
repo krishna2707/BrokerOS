@@ -3,9 +3,10 @@ import { View, Text, Modal, TouchableOpacity, TextInput, ActivityIndicator, Keyb
 import Toast from 'react-native-toast-message';
 import { Feather } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import type { UnitDto, LeadListItemDto } from '@brokeros/types';
 
 interface BookingModalProps {
-  unit: any;
+  unit: UnitDto | null;
   visible: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -14,7 +15,7 @@ interface BookingModalProps {
 export function BookingModal({ unit, visible, onClose, onSuccess }: BookingModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLeadId, setSelectedLeadId] = useState('');
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<LeadListItemDto[]>([]);
 
   useEffect(() => {
     if (visible) {

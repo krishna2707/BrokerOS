@@ -6,26 +6,27 @@ import PossessionModal from './PossessionModal';
 import { UnitDetailsView } from './UnitDetailsView';
 import { UnitDetailsForm } from './UnitDetailsForm';
 import { UnitDetailsPostSales } from './UnitDetailsPostSales';
+import type { UnitDto, BookingDto, UnitStatus, UnitType } from '@brokeros/types';
 
 interface UnitDetailsModalProps {
-  unit: any;
+  unit: UnitDto;
   visible: boolean;
   onClose: () => void;
-  onSave: (unitId: string, updates: any) => Promise<void>;
+  onSave: (unitId: string, updates: Partial<UnitDto> & { clearBooking?: boolean }) => Promise<void>;
 }
 
 export function UnitDetailsModal({ unit, visible, onClose, onSave }: UnitDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [bookingData, setBookingData] = useState<any>(null);
+  const [bookingData, setBookingData] = useState<BookingDto | null>(null);
   const [loadingBooking, setLoadingBooking] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isPossessionModalOpen, setIsPossessionModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    status: 'AVAILABLE',
+    status: 'AVAILABLE' as UnitStatus,
     basePrice: '0',
     carpetArea: '0',
-    type: 'TWO_BHK',
+    type: 'TWO_BHK' as UnitType,
     facing: 'East',
     commissionPercentage: '0',
     commissionAmount: '0',
@@ -33,15 +34,15 @@ export function UnitDetailsModal({ unit, visible, onClose, onSave }: UnitDetails
 
   useEffect(() => {
     if (unit) {
-      const basePrice = unit.basePrice || 0;
-      const commissionPercentage = unit.commissionPercentage || 0;
+      const basePrice = Number(unit.basePrice || 0);
+      const commissionPercentage = Number(unit.commissionPercentage || 0);
       const commissionAmount = (basePrice * commissionPercentage) / 100;
 
       setFormData({
-        status: unit.status || 'AVAILABLE',
+        status: (unit.status || 'AVAILABLE') as UnitStatus,
         basePrice: basePrice.toString(),
         carpetArea: unit.carpetArea?.toString() || '0',
-        type: unit.type || 'TWO_BHK',
+        type: (unit.type || 'TWO_BHK') as UnitType,
         facing: unit.facing || 'East',
         commissionPercentage: commissionPercentage.toString(),
         commissionAmount: commissionAmount.toString(),
@@ -80,6 +81,8 @@ export function UnitDetailsModal({ unit, visible, onClose, onSave }: UnitDetails
       setIsSaving(true);
       await onSave(unit.id || unit.unitNumber, {
         ...formData,
+        status: formData.status as UnitStatus,
+        type: formData.type as UnitType,
         basePrice: Number(formData.basePrice),
         carpetArea: Number(formData.carpetArea),
         commissionPercentage: Number(formData.commissionPercentage),
@@ -118,7 +121,15 @@ export function UnitDetailsModal({ unit, visible, onClose, onSave }: UnitDetails
               });
               if (res.ok) {
                 // Trigger a fake "AVAILABLE" update to refresh grid and close drawer safely
-                await onSave(unit.id || unit.unitNumber, { ...formData, status: 'AVAILABLE', clearBooking: true });
+                await onSave(unit.id || unit.unitNumber, {
+                  ...formData,
+                  status: 'AVAILABLE' as UnitStatus,
+                  type: formData.type as UnitType,
+                  basePrice: Number(formData.basePrice),
+                  carpetArea: Number(formData.carpetArea),
+                  commissionPercentage: Number(formData.commissionPercentage),
+                  clearBooking: true,
+                });
                 Toast.show({ type: 'success', text1: 'Success', text2: 'Booking cancelled successfully' });
                 onClose(); // Close and refresh
               } else {
@@ -155,26 +166,26 @@ export function UnitDetailsModal({ unit, visible, onClose, onSave }: UnitDetails
         <ScrollView className="flex-1 p-5">
           {!isEditing ? (
             <>
-              <UnitDetailsView 
-                unit={unit} 
-                bookingData={bookingData} 
-                onEditPress={() => setIsEditing(true)} 
+              <UnitDetailsView
+                unit={unit}
+                bookingData={bookingData}
+                onEditPress={() => setIsEditing(true)}
               />
-              <UnitDetailsPostSales 
-                unit={unit} 
+              <UnitDetailsPostSales
+                unit={unit}
                 bookingData={bookingData}
                 handleCancelBooking={handleCancelBooking}
                 isCancelling={isCancelling}
-                onUpdateTimelinePress={() => setIsPossessionModalOpen(true)} 
+                onUpdateTimelinePress={() => setIsPossessionModalOpen(true)}
               />
             </>
           ) : (
-            <UnitDetailsForm 
-              formData={formData} 
-              setFormData={setFormData} 
-              onCancel={() => setIsEditing(false)} 
-              onSave={handleSave} 
-              isSaving={isSaving} 
+            <UnitDetailsForm
+              formData={formData}
+              setFormData={setFormData}
+              onCancel={() => setIsEditing(false)}
+              onSave={handleSave}
+              isSaving={isSaving}
             />
           )}
 
@@ -188,8 +199,8 @@ export function UnitDetailsModal({ unit, visible, onClose, onSave }: UnitDetails
         entityId={unit.id || unit.unitNumber}
         entityType="unit"
         entityName={`Unit ${unit.unitNumber}`}
-        initialStatus={unit.processionStatus}
-        initialTimeline={unit.processionTimelineUnit ? { value: unit.processionTimelineValue, unit: unit.processionTimelineUnit } : undefined}
+        initialStatus={(unit.processionStatus as any) || undefined}
+        initialTimeline={unit.processionTimelineUnit ? { value: unit.processionTimelineValue || 0, unit: unit.processionTimelineUnit as any } : undefined}
         onSuccess={() => {
           onClose(); // Close details modal entirely or we can trigger a refresh instead
         }}

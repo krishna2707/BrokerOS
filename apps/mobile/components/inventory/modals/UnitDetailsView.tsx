@@ -1,10 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import type { UnitDto, BookingDto } from '@brokeros/types';
 
 interface UnitDetailsViewProps {
-  unit: any;
-  bookingData: any;
+  unit: UnitDto;
+  bookingData: BookingDto | null;
   onEditPress: () => void;
 }
 
