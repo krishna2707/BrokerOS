@@ -1,7 +1,11 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { prismaClient } from '@brokeros/prisma';
 import { getVoiceAgentProvider, tryCarrierBridgeDispatch } from '@brokeros/int-voice';
-import { normalizeVoiceLeadVariables, interpolateVoiceTemplate } from '@brokeros/constants';
+import {
+  normalizeVoiceLeadVariables,
+  interpolateVoiceTemplate,
+  normalizePhoneNumber,
+} from '@brokeros/constants';
 import type {
   VoiceAgentPlatform,
   VoiceTelephonyCredentials,
@@ -92,22 +96,9 @@ export class MarketingVoiceProcessor implements OnModuleInit, OnModuleDestroy {
     return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
   }
 
+  // E.164 standard phone normalization (delegates to canonical @brokeros/constants)
   static normalizePhoneNumber(rawPhone: string, defaultCountryCode = '+91'): string {
-    if (!rawPhone) return '';
-    let cleaned = rawPhone.replace(/[^\d+]/g, '');
-
-    if (!cleaned.startsWith('+')) {
-      if (cleaned.length === 10) {
-        cleaned = `${defaultCountryCode}${cleaned}`;
-      } else if (cleaned.length === 12 && cleaned.startsWith('91')) {
-        cleaned = `+${cleaned}`;
-      } else if (cleaned.length === 11 && cleaned.startsWith('1')) {
-        cleaned = `+${cleaned}`;
-      } else {
-        cleaned = `+${cleaned}`;
-      }
-    }
-    return cleaned;
+    return normalizePhoneNumber(rawPhone, defaultCountryCode);
   }
 
   async processVoiceCampaign(data: VoiceCampaignDispatchJobData): Promise<void> {
