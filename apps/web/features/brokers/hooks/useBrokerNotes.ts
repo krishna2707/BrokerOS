@@ -1,8 +1,16 @@
+"use client";
+
 import { useState } from 'react';
 import { toast } from 'sonner';
+import type { BrokerDto, NoteDto } from '@brokeros/types';
 
-export function useBrokerNotes(brokerId: string, userId: string | undefined, broker: any, setBroker: (broker: any) => void) {
-  const [notes, setNotes] = useState<any[]>([]);
+export function useBrokerNotes(
+  brokerId: string,
+  userId: string | undefined,
+  broker: BrokerDto | null,
+  setBroker: (broker: BrokerDto) => void
+) {
+  const [notes, setNotes] = useState<NoteDto[]>([]);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState('');
   const [pendingStatusChange, setPendingStatusChange] = useState<string | null>(null);
@@ -10,7 +18,7 @@ export function useBrokerNotes(brokerId: string, userId: string | undefined, bro
 
   // We fetch broker with its relations, so notes come attached to it.
   // But we can extract this to just set notes locally if needed.
-  const updateNotesFromBroker = (brokerData: any) => {
+  const updateNotesFromBroker = (brokerData: (BrokerDto & { notes?: NoteDto[] }) | null) => {
     if (brokerData && brokerData.notes) {
       setNotes(brokerData.notes);
     }
@@ -56,7 +64,7 @@ export function useBrokerNotes(brokerId: string, userId: string | undefined, bro
             body: JSON.stringify({ status: pendingStatusChange })
           });
           if (statusRes.ok) {
-            setBroker({ ...broker, status: pendingStatusChange, subStatus: 'PENDING' });
+            setBroker({ ...broker, status: pendingStatusChange as any, subStatus: 'PENDING' });
           }
           setPendingStatusChange(null);
         }

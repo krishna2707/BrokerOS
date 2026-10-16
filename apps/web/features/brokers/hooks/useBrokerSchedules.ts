@@ -1,9 +1,16 @@
+"use client";
+
 import { useState } from 'react';
 import { toast } from 'sonner';
+import type { BrokerDto, FollowUpDto, BrokerMeetingDto } from '@brokeros/types';
 
-export function useBrokerSchedules(brokerId: string, userId: string | undefined, broker: any) {
-  const [followUps, setFollowUps] = useState<any[]>([]);
-  const [meetings, setMeetings] = useState<any[]>([]);
+export function useBrokerSchedules(
+  brokerId: string,
+  userId: string | undefined,
+  broker: BrokerDto | null
+) {
+  const [followUps, setFollowUps] = useState<FollowUpDto[]>([]);
+  const [meetings, setMeetings] = useState<BrokerMeetingDto[]>([]);
 
   const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
@@ -11,7 +18,7 @@ export function useBrokerSchedules(brokerId: string, userId: string | undefined,
   const [followUpData, setFollowUpData] = useState({ title: '', scheduledDate: '', type: 'CALL', notes: '' });
   const [meetingData, setMeetingData] = useState({ title: '', scheduledAt: '', meetingType: 'OFFICE', agenda: '' });
 
-  const updateSchedulesFromBroker = (brokerData: any) => {
+  const updateSchedulesFromBroker = (brokerData: (BrokerDto & { followUps?: FollowUpDto[]; meetings?: BrokerMeetingDto[] }) | null) => {
     if (brokerData) {
       if (brokerData.followUps) setFollowUps(brokerData.followUps);
       if (brokerData.meetings) setMeetings(brokerData.meetings);
