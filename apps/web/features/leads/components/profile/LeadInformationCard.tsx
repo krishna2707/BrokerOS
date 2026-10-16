@@ -1,17 +1,20 @@
+"use client";
+
 import React from "react";
 import { Edit2, Check, X, Briefcase } from "lucide-react";
+import type { LeadDetailsDto, LeadSourceDto, ProjectDto } from "@brokeros/types";
 import { LeadInformationDisplay } from "@/features/leads/components/profile/LeadInformationDisplay";
 import { LeadInformationEdit } from "@/features/leads/components/profile/LeadInformationEdit";
 
 interface LeadInformationCardProps {
-  lead: any;
+  lead: LeadDetailsDto;
   isEditingLeadInfo: boolean;
   setIsEditingLeadInfo: (val: boolean) => void;
   leadInfoData: any;
   setLeadInfoData: (data: any) => void;
   handleLeadInfoSave: () => void;
-  availableSources: any[];
-  availableProjects: any[];
+  availableSources: LeadSourceDto[];
+  availableProjects: ProjectDto[];
 }
 
 export function LeadInformationCard({

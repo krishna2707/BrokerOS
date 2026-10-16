@@ -9,9 +9,10 @@ import {
   Briefcase,
   Calendar,
 } from "lucide-react";
+import type { LeadDetailsDto } from "@brokeros/types";
 
 interface LeadInformationDisplayProps {
-  lead: any;
+  lead: LeadDetailsDto;
 }
 
 export function LeadInformationDisplay({ lead }: LeadInformationDisplayProps) {

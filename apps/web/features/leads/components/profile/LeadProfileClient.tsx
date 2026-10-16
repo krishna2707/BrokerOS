@@ -18,7 +18,7 @@ import { LeadSchedulesCard } from "@/features/leads/components/profile/LeadSched
 import { SiteVisitModal } from "@/features/leads/components/modals/SiteVisitModal";
 import { SiteVisitCompleteModal } from "@/features/leads/components/modals/SiteVisitCompleteModal";
 import { PostSalesPipelineCards } from "@/features/leads/components/post-sales/PostSalesPipelineCards";
-import { PaymentHistoryCard } from "@/components/leads/PaymentHistoryCard";
+import { PaymentHistoryCard } from "@/features/leads/components/booking/PaymentHistoryCard";
 import { toast } from "sonner";
 
 // Hooks
@@ -198,14 +198,14 @@ export function LeadProfileClient({ leadId }: { leadId: string }) {
   const backHref = isSalesExec
     ? "/dashboard/sales-executive/lead-management"
     : isSalesManager
-    ? "/dashboard/sales-manager/lead-management"
-    : isPostSales
-    ? "/dashboard/post-sales/lead-management"
-    : isClosingManager
-    ? "/dashboard/closing-manager/lead-management"
-    : isChannelPartner
-    ? "/dashboard/channel-partner/customer-management"
-    : "/dashboard/pre-sales/lead-management";
+      ? "/dashboard/sales-manager/lead-management"
+      : isPostSales
+        ? "/dashboard/post-sales/lead-management"
+        : isClosingManager
+          ? "/dashboard/closing-manager/lead-management"
+          : isChannelPartner
+            ? "/dashboard/channel-partner/customer-management"
+            : "/dashboard/pre-sales/lead-management";
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 animate-enter">
@@ -342,7 +342,7 @@ export function LeadProfileClient({ leadId }: { leadId: string }) {
             <PostSalesPipelineCards
               leadId={leadId}
               leadStatus={lead.status}
-              leadSubStatus={lead.subStatus}
+              leadSubStatus={lead.subStatus || ''}
               booking={booking}
               userRole={inferredRole}
               onRefresh={() => {

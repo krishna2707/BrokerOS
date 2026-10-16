@@ -1,12 +1,15 @@
+"use client";
+
 import React from "react";
 import { Card } from "@/components/ui/Card";
 import { Calendar, Clock, MapPin, CheckCircle2, Navigation } from "lucide-react";
+import type { SiteVisitDto, FollowUpDto } from "@brokeros/types";
 
 interface LeadSchedulesCardProps {
-  siteVisits: any[];
-  openSiteVisitModal?: (item?: any) => void;
-  followUps?: any[];
-  openFollowUpModal?: (item?: any) => void;
+  siteVisits: SiteVisitDto[];
+  openSiteVisitModal?: (item?: SiteVisitDto) => void;
+  followUps?: FollowUpDto[];
+  openFollowUpModal?: (item?: FollowUpDto) => void;
   handleConfirmFollowUp?: (id: string) => void;
   onMarkCompleted?: (id: string) => void;
   hideSiteVisits?: boolean;
@@ -84,7 +87,7 @@ export function LeadSchedulesCard({
                       <p className="text-[11px] text-[var(--text-muted)] mt-1 flex items-center gap-1 tabular-nums m-0">
                         <Calendar size={11} />
                         <span>
-                          {new Date(sv.scheduledDate).toLocaleDateString("en-IN", {
+                          {new Date(sv.scheduledDate || sv.scheduledAt || Date.now()).toLocaleDateString("en-IN", {
                             day: "2-digit",
                             month: "short",
                             hour: "2-digit",
@@ -176,7 +179,7 @@ export function LeadSchedulesCard({
                     <p className="text-[11px] text-[var(--text-muted)] mt-1 flex items-center gap-1 tabular-nums m-0">
                       <Clock size={11} />
                       <span>
-                        {new Date(fu.scheduledDate).toLocaleDateString("en-IN", {
+                        {new Date(fu.scheduledDate || fu.scheduledAt || Date.now()).toLocaleDateString("en-IN", {
                           day: "2-digit",
                           month: "short",
                           hour: "2-digit",
