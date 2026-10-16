@@ -1,4 +1,4 @@
-import { ChannelPartnerLeadTableClient } from "@/features/leads/components/tables/ChannelPartnerLeadTableClient";
+import { ChannelPartnerLeadTableClient } from "@/features/leads";
 
 export default function CustomerManagement() {
   return (
