@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import type { UnitDto, BookingDto } from '@brokeros/types';
 
 export function useUnitDetails(
-  unit: any,
+  unit: UnitDto | null,
   isOpen: boolean,
-  onSave: (unitId: string, updates: any) => Promise<void>,
+  onSave: (unitId: string, updates: Partial<UnitDto> & { clearBooking?: boolean }) => Promise<void>,
   onClose: () => void
 ) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [booking, setBooking] = useState<any>(null);
+  const [booking, setBooking] = useState<BookingDto | null>(null);
   const [loadingBooking, setLoadingBooking] = useState(false);
   const [possessionModalOpen, setPossessionModalOpen] = useState(false);
 
@@ -38,6 +39,7 @@ export function useUnitDetails(
   }, [isOpen, unit]);
 
   const fetchBooking = async () => {
+    if (!unit) return;
     try {
       setLoadingBooking(true);
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api/proxy';
@@ -62,9 +64,10 @@ export function useUnitDetails(
   }, [isOpen, unit]);
 
   const handleSave = async () => {
+    if (!unit) return;
     try {
       setIsSaving(true);
-      await onSave(unit.id, formData);
+      await onSave(unit.id, formData as any);
       setIsEditing(false);
     } catch (e) {
       console.error(e);
@@ -75,7 +78,7 @@ export function useUnitDetails(
   };
 
   const handleCancelBooking = async () => {
-    if (!booking) return;
+    if (!booking || !unit) return;
     const reason = prompt("Enter reason for cancellation:");
     if (reason === null) return;
 
@@ -89,7 +92,7 @@ export function useUnitDetails(
       });
       if (res.ok) {
         // Trigger a fake "AVAILABLE" update to refresh grid and close drawer safely
-        await onSave(unit.id, { ...formData, status: 'AVAILABLE', clearBooking: true });
+        await onSave(unit.id, { ...formData, status: 'AVAILABLE', clearBooking: true } as any);
         onClose();
       } else {
         toast.error("Failed to cancel booking.");
