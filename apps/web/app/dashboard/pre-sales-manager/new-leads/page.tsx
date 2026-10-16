@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import { NewLeadsTable } from "@/features/leads/components/tables/NewLeadsTable";
+import { NewLeadsTable } from "@/features/leads";
 import { UserPlus, Loader2 } from "lucide-react";
 
 export default function PreSalesManagerNewLeads() {
