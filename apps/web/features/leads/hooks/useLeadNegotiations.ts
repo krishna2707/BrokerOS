@@ -1,7 +1,10 @@
+"use client";
+
 import { useState } from 'react';
+import type { NegotiationDto } from '@brokeros/types';
 
 export function useLeadNegotiations(leadId: string) {
-  const [negotiations, setNegotiations] = useState<any[]>([]);
+  const [negotiations, setNegotiations] = useState<NegotiationDto[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchNegotiations = async () => {

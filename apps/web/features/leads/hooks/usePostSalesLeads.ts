@@ -1,12 +1,15 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
+import type { LeadListItemDto } from '@brokeros/types';
 
 export function usePostSalesLeads(options?: { completedHandoversOnly?: boolean, isCpProject?: boolean }) {
   const searchParams = useSearchParams();
   const initialFollowUpDate = searchParams.get('followUpDate') || '';
 
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<LeadListItemDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState(
     options?.completedHandoversOnly ? 'HANDOVER' : (searchParams.get('status') || 'NEW,CONTACTED,NEGOTIATION,BOOKING,DOCUMENT,LOAN,AGREEMENT,HANDOVER')
@@ -24,7 +27,7 @@ export function usePostSalesLeads(options?: { completedHandoversOnly?: boolean, 
       const statusesToFetch = status.split(',');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api/proxy';
 
-      let allLeads: any[] = [];
+      let allLeads: LeadListItemDto[] = [];
 
       for (const st of statusesToFetch) {
         const params = new URLSearchParams();
@@ -32,7 +35,7 @@ export function usePostSalesLeads(options?: { completedHandoversOnly?: boolean, 
         if (followUpDate) params.append('followUpDate', followUpDate);
         if (options?.isCpProject !== undefined) params.append('isCpProject', options.isCpProject.toString());
 
-        const res = await authClient.$fetch<any[]>(`/api/leads?${params.toString()}`, { baseURL: apiUrl });
+        const res = await authClient.$fetch<LeadListItemDto[]>(`/api/leads?${params.toString()}`, { baseURL: apiUrl });
         if (res.data) {
           allLeads = [...allLeads, ...res.data];
         }

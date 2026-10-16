@@ -1,13 +1,16 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
+import type { LeadListItemDto } from '@brokeros/types';
 
 export function useSalesExecLeads() {
   const searchParams = useSearchParams();
   const initialFollowUpDate = searchParams.get('followUpDate') || '';
   const initialSiteVisitDate = searchParams.get('siteVisitDate') || '';
 
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<LeadListItemDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState(searchParams.get('status') || (initialSiteVisitDate ? 'SITE_VISIT_SCHEDULED' : ''));
   const [followUpDate, setFollowUpDate] = useState(initialFollowUpDate);
@@ -27,7 +30,7 @@ export function useSalesExecLeads() {
       if (siteVisitDate) params.append('siteVisitDate', siteVisitDate);
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api/proxy';
-      const res = await authClient.$fetch<any[]>(`/api/leads?${params.toString()}`, { baseURL: apiUrl });
+      const res = await authClient.$fetch<LeadListItemDto[]>(`/api/leads?${params.toString()}`, { baseURL: apiUrl });
       if (res.data) {
         setLeads(res.data);
       } else if (res.error) {

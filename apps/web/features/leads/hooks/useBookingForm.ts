@@ -1,5 +1,8 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { authClient } from '@/lib/auth-client';
+import type { ProjectDto, TowerDto, FloorDto, UnitDto, BookingDto } from '@brokeros/types';
 
 export function useBookingForm(
   leadId: string,
@@ -8,7 +11,7 @@ export function useBookingForm(
   setShowForm: (show: boolean) => void,
   onRefresh: () => void,
   lead?: any,
-  booking?: any
+  booking?: BookingDto | any
 ) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -25,16 +28,16 @@ export function useBookingForm(
 
   const [hasInitializedFromBooking, setHasInitializedFromBooking] = useState(false);
 
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<ProjectDto[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
 
-  const [towers, setTowers] = useState<any[]>([]);
+  const [towers, setTowers] = useState<TowerDto[]>([]);
   const [selectedTowerId, setSelectedTowerId] = useState('');
 
-  const [floors, setFloors] = useState<any[]>([]);
+  const [floors, setFloors] = useState<FloorDto[]>([]);
   const [selectedFloorId, setSelectedFloorId] = useState('');
 
-  const [units, setUnits] = useState<any[]>([]);
+  const [units, setUnits] = useState<UnitDto[]>([]);
   const [selectedUnitId, setSelectedUnitId] = useState(lead?.interestedUnitId || '');
 
   // Pre-fill from lead or booking
