@@ -3,8 +3,8 @@ import { View, Text, ScrollView, RefreshControl, TouchableOpacity, ActivityIndic
 import Toast from 'react-native-toast-message';
 import { Feather } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
-import { authClient } from '../../../../lib/auth-client';
-import { InboundCommissionReceiveModal } from '../../../../components/commissions/InboundCommissionReceiveModal';
+import { authClient } from '@/lib/auth-client';
+import { InboundCommissionReceiveModal } from '@/components/commissions/InboundCommissionReceiveModal';
 
 export default function PostSalesCommissionsScreen() {
   const [commissions, setCommissions] = useState<any[]>([]);
