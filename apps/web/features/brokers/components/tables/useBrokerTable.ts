@@ -1,7 +1,10 @@
+"use client";
+
 import { useState, useEffect } from 'react';
+import type { BrokerDto, ProjectDto, UserSummaryDto } from '@brokeros/types';
 
 export function useBrokerTable(isCP: boolean) {
-  const [brokers, setBrokers] = useState<any[]>([]);
+  const [brokers, setBrokers] = useState<BrokerDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -22,9 +25,9 @@ export function useBrokerTable(isCP: boolean) {
   const [saving, setSaving] = useState(false);
 
   // Assignment Modal
-  const [assignModalBroker, setAssignModalBroker] = useState<any>(null);
-  const [sourcingManagers, setSourcingManagers] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
+  const [assignModalBroker, setAssignModalBroker] = useState<BrokerDto | null>(null);
+  const [sourcingManagers, setSourcingManagers] = useState<UserSummaryDto[]>([]);
+  const [projects, setProjects] = useState<ProjectDto[]>([]);
 
   useEffect(() => {
     loadBrokers();

@@ -1,13 +1,24 @@
 import React from "react";
 import { UserPlus, X } from "lucide-react";
+import type { ProjectDto, UserSummaryDto } from "@brokeros/types";
 
 interface AddBrokerModalProps {
   isCP: boolean;
-  form: any;
+  form: {
+    companyName: string;
+    name: string;
+    phone: string;
+    city: string;
+    reraNumber: string;
+    gstNumber: string;
+    serviceAreas: string;
+    assignedProjects: string[];
+    sourcingManagerId: string;
+  };
   setForm: (form: any) => void;
   saving: boolean;
-  projects: any[];
-  sourcingManagers: any[];
+  projects: ProjectDto[];
+  sourcingManagers: UserSummaryDto[];
   handleCreate: (e: React.FormEvent) => void;
   setIsModalOpen: (isOpen: boolean) => void;
 }

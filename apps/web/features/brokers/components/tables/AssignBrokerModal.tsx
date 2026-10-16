@@ -1,11 +1,12 @@
 import React from "react";
 import { UserCheck, X } from "lucide-react";
+import type { BrokerDto, UserSummaryDto } from "@brokeros/types";
 
 interface AssignBrokerModalProps {
-  assignModalBroker: any;
-  sourcingManagers: any[];
+  assignModalBroker: BrokerDto | null;
+  sourcingManagers: UserSummaryDto[];
   handleAssign: (brokerId: string, smId: string) => void;
-  setAssignModalBroker: (broker: any) => void;
+  setAssignModalBroker: (broker: BrokerDto | null) => void;
 }
 
 export function AssignBrokerModal({
