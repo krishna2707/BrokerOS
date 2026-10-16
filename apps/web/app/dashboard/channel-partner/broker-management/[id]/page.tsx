@@ -1,4 +1,4 @@
-import { BrokerProfileClient } from '@/features/brokers/components/profile/BrokerProfileClient';
+import { BrokerProfileClient } from '@/features/brokers';
 
 export default async function CPBrokerProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
