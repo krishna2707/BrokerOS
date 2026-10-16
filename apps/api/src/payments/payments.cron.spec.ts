@@ -3,12 +3,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 jest.mock('@brokeros/prisma', () => ({
   PrismaClient: class {},
 }));
-jest.mock('../../../lib/database/prisma.service.js', () => ({
+jest.mock('../lib/database/prisma.service.js', () => ({
   PrismaService: jest.fn().mockImplementation(() => ({})),
 }));
 
 import { PaymentsCron } from './payments.cron.js';
-import { PrismaService } from '../../../lib/database/prisma.service.js';
+import { PrismaService } from '../lib/database/prisma.service.js';
 
 describe('PaymentsCron', () => {
   let cron: PaymentsCron;

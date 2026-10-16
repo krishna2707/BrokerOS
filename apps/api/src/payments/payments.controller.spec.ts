@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 jest.mock('@brokeros/prisma', () => ({
   PrismaClient: class {},
 }));
-jest.mock('../../../lib/database/prisma.service.js', () => ({
+jest.mock('../lib/database/prisma.service.js', () => ({
   PrismaService: jest.fn().mockImplementation(() => ({})),
 }));
 

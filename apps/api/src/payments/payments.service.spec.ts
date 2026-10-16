@@ -6,12 +6,12 @@ jest.mock('@brokeros/prisma', () => ({
 jest.mock('@vercel/blob', () => ({
   put: jest.fn().mockResolvedValue({ url: 'http://example.com/receipt.pdf' }),
 }));
-jest.mock('../../../lib/database/prisma.service.js', () => ({
+jest.mock('../lib/database/prisma.service.js', () => ({
   PrismaService: jest.fn().mockImplementation(() => ({})),
 }));
 
 import { PaymentsService } from './payments.service.js';
-import { PrismaService } from '../../../lib/database/prisma.service.js';
+import { PrismaService } from '../lib/database/prisma.service.js';
 import { NotFoundException } from '@nestjs/common';
 import { CreateScheduleDto } from './dto/payment.dto.js';
 

@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { PaymentsService } from './payments.service.js';
 import { PaymentsController } from './payments.controller.js';
 import { PaymentsCron } from './payments.cron.js';
+import { PrismaModule } from '../lib/database/prisma.module.js';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [PaymentsController],
   providers: [PaymentsService, PaymentsCron],
   exports: [PaymentsService],
