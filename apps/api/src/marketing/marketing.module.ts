@@ -3,6 +3,7 @@ import { PrismaModule } from '../lib/database/prisma.module.js';
 
 // Email Domain
 import { EmailService } from './email/email.service.js';
+import { EmailCampaignService } from './email/services/email-campaign.service.js';
 import { EmailAudienceService } from './email/services/email-audience.service.js';
 import { EmailAnalyticsService } from './email/services/email-analytics.service.js';
 import { EmailIntegrationsService } from './email/services/email-integrations.service.js';
@@ -23,6 +24,7 @@ import { EmailAiService } from './email/ai/email-ai.service.js';
 
 // SMS Domain
 import { SmsService } from './sms/sms.service.js';
+import { SmsCampaignService } from './sms/services/sms-campaign.service.js';
 import { SmsAudienceService } from './sms/services/sms-audience.service.js';
 import { SmsAnalyticsService } from './sms/services/sms-analytics.service.js';
 import { SmsIntegrationsService } from './sms/services/sms-integrations.service.js';
@@ -133,6 +135,7 @@ import { WhatsAppModule } from './whatsapp/whatsapp.module.js';
     EmailAnalyticsService,
     EmailIntegrationsService,
     EmailTrackingService,
+    EmailCampaignService,
     EmailService,
     EmailInboundService,
     EmailFlowsService,
@@ -145,6 +148,7 @@ import { WhatsAppModule } from './whatsapp/whatsapp.module.js';
     SmsAnalyticsService,
     SmsIntegrationsService,
     SmsTrackingService,
+    SmsCampaignService,
     SmsService,
     SmsInboundService,
     SmsFlowsService,
@@ -180,6 +184,7 @@ import { WhatsAppModule } from './whatsapp/whatsapp.module.js';
   ],
   exports: [
     EmailService,
+    EmailCampaignService,
     EmailAudienceService,
     EmailAnalyticsService,
     EmailIntegrationsService,
@@ -187,6 +192,7 @@ import { WhatsAppModule } from './whatsapp/whatsapp.module.js';
     EmailInboxService,
 
     SmsService,
+    SmsCampaignService,
     SmsAudienceService,
     SmsAnalyticsService,
     SmsIntegrationsService,
