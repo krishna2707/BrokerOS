@@ -13,7 +13,10 @@ import type {
   ExportVoiceLeadsDto,
 } from '../dto/voice.dto.js';
 import type { VoiceAudienceEstimationResult } from '@brokeros/types';
-import { mapVoiceSentimentToTemperature } from '@brokeros/constants';
+import {
+  mapVoiceSentimentToTemperature,
+  normalizePhoneNumber,
+} from '@brokeros/constants';
 
 @Injectable()
 export class VoiceAudienceService {
@@ -24,21 +27,7 @@ export class VoiceAudienceService {
     rawPhone: string,
     defaultCountryCode = '+91',
   ): string {
-    if (!rawPhone) return '';
-    let cleaned = rawPhone.replace(/[^\d+]/g, '');
-
-    if (!cleaned.startsWith('+')) {
-      if (cleaned.length === 10) {
-        cleaned = `${defaultCountryCode}${cleaned}`;
-      } else if (cleaned.length === 12 && cleaned.startsWith('91')) {
-        cleaned = `+${cleaned}`;
-      } else if (cleaned.length === 11 && cleaned.startsWith('1')) {
-        cleaned = `+${cleaned}`;
-      } else {
-        cleaned = `+${cleaned}`;
-      }
-    }
-    return cleaned;
+    return normalizePhoneNumber(rawPhone, defaultCountryCode);
   }
 
   buildLeadWhereClause(
