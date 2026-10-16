@@ -3,7 +3,7 @@
 import { authClient } from "@/lib/auth-client";
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import LiveTrackingMap from "@/components/LiveTrackingMap";
+import LiveTrackingMap from "@/components/dashboard/LiveTrackingMap";
 import { DashboardData } from "../../../sales-executive/types";
 import { StatCards } from "@/components/dashboard/StatCards";
 import { SalesExecTasks } from "../../../sales-executive/components/SalesExecTasks";

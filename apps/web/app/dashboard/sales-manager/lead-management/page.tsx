@@ -3,7 +3,7 @@
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { SalesExecLeadTableClient } from "@/features/leads/components/tables/SalesExecLeadTableClient";
+import { SalesExecLeadTableClient } from "@/features/leads";
 import { Users2, Loader2 } from "lucide-react";
 
 export default function SalesManagerLeadManagement() {

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Inbox, CheckCircle2, Loader2, FileCheck } from "lucide-react";
-import ApprovalTicket from "@/features/approvals/components/ticket/ApprovalTicket";
+import { ApprovalTicket } from "@/features/approvals";
 
 export default function SalesManagerApprovalPage() {
   const [requests, setRequests] = useState<any[]>([]);
