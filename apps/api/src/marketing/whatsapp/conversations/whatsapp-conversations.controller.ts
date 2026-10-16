@@ -33,7 +33,7 @@ export class WhatsAppConversationsController {
   @Get()
   async listConversations(
     @Query() query: ListWhatsAppConversationsQueryDto,
-    @Req() req: any,
+    @Req() req?: any,
   ) {
     return this.conversationsService.listConversations(
       query,
