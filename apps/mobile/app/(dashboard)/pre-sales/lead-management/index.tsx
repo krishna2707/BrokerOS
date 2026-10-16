@@ -5,7 +5,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { authClient } from '../../../../lib/auth-client';
 import { useAutoDialer } from '../../../../hooks/useAutoDialer';
 
-import { Lead } from '../../../../components/leads/misc/lead-management-types';
+import { Lead } from '@/components/leads/types';
 import LeadListHeader from '../../../../components/leads/list/LeadListHeader';
 import LeadSearchBar from '../../../../components/leads/list/LeadSearchBar';
 import LeadFilters from '../../../../components/leads/list/LeadFilters';

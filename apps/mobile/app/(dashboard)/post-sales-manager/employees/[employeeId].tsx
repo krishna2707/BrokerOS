@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { authClient } from '../../../../lib/auth-client';
-import { PostSalesDashboardData } from '../../../../components/dashboards/post-sales/misc/types';
+import { PostSalesDashboardData } from '@/components/dashboards/post-sales/types';
 import { SharedWidgetsGrid } from '../../../../components/shared/SharedWidgetsGrid';
 import PendingListWidget from '../../../../components/dashboards/post-sales/widgets/PendingListWidget';
 import PostSalesFollowUps from '../../../../components/dashboards/post-sales/widgets/PostSalesFollowUps';
