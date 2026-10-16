@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { authClient } from '../../../lib/auth-client';
-import { DashboardData, Announcement, LeaderboardEntry } from '../../../components/dashboards/pre-sales/misc/types';
+import { DashboardData, Announcement, LeaderboardEntry } from '@/components/dashboards/pre-sales/types';
 
 // UI Components
 import AnnouncementsList from '../../../components/dashboards/pre-sales/sections/AnnouncementsList';
