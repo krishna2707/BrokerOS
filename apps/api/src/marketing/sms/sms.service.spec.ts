@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-jest.mock('@brokeros/prisma', () => ({ PrismaClient: class {} }));
-jest.mock('expo-server-sdk', () => ({ Expo: class {} }));
+jest.mock('@brokeros/prisma', () => ({ PrismaClient: class { } }));
+jest.mock('expo-server-sdk', () => ({ Expo: class { } }));
 jest.mock('@brokeros/types', () => ({}));
 jest.mock('@brokeros/constants', () => ({
   SMS_PROVIDER_PRICING_ESTIMATES: {},
@@ -14,6 +14,7 @@ import { SmsAudienceService } from './services/sms-audience.service.js';
 import { SmsAnalyticsService } from './services/sms-analytics.service.js';
 import { SmsIntegrationsService } from './services/sms-integrations.service.js';
 import { SmsTrackingService } from './services/sms-tracking.service.js';
+import { SmsCampaignService } from './services/sms-campaign.service.js';
 
 describe('SmsService (facade delegation)', () => {
   let service: SmsService;
@@ -71,6 +72,7 @@ describe('SmsService (facade delegation)', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SmsService,
+        SmsCampaignService,
         { provide: PrismaService, useValue: prisma },
         { provide: SmsAudienceService, useValue: audienceService },
         { provide: SmsAnalyticsService, useValue: analyticsService },
