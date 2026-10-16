@@ -6,8 +6,8 @@ jest.mock('@brokeros/prisma', () => ({
 jest.mock('expo-server-sdk', () => ({ Expo: class {} }));
 
 import { BookingStatusService } from './booking-status.service.js';
-import { PrismaService } from '../../lib/database/prisma.service.js';
-import { NotificationsService } from '../../notifications/notifications.service.js';
+import { PrismaService } from '../lib/database/prisma.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 describe('BookingStatusService', () => {
   let service: BookingStatusService;

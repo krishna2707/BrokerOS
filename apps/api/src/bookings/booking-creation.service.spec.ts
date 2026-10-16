@@ -4,11 +4,11 @@ jest.mock('@brokeros/prisma', () => ({
   PrismaClient: class {},
 }));
 jest.mock('expo-server-sdk', () => ({ Expo: class {} }));
-jest.mock('../../notifications/notifications.service.js');
+jest.mock('../notifications/notifications.service.js');
 
 import { BookingCreationService } from './booking-creation.service.js';
-import { PrismaService } from '../../lib/database/prisma.service.js';
-import { NotificationsService } from '../../notifications/notifications.service.js';
+import { PrismaService } from '../lib/database/prisma.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 import { CreateBookingDto } from './dto/booking.dto.js';
 

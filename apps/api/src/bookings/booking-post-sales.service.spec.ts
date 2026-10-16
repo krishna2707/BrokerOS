@@ -8,27 +8,27 @@ jest.mock('@brokeros/prisma', () => ({
   PrismaClient: class {},
 }));
 jest.mock('expo-server-sdk', () => ({ Expo: class {} }));
-jest.mock('../../notifications/notifications.service.js');
+jest.mock('../notifications/notifications.service.js');
 jest.mock('@vercel/blob', () => ({
   put: jest.fn().mockResolvedValue({ url: 'http://example.com/blob.pdf' }),
 }));
 jest.mock('@brokeros/storage', () => ({
   uploadFileToBlob: jest.fn().mockResolvedValue('http://example.com/blob.pdf'),
 }));
-jest.mock('../../lib/storage/storage.service.js', () => ({
+jest.mock('../lib/storage/storage.service.js', () => ({
   StorageService: jest.fn().mockImplementation(() => ({
     uploadFile: jest.fn().mockResolvedValue('http://example.com/blob.pdf'),
   })),
 }));
-jest.mock('../../lib/database/prisma.service.js', () => ({
+jest.mock('../lib/database/prisma.service.js', () => ({
   PrismaService: jest.fn().mockImplementation(() => ({})),
 }));
 jest.mock('fs', () => ({ writeFileSync: jest.fn() }));
 
 import { BookingPostSalesService } from './booking-post-sales.service.js';
-import { PrismaService } from '../../lib/database/prisma.service.js';
-import { NotificationsService } from '../../notifications/notifications.service.js';
-import { StorageService } from '../../lib/storage/storage.service.js';
+import { PrismaService } from '../lib/database/prisma.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { StorageService } from '../lib/storage/storage.service.js';
 
 describe('BookingPostSalesService', () => {
   let service: BookingPostSalesService;
