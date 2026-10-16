@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { authClient } from '../../../../lib/auth-client';
-import { FinancialOverview } from '../../../../app/(dashboard)/sales-executive/analytics/components/FinancialOverview';
-import { ConversionFunnel } from '../../../../app/(dashboard)/sales-executive/analytics/components/ConversionFunnel';
-import { TowerHeatmap } from '../../../../app/(dashboard)/sales-executive/analytics/components/TowerHeatmap';
-import { ProjectAnalytics } from '../../../../app/(dashboard)/sales-executive/analytics/components/ProjectAnalytics';
+import { authClient } from '@/lib/auth-client';
+import { FinancialOverview } from '@/components/dashboards/sales-executive/analytics/FinancialOverview';
+import { ConversionFunnel } from '@/components/dashboards/sales-executive/analytics/ConversionFunnel';
+import { TowerHeatmap } from '@/components/dashboards/sales-executive/analytics/TowerHeatmap';
+import { ProjectAnalytics } from '@/components/dashboards/sales-executive/analytics/ProjectAnalytics';
 
 const ranges = [
   { id: 'weekly', label: 'Weekly' },

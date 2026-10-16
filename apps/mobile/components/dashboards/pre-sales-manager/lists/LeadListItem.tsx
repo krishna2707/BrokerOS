@@ -1,17 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-
-interface Lead {
-  id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  createdAt: string;
-}
+import type { LeadListItemDto } from '@brokeros/types';
 
 interface LeadListItemProps {
-  item: Lead;
+  item: LeadListItemDto;
   isSelected: boolean;
   onToggleSelect: (id: string) => void;
 }
