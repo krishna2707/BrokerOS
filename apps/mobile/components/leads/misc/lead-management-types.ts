@@ -1,9 +1,7 @@
-export type Lead = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  status: string;
-  score: number;
-  createdAt: string;
-};
+// ============================================================================
+// BrokerOS Mobile — Lead Management Types
+// ============================================================================
+
+import type { LeadListItemDto } from '@brokeros/types';
+
+export type Lead = LeadListItemDto;
