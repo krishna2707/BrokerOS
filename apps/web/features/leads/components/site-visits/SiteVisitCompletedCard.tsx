@@ -3,11 +3,12 @@
 import React from "react";
 import { CheckCircle } from "lucide-react";
 import { SiteVisit } from "@/features/leads/types/site-visit-constants";
+import type { SiteVisitDto } from "@brokeros/types";
 import { useSiteVisitCompleted } from "@/features/leads/hooks/useSiteVisitCompleted";
 import { SiteVisitRow } from "@/features/leads/components/site-visits/SiteVisitRow";
 
 interface SiteVisitCompletedCardProps {
-  siteVisits: SiteVisit[];
+  siteVisits: (SiteVisit | SiteVisitDto | any)[];
   leadId: string;
   onRefresh: () => void;
 }
