@@ -34,7 +34,7 @@ export class SmsInboxController {
   @Get('conversations')
   async listConversations(
     @Query() query: ListSmsConversationsQueryDto,
-    @Req() req: any,
+    @Req() req?: any,
   ) {
     return this.inboxService.listConversations(query, req?.user);
   }
