@@ -34,7 +34,7 @@ export class EmailInboxController {
   @Get('conversations')
   async listConversations(
     @Query() query: ListEmailConversationsQueryDto,
-    @Req() req: any,
+    @Req() req?: any,
   ) {
     if (req?.user) {
       return this.inboxService.listConversations(query, req.user);
