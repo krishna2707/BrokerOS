@@ -2,9 +2,11 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import type { BrokerDto } from '@brokeros/types';
+import { BROKER_STATUS_CONFIG } from '@brokeros/constants';
 
 interface BrokerListCardProps {
-  broker: any;
+  broker: BrokerDto | any;
   onPress: () => void;
   onAssign?: () => void;
   showAssignee?: boolean;
@@ -12,13 +14,8 @@ interface BrokerListCardProps {
 
 export default function BrokerListCard({ broker, onPress, onAssign, showAssignee }: BrokerListCardProps) {
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'DEAL': return 'bg-green-100 text-green-700 border-green-200';
-      case 'VISIT': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'NEW': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'CONTACTED': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
+    const key = status?.toUpperCase() as keyof typeof BROKER_STATUS_CONFIG;
+    return BROKER_STATUS_CONFIG[key]?.badge || 'bg-gray-100 text-gray-700 border-gray-200';
   };
 
   const displayName = broker.companyName || broker.name || 'Unknown Broker';
