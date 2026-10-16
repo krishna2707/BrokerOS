@@ -9,7 +9,7 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { BookingService } from './booking.service.js';
+import { BookingService } from '../bookings/booking.service.js';
 import {
   CreateBookingDto,
   UpdateBookingDto,
@@ -20,11 +20,11 @@ import {
   SaveAgreementDto,
   SaveHandoverDto,
   UploadPostSalesFileDto,
-} from './dto/booking.dto.js';
+} from '../bookings/dto/booking.dto.js';
 
 @Controller('api/leads')
 export class BookingController {
-  constructor(private readonly bookingService: BookingService) {}
+  constructor(private readonly bookingService: BookingService) { }
 
   @Get(':id/booking')
   getBooking(@Param('id') id: string) {

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../lib/database/prisma.service.js';
+import { PrismaService } from '../lib/database/prisma.service.js';
 import { put } from '@vercel/blob';
 
 @Injectable()

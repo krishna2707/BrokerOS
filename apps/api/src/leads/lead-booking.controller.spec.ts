@@ -1,18 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-jest.mock('@brokeros/prisma', () => ({ PrismaClient: class {} }));
-jest.mock('expo-server-sdk', () => ({ Expo: class {} }));
+jest.mock('@brokeros/prisma', () => ({ PrismaClient: class { } }));
+jest.mock('expo-server-sdk', () => ({ Expo: class { } }));
 jest.mock('@brokeros/storage', () => ({ uploadFileToBlob: jest.fn() }));
-jest.mock('../../lib/storage/storage.service.js', () => ({
+jest.mock('../lib/storage/storage.service.js', () => ({
   StorageService: jest.fn().mockImplementation(() => ({})),
 }));
-jest.mock('../../lib/database/prisma.service.js', () => ({
+jest.mock('../lib/database/prisma.service.js', () => ({
   PrismaService: jest.fn().mockImplementation(() => ({})),
 }));
-jest.mock('../../notifications/notifications.service.js');
+jest.mock('../notifications/notifications.service.js');
 
-import { BookingController } from './booking.controller.js';
-import { BookingService } from './booking.service.js';
+import { BookingController } from './lead-booking.controller.js';
+import { BookingService } from '../bookings/booking.service.js';
 
 describe('BookingController', () => {
   let controller: BookingController;

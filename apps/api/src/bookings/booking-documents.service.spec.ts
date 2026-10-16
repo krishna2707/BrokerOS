@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-jest.mock('@brokeros/prisma', () => ({ PrismaClient: class {} }));
-jest.mock('expo-server-sdk', () => ({ Expo: class {} }));
+jest.mock('@brokeros/prisma', () => ({ PrismaClient: class { } }));
+jest.mock('expo-server-sdk', () => ({ Expo: class { } }));
 
 jest.mock('@vercel/blob', () => ({
   put: jest.fn().mockResolvedValue({ url: 'http://example.com/blob' }),
 }));
 
 import { BookingDocumentsService } from './booking-documents.service.js';
-import { PrismaService } from '../../lib/database/prisma.service.js';
+import { PrismaService } from '../lib/database/prisma.service.js';
 
 describe('BookingDocumentsService', () => {
   let service: BookingDocumentsService;

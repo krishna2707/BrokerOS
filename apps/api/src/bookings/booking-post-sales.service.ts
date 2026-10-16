@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../lib/database/prisma.service.js';
-import { StorageService } from '../../lib/storage/storage.service.js';
-import { NotificationsService } from '../../notifications/notifications.service.js';
+import { PrismaService } from '../lib/database/prisma.service.js';
+import { StorageService } from '../lib/storage/storage.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { NotificationType } from '@brokeros/prisma';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class BookingPostSalesService {
     private prisma: PrismaService,
     private notificationsService: NotificationsService,
     private storageService: StorageService,
-  ) {}
+  ) { }
 
   async saveLoanCase(bookingId: string, data: Record<string, any>) {
     const {
