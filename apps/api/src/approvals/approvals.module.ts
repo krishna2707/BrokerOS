@@ -4,7 +4,7 @@ import { ApprovalsService } from './approvals.service.js';
 import { PrismaModule } from '../lib/database/prisma.module.js';
 
 import { NotificationsModule } from '../notifications/notifications.module.js';
-import { BookingsModule } from '../leads/bookings/bookings.module.js';
+import { BookingsModule } from '../bookings/bookings.module.js';
 
 @Module({
   imports: [PrismaModule, NotificationsModule, BookingsModule],

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../lib/database/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
-import { BookingStatusService } from '../leads/bookings/booking-status.service.js';
+import { BookingStatusService } from '../bookings/booking-status.service.js';
 import { NotificationType, ApprovalType } from '@brokeros/prisma';
 import {
   CreateApprovalRequestDto,

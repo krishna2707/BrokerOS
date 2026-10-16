@@ -31,7 +31,7 @@ jest.mock('../notifications/notifications.service.js');
 import { ApprovalsService } from './approvals.service.js';
 import { PrismaService } from '../lib/database/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
-import { BookingStatusService } from '../leads/bookings/booking-status.service.js';
+import { BookingStatusService } from '../bookings/booking-status.service.js';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { NotificationType } from '@brokeros/prisma';
 import {
