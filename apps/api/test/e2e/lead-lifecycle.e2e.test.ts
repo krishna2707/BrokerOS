@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { LeadsManagementService } from '../../src/leads/core/leads-management.service.js';
+import { LeadsService } from '../../src/leads/core/leads.service.js';
 import { SiteVisitsService } from '../../src/leads/site-visits/site-visits.service.js';
-import { BookingCreationService } from '../../src/leads/bookings/booking-creation.service.js';
-import { BookingStatusService } from '../../src/leads/bookings/booking-status.service.js';
+import { BookingCreationService } from '../../src/bookings/booking-creation.service.js';
+import { BookingStatusService } from '../../src/bookings/booking-status.service.js';
 import { LeadStatus } from '@brokeros/prisma';
 
 describe('API E2E: Lead Lifecycle State Machine', () => {
-  let leadsManagementService: LeadsManagementService;
+  let leadsManagementService: LeadsService;
   let siteVisitsService: SiteVisitsService;
   let bookingCreationService: BookingCreationService;
   let bookingStatusService: BookingStatusService;
@@ -75,7 +75,7 @@ describe('API E2E: Lead Lifecycle State Machine', () => {
       ),
     };
 
-    leadsManagementService = new LeadsManagementService(
+    leadsManagementService = new LeadsService(
       mockPrisma,
       mockNotifications,
     );
