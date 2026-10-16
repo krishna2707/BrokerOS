@@ -1,12 +1,15 @@
+"use client";
+
 import React, { RefObject } from "react";
 import { Card } from "@/components/ui/Card";
 import { Edit2, Check, X } from "lucide-react";
+import type { LeadDetailsDto } from "@brokeros/types";
 import { LeadHeaderAvatar } from "@/features/leads/components/profile/LeadHeaderAvatar";
 import { LeadHeaderDetails } from "@/features/leads/components/profile/LeadHeaderDetails";
 import { LeadHeaderEdit } from "@/features/leads/components/profile/LeadHeaderEdit";
 
 interface LeadHeaderProps {
-  lead: any;
+  lead: LeadDetailsDto;
   leadId: string;
   isEditing: boolean;
   setIsEditing: (val: boolean) => void;
@@ -153,11 +156,11 @@ export function LeadHeader({
                   cy={40}
                   r={35}
                   stroke={
-                    lead.score >= 80
+                    (lead.score ?? 0) >= 80
                       ? "#10b981"
-                      : lead.score >= 60
-                      ? "#f59e0b"
-                      : "#f43f5e"
+                      : (lead.score ?? 0) >= 60
+                        ? "#f59e0b"
+                        : "#f43f5e"
                   }
                   strokeWidth={5}
                   fill="transparent"
