@@ -6,6 +6,7 @@ import { authClient } from '../../../lib/auth-client';
 import { getAvailableStatusesForRole } from '../../../lib/status-utils';
 
 import { LeadProfileData } from '../misc/lead-profile-types';
+import type { BookingDto, NegotiationDto, LeadStatus, LeadTemperature } from '@brokeros/types';
 import ProfileHeader from './ProfileHeader';
 import ActionButtons from './ActionButtons';
 import AINextStep from './AINextStep';
@@ -45,8 +46,8 @@ export default function LeadProfileClient({ leadId, role }: LeadProfileClientPro
   else if (role === 'sales-manager') mappedRole = 'SALES_MANAGER';
   else if (role === 'post-sales') mappedRole = 'POST_SALES';
 
-  const [booking, setBooking] = useState<any>(null);
-  const [negotiations, setNegotiations] = useState<any[]>([]);
+  const [booking, setBooking] = useState<BookingDto | null>(null);
+  const [negotiations, setNegotiations] = useState<NegotiationDto[]>([]);
 
   // Modals state
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
@@ -281,7 +282,7 @@ export default function LeadProfileClient({ leadId, role }: LeadProfileClientPro
         body: { status: newStatus, subStatus: 'PENDING' },
       });
       if (!error && lead) {
-        setLead({ ...lead, status: newStatus, subStatus: 'PENDING' });
+        setLead({ ...lead, status: newStatus as LeadStatus, subStatus: 'PENDING' });
         if (isPostSales) {
           fetchLead(); // Refresh for subStatus changes if needed
         }
@@ -323,7 +324,7 @@ export default function LeadProfileClient({ leadId, role }: LeadProfileClientPro
         body: { temperature: newTemp },
       });
       if (!error && lead) {
-        setLead({ ...lead, temperature: newTemp });
+        setLead({ ...lead, temperature: newTemp as LeadTemperature });
       }
     } catch (e) {
       console.error(e);
@@ -644,8 +645,8 @@ export default function LeadProfileClient({ leadId, role }: LeadProfileClientPro
             {role === 'closing-manager' && booking && (
               <MobilePaymentScheduleCard
                 bookingId={booking.id}
-                agreedPrice={booking.agreedPrice || 0}
-                bookingAmount={booking.bookingAmount || 0}
+                agreedPrice={Number(booking.agreedPrice) || 0}
+                bookingAmount={Number(booking.bookingAmount) || 0}
               />
             )}
 

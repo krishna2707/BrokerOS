@@ -99,7 +99,7 @@ export default function LeadDetails({
           {lead.broker && (
             <View className="flex-row justify-between items-center mt-2 pt-2 border-t border-slate-100">
               <View className="flex-row items-center gap-2"><Feather name="users" size={14} color="#4f46e5" /><Text className="text-indigo-600 font-medium text-sm">Broker</Text></View>
-              <Text className="text-indigo-900 text-sm font-bold">{lead.broker.companyName || lead.broker.name}</Text>
+              <Text className="text-indigo-900 text-sm font-bold">{lead.broker.companyName || lead.broker.firmName || lead.broker.name}</Text>
             </View>
           )}
           <View className="flex-row justify-between items-center">
