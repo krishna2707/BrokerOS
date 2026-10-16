@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Lead } from '../misc/lead-management-types';
+import { Lead } from '../types';
 
 interface LeadListItemProps {
   item: Lead;

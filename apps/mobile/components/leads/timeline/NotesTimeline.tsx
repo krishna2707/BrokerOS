@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { LeadProfileData } from '../misc/lead-profile-types';
+import { LeadProfileData } from '../types';
 
 interface NotesTimelineProps {
   notes: LeadProfileData['notes'];

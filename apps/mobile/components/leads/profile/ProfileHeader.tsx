@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
-import { LeadProfileData } from '../misc/lead-profile-types';
+import { LeadProfileData } from '../types';
 
 interface ProfileHeaderProps {
   lead: LeadProfileData;

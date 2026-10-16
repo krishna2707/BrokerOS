@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import SiteVisitEditMode from '../misc/SiteVisitEditMode';
-import BrokerMeetingEditMode from '../../../components/brokers/misc/BrokerMeetingEditMode';
-import { LeadProfileData } from '../misc/lead-profile-types';
+import SiteVisitEditMode from '../site-visits/SiteVisitEditMode';
+import BrokerMeetingEditMode from '@/components/brokers/meetings/BrokerMeetingEditMode';
+import { LeadProfileData } from '../types';
 
 interface SchedulesTimelineProps {
   siteVisits: LeadProfileData['siteVisits'];

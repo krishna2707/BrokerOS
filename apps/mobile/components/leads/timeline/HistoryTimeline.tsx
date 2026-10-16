@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import AudioPlayer from '../misc/AudioPlayer';
-import { LeadProfileData } from '../misc/lead-profile-types';
+import AudioPlayer from '../media/AudioPlayer';
+import { LeadProfileData } from '../types';
 
 interface HistoryTimelineProps {
   lead: LeadProfileData;
