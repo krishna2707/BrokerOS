@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { DashboardData } from '../misc/types';
-import { TEMP_CONFIG, STATUS_LABEL } from '../misc/constants';
+import { DashboardData } from '../types';
+import { TEMP_CONFIG, STATUS_LABEL } from '../constants';
 
 interface TodayFollowUpsProps {
   todayFollowUpList: DashboardData['todayFollowUpList'];

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { DashboardData } from '../misc/types';
-import { PIPELINE_STAGES } from '../misc/constants';
+import { DashboardData } from '../types';
+import { PIPELINE_STAGES } from '../constants';
 
 interface PipelineStagesProps {
   pipeline: DashboardData['pipeline'];

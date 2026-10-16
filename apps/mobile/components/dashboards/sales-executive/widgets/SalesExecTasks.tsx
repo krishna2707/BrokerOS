@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { DashboardData } from '../misc/types';
+import { DashboardData } from '../types';
 
 export default function SalesExecTasks({ dashData }: { dashData: DashboardData }) {
   const [activeTab, setActiveTab] = useState<'TODAY_SV' | 'BACKLOG_SV' | 'FOLLOW_UPS'>('TODAY_SV');

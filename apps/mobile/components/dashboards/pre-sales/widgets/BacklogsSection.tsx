@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { CheckCircle } from 'lucide-react-native';
-import { DashboardData } from '../misc/types';
+import { DashboardData } from '../types';
 
 interface BacklogsSectionProps {
   backlogs: DashboardData['backlogs'];

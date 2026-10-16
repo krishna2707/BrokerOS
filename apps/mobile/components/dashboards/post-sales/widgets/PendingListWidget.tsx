@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { LeadListItem } from '../misc/types';
+import { LeadListItem } from '../types';
 
 interface PendingListWidgetProps {
   title: string;

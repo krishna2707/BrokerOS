@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { PostSalesDashboardData } from '../misc/types';
-import { STATUS_LABEL } from '../../pre-sales/misc/constants';
+import { PostSalesDashboardData } from '../types';
+import { STATUS_LABEL } from '../../pre-sales/constants';
 
 interface PostSalesFollowUpsProps {
   todayFollowUpList: PostSalesDashboardData['todayFollowUpList'];

@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { DashboardData } from '../misc/types';
-import { pct } from '../misc/constants';
+import { DashboardData } from '../types';
+import { pct } from '../constants';
 
 interface DailyTasksProps {
   dailyTasks: DashboardData['dailyTasks'];
