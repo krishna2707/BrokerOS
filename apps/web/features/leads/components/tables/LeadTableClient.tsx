@@ -4,13 +4,14 @@ import React, { useEffect, useState, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Card } from "@/components/ui/Card";
+import type { LeadListItemDto } from "@brokeros/types";
 import { LeadTableFilters } from "@/features/leads/components/tables/LeadTableFilters";
 import { LeadTableGrid } from "@/features/leads/components/tables/LeadTableGrid";
 
 function LeadTableContent({ isManagerView }: { isManagerView?: boolean }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<LeadListItemDto[]>([]);
   const [loading, setLoading] = useState(true);
 
   const initialFollowUpDate = searchParams.get("followUpDate") || "";
@@ -39,7 +40,7 @@ function LeadTableContent({ isManagerView }: { isManagerView?: boolean }) {
       if (siteVisitDate) params.append("siteVisitDate", siteVisitDate);
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api/proxy";
-      const res = await authClient.$fetch<any[]>(
+      const res = await authClient.$fetch<LeadListItemDto[]>(
         `/api/leads?${params.toString()}`,
         { baseURL: apiUrl }
       );

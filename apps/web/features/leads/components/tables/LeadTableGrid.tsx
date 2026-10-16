@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import type { LeadListItemDto } from "@brokeros/types";
 import {
   StatusPill,
   SkeletonRows,
@@ -8,7 +9,7 @@ import {
 } from "./TablePrimitives";
 
 interface LeadTableGridProps {
-  leads: any[];
+  leads: LeadListItemDto[];
   loading: boolean;
   isManagerView?: boolean;
   pathname: string;
@@ -98,7 +99,7 @@ function LeadRow({
   pathname,
   isManagerView,
 }: {
-  lead: any;
+  lead: LeadListItemDto;
   index: number;
   pathname: string;
   isManagerView?: boolean;
@@ -122,9 +123,9 @@ function LeadRow({
           <div className="font-bold text-xs text-[var(--text-primary)] group-hover:text-[var(--brand-700)] transition-colors">
             {lead.firstName} {lead.lastName || ""}
           </div>
-          {lead.project && (
+          {(lead.project?.name || lead.interestedProject?.name) && (
             <div className="text-[11px] font-medium text-[var(--text-muted)] mt-0.5">
-              {lead.project}
+              {lead.project?.name || lead.interestedProject?.name}
             </div>
           )}
         </Link>

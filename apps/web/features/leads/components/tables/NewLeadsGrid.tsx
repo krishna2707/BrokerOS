@@ -1,5 +1,6 @@
 import React from "react";
 import { UserPlus } from "lucide-react";
+import type { LeadListItemDto, UserSummaryDto } from "@brokeros/types";
 import {
   SkeletonRows,
   EmptyState,
@@ -7,10 +8,10 @@ import {
 } from "./TablePrimitives";
 
 interface NewLeadsGridProps {
-  leads: any[];
+  leads: LeadListItemDto[];
   loading: boolean;
   selectedLeadIds: Set<string>;
-  subordinates: any[];
+  subordinates: UserSummaryDto[];
   onSelectAll: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectOne: (e: React.ChangeEvent<HTMLInputElement>, id: string) => void;
   onAssign: (leadIds: string[], targetUserId?: string, roundRobin?: boolean) => void;
@@ -85,9 +86,9 @@ export function NewLeadsGrid({
                     <div className="font-bold text-xs text-[var(--text-primary)]">
                       {lead.firstName} {lead.lastName || ""}
                     </div>
-                    {lead.project && (
+                    {(lead.project?.name || lead.interestedProject?.name) && (
                       <div className="text-[11px] font-medium text-[var(--text-muted)] mt-0.5">
-                        {lead.project}
+                        {lead.project?.name || lead.interestedProject?.name}
                       </div>
                     )}
                   </td>

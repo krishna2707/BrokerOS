@@ -1,6 +1,7 @@
 import React from "react";
 import { Search, Calendar, X } from "lucide-react";
 import { ExportLeadsButton } from "@/features/leads/components/ExportLeadsButton";
+import type { LeadListItemDto } from "@brokeros/types";
 
 const POST_SALES_STATUS_OPTIONS = [
   {
@@ -23,7 +24,7 @@ interface PostSalesTableFiltersProps {
   search: string;
   setSearch: (v: string) => void;
   completedHandoversOnly?: boolean;
-  leads?: any[];
+  leads?: LeadListItemDto[];
   filenamePrefix?: string;
 }
 
