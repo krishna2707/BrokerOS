@@ -1,8 +1,9 @@
 import React from "react";
 import { FileText, Download } from "lucide-react";
+import type { ApprovalRequestDto, ApprovalMessageDto } from "@brokeros/types";
 
 interface ApprovalTicketMessagesProps {
-  ticket: any;
+  ticket: ApprovalRequestDto;
   role: string;
 }
 
@@ -12,8 +13,8 @@ export function ApprovalTicketMessages({
 }: ApprovalTicketMessagesProps) {
   return (
     <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-slate-50/40">
-      {ticket.messages.map((msg: any) => {
-        const isManager = msg.sender.role?.code === "SALES_MANAGER";
+      {(ticket.messages || []).map((msg: ApprovalMessageDto) => {
+        const isManager = (msg.sender as any)?.role?.code === "SALES_MANAGER";
         const alignRight =
           (role === "SALES_MANAGER" && isManager) ||
           (role === "SALES_EXECUTIVE" && !isManager);
@@ -26,7 +27,7 @@ export function ApprovalTicketMessages({
           >
             <div className="flex items-center gap-2 mb-1 px-1">
               <span className="text-[11px] font-bold text-[var(--text-secondary)]">
-                {msg.sender.name}
+                {msg.sender?.name || "User"}
               </span>
               <span className="text-[10px] text-[var(--text-muted)] tabular-nums">
                 {new Date(msg.createdAt).toLocaleDateString("en-IN", {

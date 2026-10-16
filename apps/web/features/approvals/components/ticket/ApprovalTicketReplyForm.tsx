@@ -1,9 +1,10 @@
 import React, { useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { CheckCircle2, XCircle, RotateCcw, Paperclip, Send } from "lucide-react";
+import type { ApprovalRequestDto } from "@brokeros/types";
 
 interface ApprovalTicketReplyFormProps {
-  ticket: any;
+  ticket: ApprovalRequestDto;
   role: string;
   replyDesc: string;
   setReplyDesc: (val: string) => void;
@@ -59,7 +60,7 @@ export function ApprovalTicketReplyForm({
 
       {role === "SALES_MANAGER" &&
         (ticket.status === "APPROVED" || ticket.status === "REJECTED") &&
-        ticket.redoCount < 2 && (
+        (ticket.redoCount ?? 0) < 2 && (
           <div className="flex justify-center pb-2 border-b border-slate-100">
             <button
               onClick={handleRedo}
@@ -67,7 +68,7 @@ export function ApprovalTicketReplyForm({
               className="h-10 px-6 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs shadow-xs transition-all active:scale-[0.96] press-effect flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <RotateCcw size={15} />
-              <span>Redo Decision ({2 - ticket.redoCount} left)</span>
+              <span>Redo Decision ({2 - (ticket.redoCount ?? 0)} left)</span>
             </button>
           </div>
         )}

@@ -5,6 +5,7 @@ import { ApprovalTicketHeader } from "@/features/approvals/components/ticket/App
 import { ApprovalTicketMessages } from "@/features/approvals/components/ticket/ApprovalTicketMessages";
 import { ApprovalTicketReplyForm } from "@/features/approvals/components/ticket/ApprovalTicketReplyForm";
 import { toast } from "sonner";
+import type { ApprovalRequestDto } from "@brokeros/types";
 
 export default function ApprovalTicket({
   ticket,
@@ -12,7 +13,7 @@ export default function ApprovalTicket({
   onBack,
   onUpdate,
 }: {
-  ticket: any;
+  ticket: ApprovalRequestDto;
   role: string;
   onBack: () => void;
   onUpdate: () => void;
