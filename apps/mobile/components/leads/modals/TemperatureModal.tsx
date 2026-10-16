@@ -5,7 +5,7 @@ import { Feather } from '@expo/vector-icons';
 interface TemperatureModalProps {
   isVisible: boolean;
   onClose: () => void;
-  currentTemperature?: string;
+  currentTemperature?: string | null;
   onTemperatureChange: (temp: string) => void;
 }
 

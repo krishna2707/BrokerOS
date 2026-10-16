@@ -4,6 +4,7 @@ import Toast from 'react-native-toast-message';
 import { Feather } from '@expo/vector-icons';
 import { authClient } from '../../../lib/auth-client';
 import { Picker } from '@react-native-picker/picker';
+import type { ProjectDto, TowerDto, UnitDto, BrokerDto } from '@brokeros/types';
 
 interface ClosingManagerNewLeadModalProps {
   isVisible: boolean;
@@ -24,10 +25,10 @@ export default function ClosingManagerNewLeadModal({ isVisible, onClose, onSucce
   });
 
   const [loading, setLoading] = useState(false);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [towers, setTowers] = useState<any[]>([]);
-  const [units, setUnits] = useState<any[]>([]);
-  const [brokers, setBrokers] = useState<any[]>([]);
+  const [projects, setProjects] = useState<ProjectDto[]>([]);
+  const [towers, setTowers] = useState<TowerDto[]>([]);
+  const [units, setUnits] = useState<UnitDto[]>([]);
+  const [brokers, setBrokers] = useState<BrokerDto[]>([]);
 
   useEffect(() => {
     if (isVisible) {
