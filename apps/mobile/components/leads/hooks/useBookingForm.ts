@@ -1,8 +1,22 @@
 import { useState, useEffect } from 'react';
 import Toast from 'react-native-toast-message';
 import { authClient } from '../../../lib/auth-client';
+import type {
+  ProjectDto,
+  TowerDto,
+  FloorDto,
+  UnitDto,
+  LeadListItemDto,
+  LeadDetailsDto,
+  BookingDto,
+} from '@brokeros/types';
 
-export function useBookingForm(leadId: string, onRefresh: () => void, lead?: any, booking?: any) {
+export function useBookingForm(
+  leadId: string,
+  onRefresh: () => void,
+  lead?: (LeadListItemDto | LeadDetailsDto) | null,
+  booking?: BookingDto | null
+) {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -20,8 +34,17 @@ export function useBookingForm(leadId: string, onRefresh: () => void, lead?: any
   const [hasInitializedFromBooking, setHasInitializedFromBooking] = useState(false);
 
   // Cascading Dropdown States
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<ProjectDto[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
+
+  const [towers, setTowers] = useState<TowerDto[]>([]);
+  const [selectedTowerId, setSelectedTowerId] = useState('');
+
+  const [floors, setFloors] = useState<FloorDto[]>([]);
+  const [selectedFloorId, setSelectedFloorId] = useState('');
+
+  const [units, setUnits] = useState<UnitDto[]>([]);
+  const [selectedUnitId, setSelectedUnitId] = useState('');
 
   // Pre-fill from lead or booking
   useEffect(() => {
@@ -50,63 +73,10 @@ export function useBookingForm(leadId: string, onRefresh: () => void, lead?: any
     }
   }, [showForm, lead, booking, hasInitializedFromBooking]);
 
-  const [towers, setTowers] = useState<any[]>([]);
-  const [selectedTowerId, setSelectedTowerId] = useState('');
-
-  const [floors, setFloors] = useState<any[]>([]);
-  const [selectedFloorId, setSelectedFloorId] = useState('');
-
-  const [units, setUnits] = useState<any[]>([]);
-  const [selectedUnitId, setSelectedUnitId] = useState('');
-
-  useEffect(() => {
-    if (showForm) {
-      const fetchProjects = async () => {
-        try {
-          const baseURL = process.env.EXPO_PUBLIC_API_URL as string;
-          // The backend detects the user's role from their auth token and
-          // automatically returns the correct project type (CP vs non-CP).
-          // No need to guess the role client-side.
-          const { data, error } = await authClient.$fetch<any[]>('/api/inventory/projects', { baseURL });
-          if (!error && data) {
-            setProjects(data);
-          }
-        } catch (e) { console.error(e); }
-      };
-      fetchProjects();
-    }
-  }, [showForm]);
-
-  useEffect(() => {
-    if (selectedProjectId) {
-      const fetchTowers = async () => {
-        try {
-          const baseURL = process.env.EXPO_PUBLIC_API_URL as string;
-          const { data } = await authClient.$fetch<any[]>(`/api/inventory/projects/${selectedProjectId}/towers`, { baseURL });
-          if (data) setTowers(data);
-        } catch (e) { console.error(e); }
-      };
-      fetchTowers();
-    } else {
-      setTowers([]);
-    }
-    setSelectedTowerId('');
-  }, [selectedProjectId]);
-
-  useEffect(() => {
-    if (selectedTowerId && towers.length > 0) {
-      const tower = towers.find(t => t.id === selectedTowerId);
-      setFloors(tower?.floors || []);
-    } else {
-      setFloors([]);
-    }
-    setSelectedFloorId('');
-  }, [selectedTowerId, towers]);
-
   useEffect(() => {
     if (selectedFloorId && floors.length > 0) {
       const floor = floors.find(f => f.id === selectedFloorId);
-      const availableUnits = (floor?.units || []).filter((u: any) => u.status === 'AVAILABLE');
+      const availableUnits = (floor?.units || []).filter((u: UnitDto) => u.status === 'AVAILABLE');
       setUnits(availableUnits);
     } else {
       setUnits([]);
