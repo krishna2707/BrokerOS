@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Plus, MessageSquare, ShieldCheck, Loader2 } from "lucide-react";
-import CreateApprovalModal from "@/features/approvals/components/modals/CreateApprovalModal";
-import ApprovalTicket from "@/features/approvals/components/ticket/ApprovalTicket";
+import { ApprovalTicket, CreateApprovalModal } from "@/features/approvals";
 
 export default function SalesExecutiveApprovalPage() {
   const [requests, setRequests] = useState<any[]>([]);
