@@ -5,6 +5,9 @@ import type {
   PreFlightCostLineItem,
   PreFlightCostSummary,
   SenderDomainAnalytics,
+  CampaignStatus,
+  AudienceSourceType,
+  CsvLeadRow,
 } from '@brokeros/types';
 
 export type {
@@ -14,6 +17,9 @@ export type {
   PreFlightCostLineItem,
   PreFlightCostSummary,
   SenderDomainAnalytics,
+  CampaignStatus,
+  AudienceSourceType,
+  CsvLeadRow,
 };
 
 export type EmailProviderType =
@@ -27,8 +33,6 @@ export type EmailProviderType =
   | 'OUTLOOK'
   | 'CONSTANT_CONTACT'
   | 'MULTI_PROVIDER';
-export type CampaignStatus = 'DRAFT' | 'SCHEDULED' | 'PROCESSING' | 'COMPLETED' | 'PAUSED' | 'FAILED' | 'CANCELLED';
-export type AudienceSourceType = 'CRM_DATABASE' | 'CSV_UPLOAD' | 'HYBRID';
 
 export interface CampaignItem {
   id: string;
@@ -54,17 +58,6 @@ export interface CampaignItem {
   createdBy?: { id: string; name: string; email: string };
   allocationMode?: 'AUTO_EVEN' | 'CUSTOM_PERCENTAGE';
   senderPools?: CampaignSenderPoolItem[];
-}
-
-export interface CsvLeadRow {
-  email: string;
-  name?: string;
-  phone?: string;
-  city?: string;
-  budget?: number;
-  interestedProject?: string;
-  temperature?: 'HOT' | 'WARM' | 'COLD';
-  tags?: string[];
 }
 
 export interface AudienceEstimation {
