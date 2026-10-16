@@ -7,12 +7,13 @@ import { useUnitDetails } from "@/features/inventory/hooks/useUnitDetails";
 import { UnitDetailsView } from "@/features/inventory/components/units/UnitDetailsView";
 import { UnitBookingInfo } from "@/features/inventory/components/units/UnitBookingInfo";
 import { UnitEditForm } from "@/features/inventory/components/units/UnitEditForm";
+import type { UnitDto } from "@brokeros/types";
 
 interface UnitDetailsDrawerProps {
-  unit: any;
+  unit: UnitDto;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (unitId: string, updates: any) => Promise<void>;
+  onSave: (unitId: string, updates: Partial<UnitDto> & { clearBooking?: boolean }) => Promise<void>;
   readOnly?: boolean;
 }
 
@@ -141,8 +142,8 @@ export function UnitDetailsDrawer({
         entityId={unit.id}
         entityType="unit"
         entityName={`Unit ${unit.unitNumber}`}
-        initialStatus={unit.constructionStatus}
-        initialTimeline={unit.possessionTimeline}
+        initialStatus={(unit.constructionStatus as any) || undefined}
+        initialTimeline={(unit.possessionTimeline as any) || undefined}
         onSuccess={() => {
           onClose();
         }}

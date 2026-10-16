@@ -1,49 +1,29 @@
 import React from "react";
 import { Box, Store, Key, Lock, CheckCircle2 } from "lucide-react";
-
-interface Unit {
-  id?: string;
-  unitNumber: string;
-  type: string;
-  status: string;
-  basePrice?: number;
-  carpetArea?: number;
-  facing?: string;
-  [key: string]: any;
-}
-
-interface Floor {
-  id?: string;
-  floorNumber: number;
-  name: string;
-  units: Unit[];
-}
-
-interface Tower {
-  id?: string;
-  name: string;
-  floors: Floor[];
-}
+import type { UnitDto, FloorDto, TowerDto } from "@brokeros/types";
+import { UNIT_STATUS_CONFIG } from "@brokeros/constants";
 
 interface UnitGridProps {
-  tower: Tower;
-  onUnitClick?: (unit: Unit, floor: Floor) => void;
+  tower: TowerDto;
+  onUnitClick?: (unit: UnitDto, floor: FloorDto) => void;
   isInteractive?: boolean;
 }
 
 const getUnitColor = (status: string) => {
-  switch (status?.toUpperCase()) {
-    case "AVAILABLE":
-      return "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 hover:border-emerald-400";
-    case "RESERVED":
-      return "bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 hover:border-amber-400";
-    case "SOLD":
-      return "bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100 hover:border-rose-300";
-    case "BLOCKED":
-      return "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200";
-    default:
-      return "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100";
+  const upperStatus = status?.toUpperCase() as keyof typeof UNIT_STATUS_CONFIG;
+  if (UNIT_STATUS_CONFIG[upperStatus]) {
+    switch (upperStatus) {
+      case "AVAILABLE":
+        return "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100 hover:border-emerald-400";
+      case "RESERVED":
+        return "bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 hover:border-amber-400";
+      case "SOLD":
+        return "bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100 hover:border-rose-300";
+      case "BLOCKED":
+        return "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200";
+    }
   }
+  return "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100";
 };
 
 const getUnitIcon = (type: string) => {
@@ -80,7 +60,7 @@ export function UnitGrid({
   onUnitClick,
   isInteractive = true,
 }: UnitGridProps) {
-  const sortedFloors = [...tower.floors].sort(
+  const sortedFloors = [...(tower.floors || [])].sort(
     (a, b) => b.floorNumber - a.floorNumber
   );
 
@@ -103,7 +83,7 @@ export function UnitGrid({
               </div>
 
               <div className="flex flex-wrap gap-2.5 py-1">
-                {floor.units.map((unit, idx) => {
+                {(floor.units || []).map((unit: UnitDto, idx: number) => {
                   const isCommercial =
                     unit.type === "SHOP" || unit.type === "OFFICE";
                   return (
@@ -121,10 +101,9 @@ export function UnitGrid({
                           relative flex flex-col items-center justify-center 
                           w-20 h-20 sm:w-22 sm:h-22 border transition-all duration-150 
                           ${isCommercial ? "rounded-xl border-2" : "rounded-2xl"}
-                          ${
-                            isInteractive
-                              ? "cursor-pointer transform hover:-translate-y-0.5 shadow-2xs hover:shadow-md active:scale-[0.96] press-effect"
-                              : "opacity-90"
+                          ${isInteractive
+                            ? "cursor-pointer transform hover:-translate-y-0.5 shadow-2xs hover:shadow-md active:scale-[0.96] press-effect"
+                            : "opacity-90"
                           }
                           ${getUnitColor(unit.status)}
                         `}
@@ -145,13 +124,12 @@ export function UnitGrid({
                           <div className="font-extrabold text-xs mb-1.5 pb-1.5 border-b border-slate-800 flex justify-between items-center">
                             <span>Unit {unit.unitNumber}</span>
                             <span
-                              className={`text-[10px] font-bold ${
-                                unit.status === "AVAILABLE"
-                                  ? "text-emerald-400"
-                                  : unit.status === "RESERVED"
+                              className={`text-[10px] font-bold ${unit.status === "AVAILABLE"
+                                ? "text-emerald-400"
+                                : unit.status === "RESERVED"
                                   ? "text-amber-400"
                                   : "text-rose-400"
-                              }`}
+                                }`}
                             >
                               {unit.status}
                             </span>
