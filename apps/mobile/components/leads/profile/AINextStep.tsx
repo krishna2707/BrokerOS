@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { LeadProfileData } from '../misc/lead-profile-types';
+import { LeadProfileData } from '../types';
 
 interface AINextStepProps {
   suggestion?: string | null;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Lead } from '../misc/lead-management-types';
+import { Lead } from '../types';
 import { DialerLead } from '@/hooks/useAutoDialer';
 
 interface LeadSearchBarProps {

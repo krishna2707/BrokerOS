@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, Platform } from 'react-native'
 import { Feather } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { LeadProfileData } from '../misc/lead-profile-types';
+import { LeadProfileData } from '../types';
 
 interface LeadDetailsProps {
   lead: LeadProfileData;

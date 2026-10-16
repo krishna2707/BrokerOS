@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { authClient } from '../../../lib/auth-client';
 import { getAvailableStatusesForRole } from '../../../lib/status-utils';
 
-import { LeadProfileData } from '../misc/lead-profile-types';
+import { LeadProfileData } from '../types';
 import type { BookingDto, NegotiationDto, LeadStatus, LeadTemperature } from '@brokeros/types';
 import ProfileHeader from './ProfileHeader';
 import ActionButtons from './ActionButtons';
@@ -19,7 +19,7 @@ import TemperatureModal from '../modals/TemperatureModal';
 import NoteModal from '../modals/NoteModal';
 import FollowUpModal from '../modals/FollowUpModal';
 import SiteVisitModal from '../modals/SiteVisitModal';
-import CompletedSiteVisits from '../misc/CompletedSiteVisits';
+import CompletedSiteVisits from '../site-visits/CompletedSiteVisits';
 import NegotiationHistory from '../timeline/NegotiationHistory';
 import BookingCard from '../booking/BookingCard';
 import PostSalesPipelineCards from '../booking/PostSalesPipelineCards';
