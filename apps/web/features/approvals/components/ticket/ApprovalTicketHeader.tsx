@@ -2,9 +2,10 @@ import React from "react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { ArrowLeft, XCircle, ShieldCheck } from "lucide-react";
+import type { ApprovalRequestDto } from "@brokeros/types";
 
 interface ApprovalTicketHeaderProps {
-  ticket: any;
+  ticket: ApprovalRequestDto;
   role: string;
   onBack: () => void;
   handleCloseTicket: () => void;
