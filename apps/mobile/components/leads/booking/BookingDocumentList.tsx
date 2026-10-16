@@ -14,30 +14,10 @@ const DOC_TYPES = [
   { key: 'OTHER', label: 'Other Document' },
 ];
 
-interface BookingDocument {
-  type: string;
-  fileUrl: string;
-  title: string;
-}
-
-interface BookingData {
-  id: string;
-  unitDescription?: string;
-  agreedPrice?: number;
-  bookingAmount?: number;
-  commissionPercentage?: number;
-  commissionAmount?: number;
-  paymentMode?: string;
-  transactionRef?: string;
-  loanRequired?: boolean;
-  remarks?: string;
-  documents: BookingDocument[];
-  status: string;
-  createdAt: string;
-}
+import type { BookingDto } from '@brokeros/types';
 
 interface BookingDocumentListProps {
-  booking: BookingData;
+  booking: BookingDto;
   leadId: string;
   onRefresh: () => void;
   saving: boolean;
@@ -122,7 +102,7 @@ export default function BookingDocumentList({
 
       <View className="space-y-3">
         {DOC_TYPES.map(docType => {
-          const uploadedDoc = booking.documents?.find(d => d.type === docType.key);
+          const uploadedDoc = booking.documents?.find((d: any) => d.type === docType.key);
           const isUploading = uploadingType === docType.key;
 
           return (
