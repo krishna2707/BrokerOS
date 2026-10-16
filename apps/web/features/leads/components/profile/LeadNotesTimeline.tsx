@@ -1,9 +1,12 @@
+"use client";
+
 import React from "react";
 import { Card } from "@/components/ui/Card";
 import { Plus, MessageSquare } from "lucide-react";
+import type { NoteDto } from "@brokeros/types";
 
 interface LeadNotesTimelineProps {
-  notes: any[];
+  notes: NoteDto[];
   setPendingStatusChange: (status: string | null) => void;
   setIsNoteModalOpen: (val: boolean) => void;
 }

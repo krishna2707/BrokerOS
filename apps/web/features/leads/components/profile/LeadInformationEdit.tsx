@@ -7,12 +7,13 @@ import {
   Briefcase,
   Calendar,
 } from "lucide-react";
+import type { LeadDetailsDto, LeadSourceDto, ProjectDto } from "@brokeros/types";
 
 interface LeadInformationEditProps {
   leadInfoData: any;
   setLeadInfoData: (data: any) => void;
-  availableSources: any[];
-  availableProjects: any[];
+  availableSources: LeadSourceDto[];
+  availableProjects: ProjectDto[];
 }
 
 export function LeadInformationEdit({
