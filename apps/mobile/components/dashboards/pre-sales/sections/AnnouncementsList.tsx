@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Announcement } from '../misc/types';
+import { Announcement } from '../types';
 
 interface AnnouncementsListProps {
   announcements: Announcement[];
