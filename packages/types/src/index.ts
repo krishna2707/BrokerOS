@@ -23,3 +23,6 @@ export * from './whatsapp/index.js';
 // Lead, Customer & Analytics Exports
 export * from './export.js';
 
+// CRM Domain (Leads, Bookings, Inventory, Brokers, Approvals, Roles)
+export * from './crm/index.js';
+
