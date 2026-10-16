@@ -1,7 +1,9 @@
 import React from "react";
+import { LEAD_STATUS_CONFIG } from "@brokeros/constants";
+import type { LeadStatus } from "@brokeros/types";
 
 /* ─── Shared Date Formatter ────────────────────────────────────────── */
-export function formatDate(dateString: string | null | undefined) {
+export function formatDate(dateString: string | Date | null | undefined) {
   if (!dateString) return "—";
   return new Date(dateString).toLocaleDateString("en-IN", {
     year: "numeric",
@@ -10,79 +12,28 @@ export function formatDate(dateString: string | null | undefined) {
   });
 }
 
-/* ─── Semantic OKLCH Status Colors ─────────────────────────────────── */
+/* ─── Semantic Status Colors mapping from @brokeros/constants ─────── */
 export const STATUS_COLORS: Record<
   string,
   { bg: string; fg: string; border: string }
 > = {
-  NEW: {
-    bg: "bg-purple-50",
-    fg: "text-purple-700",
-    border: "border-purple-200",
-  },
-  CONTACTED: {
-    bg: "bg-sky-50",
-    fg: "text-sky-700",
-    border: "border-sky-200",
-  },
-  INTERESTED: {
-    bg: "bg-emerald-50",
-    fg: "text-emerald-700",
-    border: "border-emerald-200",
-  },
-  QUALIFIED: {
-    bg: "bg-teal-50",
-    fg: "text-teal-700",
-    border: "border-teal-200",
-  },
-  SITE_VISIT_SCHEDULED: {
-    bg: "bg-amber-50",
-    fg: "text-amber-800",
-    border: "border-amber-200",
-  },
-  SITE_VISIT_COMPLETED: {
-    bg: "bg-indigo-50",
-    fg: "text-indigo-700",
-    border: "border-indigo-200",
-  },
-  NEGOTIATION: {
-    bg: "bg-orange-50",
-    fg: "text-orange-800",
-    border: "border-orange-200",
-  },
-  BOOKING: {
-    bg: "bg-emerald-50",
-    fg: "text-emerald-700",
-    border: "border-emerald-200",
-  },
-  DOCUMENT: {
-    bg: "bg-amber-50",
-    fg: "text-amber-900",
-    border: "border-amber-300",
-  },
-  LOAN: {
-    bg: "bg-blue-50",
-    fg: "text-blue-700",
-    border: "border-blue-200",
-  },
-  AGREEMENT: {
-    bg: "bg-violet-50",
-    fg: "text-violet-700",
-    border: "border-violet-200",
-  },
-  HANDOVER: {
-    bg: "bg-rose-50",
-    fg: "text-rose-700",
-    border: "border-rose-200",
-  },
-  LOST: {
-    bg: "bg-rose-50",
-    fg: "text-rose-700",
-    border: "border-rose-200",
-  },
+  NEW: { bg: "bg-purple-50", fg: "text-purple-700", border: "border-purple-200" },
+  CONTACTED: { bg: "bg-sky-50", fg: "text-sky-700", border: "border-sky-200" },
+  INTERESTED: { bg: "bg-emerald-50", fg: "text-emerald-700", border: "border-emerald-200" },
+  QUALIFIED: { bg: "bg-teal-50", fg: "text-teal-700", border: "border-teal-200" },
+  SITE_VISIT_SCHEDULED: { bg: "bg-amber-50", fg: "text-amber-800", border: "border-amber-200" },
+  SITE_VISIT_COMPLETED: { bg: "bg-indigo-50", fg: "text-indigo-700", border: "border-indigo-200" },
+  NEGOTIATION: { bg: "bg-orange-50", fg: "text-orange-800", border: "border-orange-200" },
+  BOOKING: { bg: "bg-emerald-50", fg: "text-emerald-700", border: "border-emerald-200" },
+  DOCUMENT: { bg: "bg-amber-50", fg: "text-amber-900", border: "border-amber-300" },
+  LOAN: { bg: "bg-blue-50", fg: "text-blue-700", border: "border-blue-200" },
+  AGREEMENT: { bg: "bg-violet-50", fg: "text-violet-700", border: "border-violet-200" },
+  HANDOVER: { bg: "bg-rose-50", fg: "text-rose-700", border: "border-rose-200" },
+  LOST: { bg: "bg-rose-50", fg: "text-rose-700", border: "border-rose-200" },
 };
 
-export function StatusPill({ status }: { status: string }) {
+export function StatusPill({ status }: { status: LeadStatus | string }) {
+  const config = (LEAD_STATUS_CONFIG as Record<string, { label: string; bg: string }>)[status];
   const s = STATUS_COLORS[status] ?? {
     bg: "bg-slate-50",
     fg: "text-slate-700",
@@ -94,7 +45,7 @@ export function StatusPill({ status }: { status: string }) {
       className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${s.bg} ${s.fg} ${s.border} whitespace-nowrap select-none`}
     >
       <span className="w-1.5 h-1.5 rounded-full bg-current opacity-75 inline-block" />
-      {status.replace(/_/g, " ")}
+      {config?.label || status.replace(/_/g, " ")}
     </span>
   );
 }
