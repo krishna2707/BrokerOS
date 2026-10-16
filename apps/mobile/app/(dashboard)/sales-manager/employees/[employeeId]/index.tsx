@@ -4,7 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { CalendarCheck, Footprints, CheckCircle2, MessageSquare, Award } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { authClient } from '../../../../../lib/auth-client';
-import { DashboardData, LeaderboardEntry } from '../../../../../components/dashboards/sales-executive/misc/types';
+import { DashboardData, LeaderboardEntry } from '@/components/dashboards/sales-executive/types';
 import SalesExecTasks from '../../../../../components/dashboards/sales-executive/widgets/SalesExecTasks';
 import LiveTrackingMap from '../../../../../components/maps/LiveTrackingMap';
 import MobileEmployeeLeads from '../../../../../components/dashboards/sales-manager/widgets/MobileEmployeeLeads';

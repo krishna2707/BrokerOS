@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import { UnitGrid } from '../../../../components/inventory/grid/UnitGrid';
 import { BookingModal } from '../../../../components/inventory/modals/BookingModal';
 import { UnitInfoModal } from '../../../../components/inventory/modals/UnitInfoModal';
-import { ProjectDocuments } from '../../../../components/inventory/misc/ProjectDocuments';
+import { ProjectDocuments } from '@/components/inventory/documents/ProjectDocuments';
 import InventoryFilters from '../../../../components/shared/InventoryFilters';
 import { authClient } from '../../../../lib/auth-client';
 

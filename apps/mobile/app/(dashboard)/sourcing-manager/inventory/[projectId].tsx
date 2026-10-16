@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { UnitGrid } from '../../../../components/inventory/grid/UnitGrid';
 import { UnitInfoModal } from '../../../../components/inventory/modals/UnitInfoModal';
-import { ProjectDocuments } from '../../../../components/inventory/misc/ProjectDocuments';
+import { ProjectDocuments } from '@/components/inventory/documents/ProjectDocuments';
 import InventoryFilters from '../../../../components/shared/InventoryFilters';
 import { authClient } from '../../../../lib/auth-client';
 

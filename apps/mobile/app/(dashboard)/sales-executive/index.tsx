@@ -4,7 +4,7 @@ import { useLocationTracking } from '../../../hooks/useLocationTracking';
 import { authClient } from '../../../lib/auth-client';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { DashboardData, LeaderboardEntry } from '../../../components/dashboards/sales-executive/misc/types';
+import { DashboardData, LeaderboardEntry } from '@/components/dashboards/sales-executive/types';
 import SalesExecTasks from '../../../components/dashboards/sales-executive/widgets/SalesExecTasks';
 import { SharedLeaderboard } from '../../../components/shared/SharedLeaderboard';
 import LiveTrackingMap from '../../../components/maps/LiveTrackingMap';

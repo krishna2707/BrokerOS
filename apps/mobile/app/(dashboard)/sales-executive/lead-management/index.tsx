@@ -3,7 +3,7 @@ import { View, FlatList, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { authClient } from '../../../../lib/auth-client';
 
-import { Lead } from '../../../../components/leads/misc/lead-management-types';
+import { Lead } from '@/components/leads/types';
 import LeadSearchBar from '../../../../components/leads/list/LeadSearchBar';
 import LeadListItem from '../../../../components/leads/list/LeadListItem';
 import LeadFilters from '../../../../components/leads/list/LeadFilters';
