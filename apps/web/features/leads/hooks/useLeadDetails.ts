@@ -1,15 +1,18 @@
+"use client";
+
 import { useState, useRef } from 'react';
+import type { LeadDetailsDto, LeadSourceDto, ProjectDto } from '@brokeros/types';
 
 export function useLeadDetails(leadId: string) {
-  const [lead, setLead] = useState<any>(null);
+  const [lead, setLead] = useState<LeadDetailsDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isEditingLeadInfo, setIsEditingLeadInfo] = useState(false);
-  const [availableSources, setAvailableSources] = useState<any[]>([]);
-  const [availableProjects, setAvailableProjects] = useState<any[]>([]);
+  const [availableSources, setAvailableSources] = useState<LeadSourceDto[]>([]);
+  const [availableProjects, setAvailableProjects] = useState<ProjectDto[]>([]);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -142,7 +145,7 @@ export function useLeadDetails(leadId: string) {
         body: JSON.stringify({ temperature: newTemp }),
       });
       if (res.ok) {
-        setLead({ ...lead, temperature: newTemp });
+        setLead((prev) => (prev ? { ...prev, temperature: newTemp as any } : null));
       }
     } catch (e) {
       console.error('Failed to update temperature:', e);
@@ -158,7 +161,7 @@ export function useLeadDetails(leadId: string) {
         body: JSON.stringify({ subStatus: newSubStatus }),
       });
       if (res.ok) {
-        setLead({ ...lead, subStatus: newSubStatus });
+        setLead((prev) => (prev ? { ...prev, subStatus: newSubStatus } : null));
       }
     } catch (e) {
       console.error('Failed to update subStatus:', e);

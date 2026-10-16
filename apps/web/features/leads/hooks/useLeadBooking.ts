@@ -1,7 +1,10 @@
+"use client";
+
 import { useState } from 'react';
+import type { BookingDto } from '@brokeros/types';
 
 export function useLeadBooking(leadId: string) {
-  const [booking, setBooking] = useState<any>(null);
+  const [booking, setBooking] = useState<BookingDto | null>(null);
 
   const fetchBooking = async () => {
     try {

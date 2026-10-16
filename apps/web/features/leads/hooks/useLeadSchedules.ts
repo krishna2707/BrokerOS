@@ -1,9 +1,12 @@
+"use client";
+
 import { useState } from 'react';
 import { toast } from 'sonner';
+import type { FollowUpDto, SiteVisitDto, LeadDetailsDto } from '@brokeros/types';
 
-export function useLeadSchedules(leadId: string, userId: string | undefined, lead: any) {
-  const [followUps, setFollowUps] = useState<any[]>([]);
-  const [siteVisits, setSiteVisits] = useState<any[]>([]);
+export function useLeadSchedules(leadId: string, userId: string | undefined, lead: LeadDetailsDto | any) {
+  const [followUps, setFollowUps] = useState<FollowUpDto[]>([]);
+  const [siteVisits, setSiteVisits] = useState<SiteVisitDto[]>([]);
 
   const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
   const [isSiteVisitModalOpen, setIsSiteVisitModalOpen] = useState(false);

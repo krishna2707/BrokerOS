@@ -1,8 +1,11 @@
+"use client";
+
 import { useState } from 'react';
 import { toast } from 'sonner';
+import type { NoteDto, LeadDetailsDto } from '@brokeros/types';
 
-export function useLeadNotes(leadId: string, userId: string | undefined, lead: any, setLead: (lead: any) => void) {
-  const [notes, setNotes] = useState<any[]>([]);
+export function useLeadNotes(leadId: string, userId: string | undefined, lead: LeadDetailsDto | any, setLead: (lead: LeadDetailsDto | any) => void) {
+  const [notes, setNotes] = useState<NoteDto[]>([]);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState('');
   const [pendingStatusChange, setPendingStatusChange] = useState<string | null>(null);

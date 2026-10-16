@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from 'react';
 import { NegotiationFormData } from '@/features/leads/types/negotiation-types';
 
