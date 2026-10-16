@@ -2,34 +2,11 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-
-interface Unit {
-  id?: string;
-  unitNumber: string;
-  type: string;
-  status: string;
-  basePrice?: number;
-  carpetArea?: number;
-  facing?: string;
-  [key: string]: any;
-}
-
-interface Floor {
-  id?: string;
-  floorNumber: number;
-  name: string;
-  units: Unit[];
-}
-
-interface Tower {
-  id?: string;
-  name: string;
-  floors: Floor[];
-}
+import type { UnitDto, FloorDto, TowerDto } from '@brokeros/types';
 
 interface UnitGridProps {
-  tower: Tower;
-  onUnitClick?: (unit: Unit, floor: Floor) => void;
+  tower: TowerDto;
+  onUnitClick?: (unit: UnitDto, floor: FloorDto) => void;
   isInteractive?: boolean;
 }
 
@@ -70,9 +47,9 @@ const getStatusIcon = (status: string) => {
 };
 
 export function UnitGrid({ tower, onUnitClick, isInteractive = true }: UnitGridProps) {
-  const sortedFloors = [...tower.floors].sort((a, b) => b.floorNumber - a.floorNumber);
+  const sortedFloors = [...(tower.floors || [])].sort((a, b) => b.floorNumber - a.floorNumber);
 
-  const handlePress = (unit: Unit, floor: Floor) => {
+  const handlePress = (unit: UnitDto, floor: FloorDto) => {
     if (isInteractive && onUnitClick) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       onUnitClick(unit, floor);
@@ -91,10 +68,10 @@ export function UnitGrid({ tower, onUnitClick, isInteractive = true }: UnitGridP
                   <Text className="text-sm font-bold text-slate-700 text-right">{floor.name}</Text>
                   <Text className="text-[10px] text-slate-400 text-right font-medium">Floor {floor.floorNumber}</Text>
                 </View>
-                
+
                 {/* Units */}
                 <View className="flex-row gap-3">
-                  {floor.units.map((unit, idx) => {
+                  {(floor.units || []).map((unit: UnitDto, idx: number) => {
                     const isCommercial = unit.type === 'SHOP' || unit.type === 'OFFICE';
                     return (
                       <TouchableOpacity
