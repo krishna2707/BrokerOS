@@ -1,11 +1,14 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { Briefcase, Plus, FileText, Lock, Unlock, Edit2 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import type { BrokerDto, ProjectDto } from "@brokeros/types";
 
 interface BrokerDealCardProps {
   brokerId: string;
-  broker: any;
+  broker: BrokerDto & { projectAssignments?: any[] };
   onRefresh: () => void;
 }
 
@@ -15,7 +18,7 @@ export function BrokerDealCard({
   onRefresh,
 }: BrokerDealCardProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<ProjectDto[]>([]);
   const [formData, setFormData] = useState({
     projectId: "",
     towerId: "",

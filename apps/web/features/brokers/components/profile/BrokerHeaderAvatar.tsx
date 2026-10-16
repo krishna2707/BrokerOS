@@ -1,7 +1,8 @@
 import React from "react";
+import type { BrokerDto } from "@brokeros/types";
 
 interface BrokerHeaderAvatarProps {
-  broker: any;
+  broker: BrokerDto & { profilePhotoUrl?: string | null };
 }
 
 export function BrokerHeaderAvatar({ broker }: BrokerHeaderAvatarProps) {

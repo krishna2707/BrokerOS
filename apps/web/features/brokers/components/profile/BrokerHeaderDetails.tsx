@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useTelephony } from "@/features/telephony/context/TelephonyContext";
@@ -12,9 +14,15 @@ import {
   MessageSquare,
   ChevronDown,
 } from "lucide-react";
+import type { BrokerDto } from "@brokeros/types";
+import {
+  BROKER_STATUS_CONFIG,
+  normalizePhoneNumber,
+  sanitizePhoneForMeta,
+} from "@brokeros/constants";
 
 interface BrokerHeaderDetailsProps {
-  broker: any;
+  broker: BrokerDto & { alternatePhone?: string | null };
   displayName: string;
   handleStatusChange: (status: string) => void;
   handleSubStatusChange?: (subStatus: string) => void;
@@ -24,20 +32,6 @@ interface BrokerHeaderDetailsProps {
   isAiAdvancing: boolean;
   isCM?: boolean;
 }
-
-const BROKER_STATUS_CLASSES: Record<
-  string,
-  { bg: string; text: string; border: string }
-> = {
-  NEW: { bg: "bg-sky-50", text: "text-sky-700", border: "border-sky-200" },
-  CONTACTED: { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200" },
-  VISIT: { bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-200" },
-  DEAL: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
-  ACTIVE: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
-  INACTIVE: { bg: "bg-slate-100", text: "text-slate-600", border: "border-slate-200" },
-  BLACKLISTED: { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-200" },
-  PENDING_APPROVAL: { bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-200" },
-};
 
 export function BrokerHeaderDetails({
   broker,
@@ -54,11 +48,8 @@ export function BrokerHeaderDetails({
   const pathname = usePathname();
   const { initiateCall, callState, activeLead } = useTelephony();
   const currentStatus = broker.status || "NEW";
-  const statusConf = BROKER_STATUS_CLASSES[currentStatus] || {
-    bg: "bg-purple-50",
-    text: "text-[var(--brand-700)]",
-    border: "border-purple-200",
-  };
+  const statusConfig = (BROKER_STATUS_CONFIG as Record<string, { label: string; badge: string }>)[currentStatus];
+  const badgeClasses = statusConfig?.badge || "bg-purple-50 text-[var(--brand-700)] border-purple-200";
 
   return (
     <>
@@ -73,7 +64,7 @@ export function BrokerHeaderDetails({
           <select
             value={currentStatus}
             onChange={(e) => handleStatusChange(e.target.value)}
-            className={`h-7 pl-3 pr-7 rounded-full text-xs font-bold ${statusConf.bg} ${statusConf.text} border ${statusConf.border} outline-none cursor-pointer appearance-none transition-all shadow-2xs`}
+            className={`h-7 pl-3 pr-7 rounded-full text-xs font-bold ${badgeClasses} border outline-none cursor-pointer appearance-none transition-all shadow-2xs`}
           >
             {(() => {
               const allStatuses = [
@@ -102,7 +93,7 @@ export function BrokerHeaderDetails({
           </select>
           <ChevronDown
             size={12}
-            className={`absolute right-2.5 pointer-events-none ${statusConf.text} opacity-70`}
+            className="absolute right-2.5 pointer-events-none opacity-70"
           />
         </div>
 
@@ -201,7 +192,9 @@ export function BrokerHeaderDetails({
           <button
             onClick={(e) => {
               if (e.altKey && broker.phone) {
-                const cleanPhone = broker.phone.replace(/[^0-9]/g, "");
+                const cleanPhone = sanitizePhoneForMeta(
+                  normalizePhoneNumber(broker.phone),
+                );
                 window.open(`https://wa.me/${cleanPhone}`, "_blank");
                 return;
               }

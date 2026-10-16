@@ -1,17 +1,20 @@
+"use client";
+
 import React from "react";
 import { Card } from "@/components/ui/Card";
 import { Edit2, Check, X } from "lucide-react";
 import { BrokerHeaderAvatar } from "@/features/brokers/components/profile/BrokerHeaderAvatar";
 import { BrokerHeaderDetails } from "@/features/brokers/components/profile/BrokerHeaderDetails";
 import { BrokerHeaderEdit } from "@/features/brokers/components/profile/BrokerHeaderEdit";
+import type { BrokerDto } from "@brokeros/types";
 
 interface BrokerHeaderProps {
-  broker: any;
+  broker: BrokerDto;
   brokerId: string;
   isEditing: boolean;
   setIsEditing: (val: boolean) => void;
-  formData: any;
-  setFormData: (data: any) => void;
+  formData: { name: string; email: string };
+  setFormData: (data: { name: string; email: string }) => void;
   handleSave: () => void;
   handleStatusChange: (status: string) => void;
   handleSubStatusChange?: (subStatus: string) => void;
