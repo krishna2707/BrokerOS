@@ -2,7 +2,7 @@
 
 import { authClient } from "@/lib/auth-client";
 import { UserCircle, Shield, Building } from "lucide-react";
-import LiveTrackingMap from "@/components/LiveTrackingMap";
+import LiveTrackingMap from "@/components/dashboard/LiveTrackingMap";
 
 export default function DashboardOverview() {
   const { data: session } = authClient.useSession();
