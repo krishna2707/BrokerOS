@@ -1,6 +1,6 @@
 jest.mock('../../lib/database/prisma.service.js', () => {
   return {
-    PrismaService: class MockPrismaService {},
+    PrismaService: class MockPrismaService { },
   };
 });
 
@@ -9,6 +9,7 @@ import { EmailAudienceService } from './services/email-audience.service.js';
 import { EmailAnalyticsService } from './services/email-analytics.service.js';
 import { EmailIntegrationsService } from './services/email-integrations.service.js';
 import { EmailTrackingService } from './services/email-tracking.service.js';
+import { EmailCampaignService } from './services/email-campaign.service.js';
 
 describe('EmailService Unit Tests', () => {
   let service: EmailService;
@@ -16,6 +17,7 @@ describe('EmailService Unit Tests', () => {
   let analyticsService: EmailAnalyticsService;
   let integrationsService: EmailIntegrationsService;
   let trackingService: EmailTrackingService;
+  let campaignService: EmailCampaignService;
   let mockPrisma: any;
 
   beforeEach(() => {
@@ -90,13 +92,14 @@ describe('EmailService Unit Tests', () => {
     analyticsService = new EmailAnalyticsService(mockPrisma);
     integrationsService = new EmailIntegrationsService(mockPrisma);
     trackingService = new EmailTrackingService(mockPrisma);
+    campaignService = new EmailCampaignService(mockPrisma, audienceService);
 
     service = new EmailService(
-      mockPrisma,
       audienceService,
       analyticsService,
       integrationsService,
       trackingService,
+      campaignService,
     );
   });
 
