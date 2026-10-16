@@ -24,11 +24,13 @@ apps/api/src/
 ├── auth/              Better Auth + RBAC guards (roles.guard.ts, roles.decorator.ts)
 ├── leads/             Lead lifecycle
 │   ├── core/          Lead CRUD, assignment, scoring, media
-│   ├── bookings/      Booking creation, customer conversion, post-sales, payments
 │   ├── call-records/  Call logging + Groq AI transcription
 │   ├── follow-ups/    Scheduled follow-up management
 │   ├── notes/         Lead notes
 │   └── site-visits/   GPS-verified site visits + selfie upload
+│
+├── bookings/          Booking lifecycle, queries, status, documents, post-sales
+├── payments/          Installment schedules, receipts, closing manager cron checks
 │
 ├── inventory/         Property inventory
 │   ├── projects/      Builder → Project management
@@ -38,6 +40,7 @@ apps/api/src/
 │
 ├── brokers/           CP broker management (CRUD, meetings, referrals, settlements, KYC)
 ├── approvals/         Multi-step approval workflows (ApprovalRequest + FinancialApproval)
+├── crm-telephony/     CRM PSTN direct calling (Twilio/Exotel/Vobiz tokens, carrier bridge, call webhooks)
 ├── chat/              Socket.IO gateway — chat rooms + messages
 ├── notifications/     Socket.IO gateway + Expo Push SDK
 │
@@ -53,19 +56,19 @@ apps/api/src/
 │   ├── manager/       Shared manager utilities
 │   └── employees/     Employee performance tracking
 │
-│   ├── marketing/         Omnichannel marketing campaigns (Email · SMS · AI Voice · WhatsApp · Ads)
-│   │   ├── marketing.module.ts   Root module, registers all sub-modules + services
-│   │   ├── shared/        shared/sample-csv.controller.ts — CSV template downloads
-│   │   │
-│   │   ├── email/         Email Campaign Module (controllers, services, facade)
-│   │   ├── sms/           SMS Campaign Module (controllers, services, facade)
-│   │   ├── voice/         AI Voice Campaign Module (controllers, gateway, services, facade)
-│   │   ├── whatsapp/      WhatsApp Cloud API Module (broadcasts, automations, templates, webhooks)
-│   │   └── ads/           Ad platform lead ingestion (google, meta, instagram, youtube webhooks)
+├── marketing/         Omnichannel marketing campaigns (Email · SMS · AI Voice · WhatsApp · Ads)
+│   ├── marketing.module.ts   Root module, registers all sub-modules + services
+│   ├── shared/        shared/sample-csv.controller.ts — CSV template downloads
 │   │
-│   └── lib/               Shared infrastructure
-│       ├── database/      PrismaModule wrapper around @brokeros/prisma
-│       └── storage/       Vercel Blob upload/download helpers
+│   ├── email/         Email Campaign Module (controllers, services, facade)
+│   ├── sms/           SMS Campaign Module (controllers, services, facade)
+│   ├── voice/         AI Voice Campaign Module (controllers, gateway, services, facade)
+│   ├── whatsapp/      WhatsApp Cloud API Module (broadcasts, automations, templates, webhooks)
+│   └── ads/           Ad platform lead ingestion (google, meta, instagram, youtube webhooks)
+│
+└── lib/               Shared infrastructure
+    ├── database/      PrismaModule wrapper around @brokeros/prisma
+    └── storage/       Vercel Blob upload/download helpers
 ```
 
 ---
