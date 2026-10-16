@@ -5,22 +5,14 @@ import {
   SkeletonRows,
   EmptyState,
 } from "@/features/leads/components/tables/TablePrimitives";
-
-const BROKER_STATUS_CLASSES: Record<string, string> = {
-  NEW: "bg-sky-50 text-sky-700 border-sky-200",
-  CONTACTED: "bg-purple-50 text-purple-700 border-purple-200",
-  VISIT: "bg-amber-50 text-amber-800 border-amber-200",
-  DEAL: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  ACTIVE: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  INACTIVE: "bg-rose-50 text-rose-700 border-rose-200",
-  BLACKLISTED: "bg-rose-100 text-rose-800 border-rose-300",
-};
+import type { BrokerDto } from "@brokeros/types";
+import { BROKER_STATUS_CONFIG } from "@brokeros/constants";
 
 interface BrokerTableProps {
   loading: boolean;
-  filteredBrokers: any[];
+  filteredBrokers: (BrokerDto | any)[];
   isCP: boolean;
-  setAssignModalBroker: (broker: any) => void;
+  setAssignModalBroker: (broker: BrokerDto | any) => void;
 }
 
 export function BrokerTable({
@@ -74,9 +66,9 @@ export function BrokerTable({
               const brokerLink = isCP
                 ? `/dashboard/channel-partner/broker-management/${broker.id}`
                 : `/dashboard/sourcing-manager/broker-management/${broker.id}`;
-              const statusKey = broker.status as string;
+              const statusKey = broker.status as keyof typeof BROKER_STATUS_CONFIG;
               const statusClass =
-                BROKER_STATUS_CLASSES[statusKey] ||
+                BROKER_STATUS_CONFIG[statusKey]?.badge ||
                 "bg-slate-50 text-slate-700 border-slate-200";
 
               return (
