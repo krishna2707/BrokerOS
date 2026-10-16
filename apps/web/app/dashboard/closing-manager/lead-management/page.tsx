@@ -1,4 +1,4 @@
-import { ClosingManagerLeadTableClient } from "@/features/leads/components/tables/ClosingManagerLeadTableClient";
+import { ClosingManagerLeadTableClient } from "@/features/leads";
 
 export default function ClosingManagerLeadManagement() {
   return (

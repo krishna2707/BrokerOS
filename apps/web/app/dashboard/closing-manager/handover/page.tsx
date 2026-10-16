@@ -3,7 +3,7 @@
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ClosingManagerHandoverClient } from "@/features/leads/components/tables/ClosingManagerHandoverClient";
+import { ClosingManagerHandoverClient } from "@/features/leads";
 import { Key, Loader2 } from "lucide-react";
 
 export default function ClosingManagerHandoverPage() {
