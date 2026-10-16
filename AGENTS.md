@@ -173,7 +173,7 @@ As BrokerOS grows to include background workers, 3rd-party integrations, and new
 
 ## Map
 
-- API modules (`apps/api/src/`): `auth`, `leads`, `inventory`, `brokers`, `approvals`, `chat`, `notifications`, `dashboard`, `marketing` (whatsapp, voice, email, sms, ads sub-modules).
+- API modules (`apps/api/src/`): `auth`, `leads`, `bookings`, `payments`, `inventory`, `brokers`, `approvals`, `crm-telephony`, `chat`, `notifications`, `dashboard`, `marketing` (whatsapp, voice, email, sms, ads sub-modules).
 - Marketing API sub-modules (`apps/api/src/marketing/`):
   - `whatsapp/` — inbox conversations, messages, contacts, flows, automations, pipelines, templates, AI assistant, broadcasts, webhooks, realtime gateway.
   - `voice/` — campaigns, integrations, prompt editor, audio service, test calling, webhooks, carrier bridge dispatcher, WebSocket media stream gateway.
