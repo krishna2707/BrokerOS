@@ -27,7 +27,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/DropdownMenu';
 import type { SmsFlowNode, SmsFlowNodeType } from './types';
 import { SMS_NODE_TYPES_META } from './types';
 import { calculateSmsSegments } from '@brokeros/constants';

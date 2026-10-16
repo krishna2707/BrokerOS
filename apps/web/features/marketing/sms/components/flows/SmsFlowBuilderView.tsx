@@ -12,7 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/DropdownMenu';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { SmsFlowData, SmsFlowNodeType, SmsFlowNode } from './builder/types';
