@@ -4,7 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { LeadProfileData } from '../misc/lead-profile-types';
 
 interface AINextStepProps {
-  suggestion?: string;
+  suggestion?: string | null;
 }
 
 export default function AINextStep({ suggestion }: AINextStepProps) {
