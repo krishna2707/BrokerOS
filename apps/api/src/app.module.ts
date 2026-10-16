@@ -8,6 +8,8 @@ import { auth } from './lib/auth.js';
 import { AuthModule } from './auth/auth.module.js';
 import { SignInHook } from './auth/sign-in.hook.js';
 import { LeadsModule } from './leads/leads.module.js';
+import { BookingsModule } from './bookings/bookings.module.js';
+import { PaymentsModule } from './payments/payments.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
 import { ApprovalsModule } from './approvals/approvals.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
@@ -35,6 +37,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     }),
     AuthModule,
     LeadsModule,
+    BookingsModule,
+    PaymentsModule,
     DashboardModule,
     ApprovalsModule,
     InventoryModule,
