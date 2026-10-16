@@ -1,19 +1,19 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
-import { authClient } from "../../../../lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { AlertCircle } from "lucide-react-native";
 import { Feather } from "@expo/vector-icons";
-import { exportAnalyticsHtmlMobile } from "../../../../lib/export-utils";
-import { Overview } from "./_components/Overview";
-import { BookingFunnel } from "./_components/BookingFunnel";
-import { RevenueCharts } from "./_components/RevenueCharts";
-import { InventoryAnalytics } from "./_components/InventoryAnalytics";
-import { BrokerPerformance } from "./_components/BrokerPerformance";
-import { SMLeaderboard } from "./_components/SMLeaderboard";
-import { CMLeaderboard } from "./_components/CMLeaderboard";
-import { ConversionAnalytics } from "./_components/ConversionAnalytics";
-import { BrokerageSettlement } from "./_components/BrokerageSettlement";
-import { SiteVisitAnalytics } from "./_components/SiteVisitAnalytics";
+import { exportAnalyticsHtmlMobile } from "@/lib/export-utils";
+import { Overview } from "@/components/dashboards/channel-partner/analytics/Overview";
+import { BookingFunnel } from "@/components/dashboards/channel-partner/analytics/BookingFunnel";
+import { RevenueCharts } from "@/components/dashboards/channel-partner/analytics/RevenueCharts";
+import { InventoryAnalytics } from "@/components/dashboards/channel-partner/analytics/InventoryAnalytics";
+import { BrokerPerformance } from "@/components/dashboards/channel-partner/analytics/BrokerPerformance";
+import { SMLeaderboard } from "@/components/dashboards/channel-partner/analytics/SMLeaderboard";
+import { CMLeaderboard } from "@/components/dashboards/channel-partner/analytics/CMLeaderboard";
+import { ConversionAnalytics } from "@/components/dashboards/channel-partner/analytics/ConversionAnalytics";
+import { BrokerageSettlement } from "@/components/dashboards/channel-partner/analytics/BrokerageSettlement";
+import { SiteVisitAnalytics } from "@/components/dashboards/channel-partner/analytics/SiteVisitAnalytics";
 
 export default function CPAnalyticsMobile() {
   const [range, setRange] = useState("all-time");
