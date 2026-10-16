@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/DropdownMenu';
 import { cn } from '@/lib/utils';
 import type { WhatsAppStepType } from '@brokeros/types';
 import { ADDABLE_STEPS, STEP_META } from './types';
