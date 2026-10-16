@@ -18,7 +18,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/DropdownMenu';
 import { toast } from 'sonner';
 import { DashboardPageWrapper } from '@/components/dashboard/DashboardPageWrapper';
 import {
