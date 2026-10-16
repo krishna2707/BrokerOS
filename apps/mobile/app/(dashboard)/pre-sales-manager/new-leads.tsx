@@ -12,18 +12,11 @@ import { SelectionActionBar } from '../../../components/dashboards/pre-sales-man
 import { LeadListItem } from '../../../components/dashboards/pre-sales-manager/lists/LeadListItem';
 import { AssignLeadsModal } from '../../../components/dashboards/pre-sales-manager/modals/AssignLeadsModal';
 import { exportLeadsToCsvMobile } from '@/lib/export-utils';
-
-interface Lead {
-  id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  createdAt: string;
-}
+import type { LeadListItemDto } from '@brokeros/types';
 
 export default function MobileNewLeads() {
   const router = useRouter();
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leads, setLeads] = useState<LeadListItemDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [subordinates, setSubordinates] = useState<any[]>([]);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
@@ -36,7 +29,7 @@ export default function MobileNewLeads() {
     setLoading(true);
     try {
       const baseURL = process.env.EXPO_PUBLIC_API_URL as string;
-      const { data, error } = await authClient.$fetch<Lead[]>(`/api/leads?managerUnassigned=true`, { baseURL });
+      const { data, error } = await authClient.$fetch<LeadListItemDto[]>(`/api/leads?managerUnassigned=true`, { baseURL });
       if (data) {
         setLeads(data);
       }

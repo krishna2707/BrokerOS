@@ -2,12 +2,12 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useRouter } from 'expo-router';
-import { authClient } from '../../../lib/auth-client';
-import { AnnouncementsSection } from '../../../components/dashboards/pre-sales-manager/sections/AnnouncementsSection';
-import { TasksSection } from '../../../components/dashboards/pre-sales-manager/sections/TasksSection';
-import { TeamMembersList } from '../../../components/dashboards/pre-sales-manager/lists/TeamMembersList';
-import { TaskModal } from '../../../components/dashboards/pre-sales-manager/modals/TaskModal';
-import { AnnouncementModal } from '../../../components/dashboards/pre-sales-manager/modals/AnnouncementModal';
+import { authClient } from '@/lib/auth-client';
+import { AnnouncementsSection } from '@/components/dashboards/pre-sales-manager/sections/AnnouncementsSection';
+import { TasksSection } from '@/components/dashboards/pre-sales-manager/sections/TasksSection';
+import { TeamMembersList } from '@/components/dashboards/pre-sales-manager/lists/TeamMembersList';
+import { TaskModal } from '@/components/dashboards/pre-sales-manager/modals/TaskModal';
+import { AnnouncementModal } from '@/components/dashboards/pre-sales-manager/modals/AnnouncementModal';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
