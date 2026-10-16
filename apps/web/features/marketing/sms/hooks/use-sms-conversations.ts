@@ -62,21 +62,20 @@ export function useSmsConversations(options?: UseSmsConversationsOptions) {
     loadConversations();
   }, [loadConversations]);
 
+  // Missing timestamps — and malformed ones that parse to NaN — sort as oldest.
+  const timeOrZero = (value: unknown): number => {
+    if (value === null || value === undefined) return 0;
+    const t = new Date(value as string).getTime();
+    return Number.isNaN(t) ? 0 : t;
+  };
+
   const handleLiveConversationUpdate = useCallback((updated: SmsConversation) => {
     setConversations((prev) => {
       const previous = prev.find((c) => c.id === updated.id);
       const next = prev.filter((c) => c.id !== updated.id);
       return [{ ...previous, ...updated }, ...next].sort((a, b) => {
-        const tA = a.lastMessageAt
-          ? new Date(a.lastMessageAt).getTime()
-          : a.updatedAt
-            ? new Date(a.updatedAt).getTime()
-            : 0;
-        const tB = b.lastMessageAt
-          ? new Date(b.lastMessageAt).getTime()
-          : b.updatedAt
-            ? new Date(b.updatedAt).getTime()
-            : 0;
+        const tA = timeOrZero(a.lastMessageAt) || timeOrZero(a.updatedAt);
+        const tB = timeOrZero(b.lastMessageAt) || timeOrZero(b.updatedAt);
         return tB - tA;
       });
     });
