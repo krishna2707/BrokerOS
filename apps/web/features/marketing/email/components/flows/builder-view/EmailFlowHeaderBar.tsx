@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, History, Play, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Switch } from '@/components/ui/switch';
+import { Switch } from '@/components/ui/Switch';
 
 export interface EmailFlowHeaderBarProps {
   id: string;
