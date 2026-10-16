@@ -4,34 +4,13 @@ import { Picker } from '@react-native-picker/picker';
 import { Feather } from '@expo/vector-icons';
 import { useBookingForm } from '../hooks/useBookingForm';
 import BookingDocumentList from './BookingDocumentList';
-
-interface BookingDocument {
-  type: string;
-  fileUrl: string;
-  title: string;
-}
-
-interface BookingData {
-  id: string;
-  unitDescription?: string;
-  agreedPrice?: number;
-  bookingAmount?: number;
-  commissionPercentage?: number;
-  commissionAmount?: number;
-  paymentMode?: string;
-  transactionRef?: string;
-  loanRequired?: boolean;
-  remarks?: string;
-  documents: BookingDocument[];
-  status: string;
-  createdAt: string;
-}
+import type { BookingDto, LeadListItemDto, LeadDetailsDto } from '@brokeros/types';
 
 interface BookingCardProps {
-  booking: BookingData | null;
+  booking: BookingDto | null;
   leadId: string;
   onRefresh: () => void;
-  lead?: any;
+  lead?: LeadListItemDto | LeadDetailsDto;
   userRole?: string;
 }
 
@@ -87,7 +66,7 @@ export default function BookingCard({ booking, leadId, onRefresh, lead, userRole
       });
 
       if (error) throw error;
-      
+
       Toast.show({ type: 'success', text1: 'Success', text2: 'Booking confirmed successfully' });
       onRefresh();
     } catch (err: any) {
@@ -176,7 +155,7 @@ export default function BookingCard({ booking, leadId, onRefresh, lead, userRole
                 <View className="flex-1 border border-gray-200 rounded-xl bg-gray-50 overflow-hidden">
                   <Picker selectedValue={selectedFloorId} onValueChange={setSelectedFloorId} enabled={!!selectedTowerId} style={{ height: 50 }}>
                     <Picker.Item label="Select Floor..." value="" color="#000" />
-                    {floors.map(f => <Picker.Item key={f.id} label={f.name} value={f.id} color="#000" />)}
+                    {floors.map(f => <Picker.Item key={f.id} label={f.name || `Floor ${f.floorNumber}`} value={f.id} color="#000" />)}
                   </Picker>
                 </View>
                 <View className="flex-1 border border-gray-200 rounded-xl bg-gray-50 overflow-hidden">
