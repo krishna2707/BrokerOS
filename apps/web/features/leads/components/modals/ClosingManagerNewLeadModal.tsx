@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/Label";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
+import type { ProjectDto, TowerDto, UnitDto, BrokerDto } from "@brokeros/types";
 
 interface ClosingManagerNewLeadModalProps {
   isOpen: boolean;
@@ -37,10 +38,10 @@ export function ClosingManagerNewLeadModal({
   });
 
   const [loading, setLoading] = useState(false);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [towers, setTowers] = useState<any[]>([]);
-  const [units, setUnits] = useState<any[]>([]);
-  const [brokers, setBrokers] = useState<any[]>([]);
+  const [projects, setProjects] = useState<ProjectDto[]>([]);
+  const [towers, setTowers] = useState<TowerDto[]>([]);
+  const [units, setUnits] = useState<UnitDto[]>([]);
+  const [brokers, setBrokers] = useState<BrokerDto[]>([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -76,7 +77,7 @@ export function ClosingManagerNewLeadModal({
   const fetchProjects = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api/proxy";
-      const res = await authClient.$fetch<any[]>(
+      const res = await authClient.$fetch<ProjectDto[]>(
         `/api/inventory/projects?isCpProject=true`,
         { baseURL: apiUrl }
       );
@@ -89,7 +90,7 @@ export function ClosingManagerNewLeadModal({
   const fetchTowers = async (projectId: string) => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api/proxy";
-      const res = await authClient.$fetch<any[]>(
+      const res = await authClient.$fetch<TowerDto[]>(
         `/api/inventory/projects/${projectId}/towers`,
         { baseURL: apiUrl }
       );
@@ -101,9 +102,8 @@ export function ClosingManagerNewLeadModal({
 
   const fetchUnits = (towerId: string) => {
     try {
-      const tower = towers.find((t: any) => t.id === towerId);
-      if (!tower) return;
-      const allUnits = tower.floors?.flatMap((f: any) => f.units) || [];
+      const tower = towers.find((t) => t.id === towerId);
+      const allUnits = (tower?.floors?.flatMap((f) => f.units || []) || []) as UnitDto[];
       setUnits(allUnits);
     } catch (e) {
       console.error(e);
@@ -113,7 +113,7 @@ export function ClosingManagerNewLeadModal({
   const fetchBrokers = async (projectId: string) => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api/proxy";
-      const res = await authClient.$fetch<any[]>(
+      const res = await authClient.$fetch<BrokerDto[]>(
         `/api/brokers?projectId=${projectId}`,
         { baseURL: apiUrl }
       );
