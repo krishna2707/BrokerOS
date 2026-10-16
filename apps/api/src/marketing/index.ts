@@ -6,6 +6,7 @@ export {
   EmailService,
   EmailService as MarketingService,
 } from './email/email.service.js';
+export { EmailCampaignService } from './email/services/email-campaign.service.js';
 export { EmailAudienceService } from './email/services/email-audience.service.js';
 export { EmailAnalyticsService } from './email/services/email-analytics.service.js';
 export { EmailIntegrationsService } from './email/services/email-integrations.service.js';
@@ -18,6 +19,7 @@ export * from './email/dto/email.dto.js';
 
 // SMS Domain
 export { SmsService } from './sms/sms.service.js';
+export { SmsCampaignService } from './sms/services/sms-campaign.service.js';
 export { SmsAudienceService } from './sms/services/sms-audience.service.js';
 export { SmsAnalyticsService } from './sms/services/sms-analytics.service.js';
 export { SmsIntegrationsService } from './sms/services/sms-integrations.service.js';
