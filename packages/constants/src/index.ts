@@ -23,3 +23,12 @@ export * from './whatsapp/index.js';
 // Lead, Customer & Analytics Exports
 export * from './export.js';
 
+// Master System Roles & Department Access
+export * from './roles.js';
+
+// Phone Normalization & Sanitization Utilities
+export * from './utils/phone.js';
+
+// CRM Domain Constants (Lead, Inventory, Booking, Broker, Approvals)
+export * from './crm/index.js';
+
