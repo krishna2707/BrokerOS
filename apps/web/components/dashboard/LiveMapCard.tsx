@@ -1,7 +1,7 @@
 "use client";
 
 import { MapPin } from "lucide-react";
-import LiveTrackingMap from "@/components/LiveTrackingMap";
+import LiveTrackingMap from "./LiveTrackingMap";
 
 export function LiveMapCard({
   userId,
