@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { CreditCard, Plus, Loader2 } from "lucide-react";
+import type { PaymentScheduleItemDto } from "@brokeros/types";
 import { PaymentScheduleForm } from "./PaymentScheduleForm";
 import { PaymentScheduleList } from "./PaymentScheduleList";
 
 interface PaymentHistoryCardProps {
   bookingId: string;
-  agreedPrice: number;
-  bookingAmount: number;
+  agreedPrice: number | string;
+  bookingAmount: number | string;
 }
 
 export function PaymentHistoryCard({
@@ -16,9 +17,11 @@ export function PaymentHistoryCard({
   agreedPrice,
   bookingAmount,
 }: PaymentHistoryCardProps) {
-  const netAmount = agreedPrice - bookingAmount;
+  const numericAgreed = Number(agreedPrice) || 0;
+  const numericBooking = Number(bookingAmount) || 0;
+  const netAmount = numericAgreed - numericBooking;
 
-  const [schedules, setSchedules] = useState<any[]>([]);
+  const [schedules, setSchedules] = useState<PaymentScheduleItemDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showScheduleForm, setShowScheduleForm] = useState(false);
 
@@ -122,8 +125,8 @@ export function PaymentHistoryCard({
             <PaymentScheduleForm
               bookingId={bookingId}
               netAmount={netAmount}
-              agreedPrice={agreedPrice}
-              bookingAmount={bookingAmount}
+              agreedPrice={numericAgreed}
+              bookingAmount={numericBooking}
               onSuccess={() => {
                 setShowScheduleForm(false);
                 fetchSchedules();

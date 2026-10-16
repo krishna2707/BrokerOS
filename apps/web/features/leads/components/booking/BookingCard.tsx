@@ -26,8 +26,10 @@ interface BookingData {
   createdAt: string;
 }
 
+import type { BookingDto } from "@brokeros/types";
+
 interface BookingCardProps {
-  booking: BookingData | null;
+  booking: BookingData | BookingDto | any | null;
   leadId: string;
   userId: string;
   onRefresh: () => void;
