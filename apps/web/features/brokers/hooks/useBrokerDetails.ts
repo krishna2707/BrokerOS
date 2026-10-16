@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef } from 'react';
 
 export function useBrokerDetails(brokerId: string, isCP: boolean) {
