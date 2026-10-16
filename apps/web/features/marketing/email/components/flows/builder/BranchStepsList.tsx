@@ -27,7 +27,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/DropdownMenu';
 import type { EmailFlowNode, EmailFlowNodeType } from './types';
 import { EMAIL_NODE_TYPES_META } from './types';
 

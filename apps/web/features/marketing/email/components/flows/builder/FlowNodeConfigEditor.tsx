@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Info, Tag as TagIcon } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { Switch } from '@/components/ui/switch';
+import { Switch } from '@/components/ui/Switch';
 import type { EmailFlowNode, EmailFlowNodeType } from './types';
 import { EMAIL_NODE_TYPES_META } from './types';
 import { BranchStepsList } from './BranchStepsList';
