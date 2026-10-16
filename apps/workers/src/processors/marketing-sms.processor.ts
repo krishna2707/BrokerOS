@@ -12,6 +12,7 @@ import { BirdSmsAdapter } from '@brokeros/int-sms-bird';
 import {
   SMS_PROVIDER_THROTTLE_LIMITS,
   calculateSmsSegments,
+  normalizePhoneNumber,
 } from '@brokeros/constants';
 import type {
   ISmsMarketingProvider,
@@ -136,33 +137,9 @@ export class MarketingSmsProcessor implements OnModuleInit, OnModuleDestroy {
     };
   }
 
-  // E.164 standard phone normalization (with Excel scientific notation un-exponential support)
+  // E.164 standard phone normalization (delegates to canonical @brokeros/constants)
   static normalizePhoneNumber(rawPhone: string, defaultCountryCode = '+91'): string {
-    if (!rawPhone) return '';
-    let str = String(rawPhone).trim();
-
-    if (/[eE]\+?[0-9]+/.test(str)) {
-      const num = Number(str);
-      if (!isNaN(num) && isFinite(num)) {
-        str = num.toLocaleString('fullwide', { useGrouping: false });
-      }
-    }
-
-    const hasPlus = str.startsWith('+');
-    const digits = str.replace(/\D/g, '');
-    if (!digits) return '';
-
-    if (hasPlus) return `+${digits}`;
-
-    if (digits.length === 10) {
-      return `${defaultCountryCode}${digits}`;
-    } else if (digits.length === 12 && digits.startsWith('91')) {
-      return `+${digits}`;
-    } else if (digits.length === 11 && digits.startsWith('1')) {
-      return `+${digits}`;
-    }
-
-    return `+${digits}`;
+    return normalizePhoneNumber(rawPhone, defaultCountryCode);
   }
 
   async processSmsCampaign(jobData: SmsCampaignDispatchJobData): Promise<void> {
