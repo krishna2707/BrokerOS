@@ -72,7 +72,7 @@ Provides operational supervision over telecaller teams without personal call que
 | :--- | :--- | :--- |
 | **Overview** | `pre-sales-manager/index` | Live team KPI overview, connect rates, and aggregated lead volume. |
 | **Leads** | `pre-sales-manager/lead-management` | Team-wide lead pipeline with reassignment actions. |
-| **Employees** | `pre-sales-manager/employees` | Real-time agent status cards (On Call dot, Idle, Offline) and call targets. |
+| **Employees** | `pre-sales-manager/employees/index` | Real-time agent status cards (On Call dot, Idle, Offline) and call targets. |
 | **New Leads** | `pre-sales-manager/new-leads` | Unassigned lead pool for round-robin or manual distribution. |
 | **Analytics** | `pre-sales-manager/analytics` | Comparative performance charts and missed follow-up tracking. |
 | **Settings** | `pre-sales-manager/settings` | Team-wide calling thresholds and script guidelines. |
@@ -86,10 +86,10 @@ Field-oriented workspace centered on physical site visits, inventory matrices, a
 | :--- | :--- | :--- |
 | **Dashboard** | `sales-executive/index` | Today's scheduled visits, task reminders, and personal sales leaderboard. |
 | **Leads** | `sales-executive/lead-management` | Qualified prospects assigned for site visits and negotiations. |
-| **Approval** | `sales-executive/approval/index` | Status of submitted price discount requests and executive waivers. |
-| **Booking** | `sales-executive/booking/index` | Unit booking creation form and payment token confirmation. |
+| **Approval** | `sales-executive/approval` | Status of submitted price discount requests and executive waivers. |
+| **Booking** | `sales-executive/booking` | Unit booking creation form and payment token confirmation. |
 | **Inventory** | `sales-executive/inventory/index` | Real-time project unit matrix (Available, Reserved, Sold). |
-| **More** | `sales-executive/more/index` | GPS site visit verification launcher and performance summaries. |
+| **More** | `sales-executive/more` | GPS site visit verification launcher and performance summaries. |
 
 ---
 
@@ -101,9 +101,9 @@ Oversees closing velocity, reviews discount negotiations, and tracks field teams
 | **Overview** | `sales-manager/index` | Project revenue velocity, site visit conversion rates, and monthly targets. |
 | **Employees** | `sales-manager/employees/index` | Live field agent map showing GPS location and on-call statuses. |
 | **Leads** | `sales-manager/lead-management/index` | High-value negotiation pipelines and escalated prospect records. |
-| **Approval** | `sales-manager/approval/index` | Inbox to approve or reject discount requests within delegation limits. |
+| **Approval** | `sales-manager/approval` | Inbox to approve or reject discount requests within delegation limits. |
 | **Inventory** | `sales-manager/inventory/index` | Master inventory availability across towers and configurations. |
-| **Booking** | `sales-manager/booking/index` | Finalized booking records and payment schedule reviews. |
+| **Booking** | `sales-manager/booking` | Finalized booking records and payment schedule reviews. |
 
 ---
 
@@ -114,9 +114,9 @@ Manages the external Channel Partner (CP) network and broker recruitment.
 | :--- | :--- | :--- |
 | **Overview** | `sourcing-manager/index` | Total recruited brokers, active CP leads, and commission volumes. |
 | **Brokers** | `sourcing-manager/broker-management/index` | Directory of external brokers with RERA, GST, and PAN status flags. |
-| **Commissions** | `sourcing-manager/commissions/index` | Brokerage settlement records and payout milestone tracker. |
+| **Commissions** | `sourcing-manager/commissions` | Brokerage settlement records and payout milestone tracker. |
 | **Inventory** | `sourcing-manager/inventory/index` | CP-flagged inventory projects (`isCpProject = true`). |
-| **Analytics** | `sourcing-manager/analytics/index` | Top performing brokers and sourcing conversion ratios. |
+| **Analytics** | `sourcing-manager/analytics` | Top performing brokers and sourcing conversion ratios. |
 
 ---
 
@@ -129,7 +129,7 @@ Dedicated on-site closing role assisting external brokers with visiting prospect
 | **Inventory** | `closing-manager/inventory/index` | Real-time unit availability for on-the-spot booking locks. |
 | **Leads** | `closing-manager/lead-management/index` | Prospects referred by external channel partners. |
 | **Brokers** | `closing-manager/broker-management/index` | Directory of active brokers linked to on-site prospects. |
-| **Handover** | `closing-manager/handover/index` | Client onboarding records transition to post-sales departments. |
+| **Handover** | `closing-manager/handover` | Client onboarding records transition to post-sales departments. |
 
 ---
 
@@ -142,7 +142,7 @@ Restricted external portal view for registered agency heads and partner brokers.
 | **Customers** | `channel-partner/customer-management/index` | Prospective buyers referred by this agency. |
 | **Employees** | `channel-partner/employees/index` | Sub-agents and team members within the partner brokerage. |
 | **Inventory** | `channel-partner/inventory/index` | Authorized CP inventory projects with downloadable marketing brochures. |
-| **Analytics** | `channel-partner/analytics/index` | Partner commission ledger and payment verification history. |
+| **Analytics** | `channel-partner/analytics` | Partner commission ledger and payment verification history. |
 
 ---
 
@@ -154,7 +154,7 @@ Handles the post-booking client relationship through possession handover.
 | **Overview** | `post-sales/index` | Milestone collection progress, pending demand notes, and document status. |
 | **Leads / Clients** | `post-sales/lead-management` | Customer accounts converted from confirmed bookings. |
 | **Inventory** | `post-sales/inventory/index` | Unit specifications, parking allocation, and floor plan sheets. |
-| **Commissions** | `post-sales/commissions/index` | Builder inbound commission collection tracking. |
+| **Commissions** | `post-sales/commissions` | Builder inbound commission collection tracking. |
 | **Handover** | `post-sales/handover` | Snag lists, possession verification, and key handover signatures. |
 
 ---
@@ -167,7 +167,7 @@ Manages collection schedules, legal document verification, and builder inbound p
 | **Overview** | `post-sales-manager/index` | Department collection KPIs, overdue demands, and escrow balances. |
 | **Employees** | `post-sales-manager/employees/index` | Executive workload, document verification queues, and audit trails. |
 | **Leads / Clients** | `post-sales-manager/lead-management` | Client portfolio across projects and unit categories. |
-| **Commissions** | `post-sales-manager/commissions/index` | Inbound commission settlements due from real estate builders. |
+| **Commissions** | `post-sales-manager/commissions` | Inbound commission settlements due from real estate builders. |
 | **Analytics** | `post-sales-manager/analytics` | Collection aging analysis and milestone completion forecasts. |
 
 ---
