@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CheckCircle2, Clock } from "lucide-react";
+import type { LeadListItemDto } from "@brokeros/types";
 import {
   StatusPill,
   SkeletonRows,
@@ -10,7 +11,7 @@ import {
 } from "./TablePrimitives";
 
 interface PostSalesTableProps {
-  filteredLeads: any[];
+  filteredLeads: LeadListItemDto[];
   loading: boolean;
 }
 
@@ -78,9 +79,9 @@ export function PostSalesTable({
                       <div className="font-bold text-xs text-[var(--text-primary)] group-hover:text-[var(--brand-700)] transition-colors">
                         {lead.firstName} {lead.lastName || ""}
                       </div>
-                      {lead.project && (
+                      {(lead.project?.name || lead.interestedProject?.name) && (
                         <div className="text-[11px] font-medium text-[var(--text-muted)] mt-0.5">
-                          {lead.project}
+                          {lead.project?.name || lead.interestedProject?.name}
                         </div>
                       )}
                     </Link>

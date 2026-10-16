@@ -2,14 +2,15 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import { toast } from "sonner";
+import type { LeadListItemDto, UserSummaryDto } from "@brokeros/types";
 import { NewLeadsToolbar } from "@/features/leads/components/tables/NewLeadsToolbar";
 import { NewLeadsGrid } from "@/features/leads/components/tables/NewLeadsGrid";
 
 function NewLeadsContent() {
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<LeadListItemDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
-  const [subordinates, setSubordinates] = useState<any[]>([]);
+  const [subordinates, setSubordinates] = useState<UserSummaryDto[]>([]);
 
   const fetchLeadsAndSubordinates = async () => {
     setLoading(true);

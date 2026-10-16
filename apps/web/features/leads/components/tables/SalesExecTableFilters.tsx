@@ -1,6 +1,7 @@
 import React from "react";
 import { Search, Calendar, X } from "lucide-react";
 import { ExportLeadsButton } from "@/features/leads/components/ExportLeadsButton";
+import type { LeadListItemDto } from "@brokeros/types";
 
 const STATUS_OPTIONS = [
   { label: "All", value: "", color: "var(--text-secondary)" },
@@ -19,7 +20,7 @@ interface SalesExecTableFiltersProps {
   setSiteVisitDate: (v: string) => void;
   search: string;
   setSearch: (v: string) => void;
-  leads?: any[];
+  leads?: LeadListItemDto[];
   filenamePrefix?: string;
 }
 

@@ -3,13 +3,14 @@ import { Upload, Users, Shuffle, CheckSquare, Loader2 } from "lucide-react";
 import Papa from "papaparse";
 import { toast } from "sonner";
 import { ExportLeadsButton } from "@/features/leads/components/ExportLeadsButton";
+import type { LeadListItemDto, UserSummaryDto } from "@brokeros/types";
 
 interface NewLeadsToolbarProps {
   selectedLeadIds: Set<string>;
-  subordinates: any[];
+  subordinates: UserSummaryDto[];
   onAssign: (leadIds: string[], targetUserId?: string, roundRobin?: boolean) => void;
   onUploadSuccess: () => void;
-  leads?: any[];
+  leads?: LeadListItemDto[];
 }
 
 export function NewLeadsToolbar({

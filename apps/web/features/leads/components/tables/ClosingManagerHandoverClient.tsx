@@ -6,14 +6,15 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Handshake, CheckCircle2 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import type { LeadListItemDto } from "@brokeros/types";
 import { ClosingManagerHandoverFormModal } from "../modals/ClosingManagerHandoverFormModal";
 import { StatusPill } from "./TablePrimitives";
 
 function ClosingManagerHandoverContent() {
   const router = useRouter();
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<LeadListItemDto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [selectedLead, setSelectedLead] = useState<LeadListItemDto | null>(null);
   const [activeTab, setActiveTab] = useState<"pending" | "completed">("pending");
 
   const fetchLeads = async () => {
@@ -26,10 +27,10 @@ function ClosingManagerHandoverContent() {
           ? ["BOOKING", "AGREEMENT"]
           : ["HANDOVER", "SOLD"];
 
-      let allLeads: any[] = [];
+      let allLeads: LeadListItemDto[] = [];
 
       for (const st of statuses) {
-        const res = await authClient.$fetch<any[]>(
+        const res = await authClient.$fetch<LeadListItemDto[]>(
           `/api/leads?status=${st}&isCpProject=true`,
           { baseURL: apiUrl }
         );

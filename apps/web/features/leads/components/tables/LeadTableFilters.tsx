@@ -1,6 +1,7 @@
 import React from "react";
 import { Search, SlidersHorizontal, X, Calendar } from "lucide-react";
 import { ExportLeadsButton } from "@/features/leads/components/ExportLeadsButton";
+import type { LeadListItemDto } from "@brokeros/types";
 
 const STATUS_GROUPS: { label: string; value: string; color: string }[] = [
   { label: "All", value: "", color: "var(--text-secondary)" },
@@ -26,7 +27,7 @@ interface LeadTableFiltersProps {
   setSiteVisitDate: (val: string) => void;
   search?: string;
   setSearch?: (val: string) => void;
-  leads?: any[];
+  leads?: LeadListItemDto[];
   filenamePrefix?: string;
 }
 
