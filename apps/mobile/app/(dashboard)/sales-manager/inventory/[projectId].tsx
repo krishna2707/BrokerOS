@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { UnitGrid } from '../../../../components/inventory/grid/UnitGrid';
 import { UnitDetailsModal } from '../../../../components/inventory/modals/UnitDetailsModal';
-import { AiTowerGenerator } from '../../../../components/inventory/misc/AiTowerGenerator';
+import { AiTowerGenerator } from '@/components/inventory/wizards/AiTowerGenerator';
 import PossessionModal from '../../../../components/inventory/modals/PossessionModal';
 import AssignmentModal from '../../../../components/inventory/modals/AssignmentModal';
 import InventoryFilters from '../../../../components/shared/InventoryFilters';
