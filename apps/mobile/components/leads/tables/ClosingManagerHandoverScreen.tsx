@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import type { LeadListItemDto } from '@brokeros/types';
 import { authClient } from '../../../lib/auth-client';
 import ClosingManagerHandoverModal from '../modals/ClosingManagerHandoverModal';
 
 export default function ClosingManagerHandoverScreen() {
   const router = useRouter();
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<LeadListItemDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'pending' | 'completed'>('pending');
-  const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [selectedLead, setSelectedLead] = useState<LeadListItemDto | null>(null);
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -21,12 +22,12 @@ export default function ClosingManagerHandoverScreen() {
         ? ['BOOKING', 'AGREEMENT']
         : ['HANDOVER', 'SOLD'];
 
-      let allLeads: any[] = [];
+      let allLeads: LeadListItemDto[] = [];
 
       for (const st of statuses) {
         // We use isCpProject=true or maybe we just fetch all that are relevant. 
         // Following web app logic, we pass isCpProject=true.
-        const res = await authClient.$fetch<any[]>(`/api/leads?status=${st}&isCpProject=true`, { baseURL });
+        const res = await authClient.$fetch<LeadListItemDto[]>(`/api/leads?status=${st}&isCpProject=true`, { baseURL });
         if (res.data) {
           allLeads = [...allLeads, ...res.data];
         }
