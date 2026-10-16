@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { X, CheckCircle2, AlertCircle, Loader2, Key } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import type { UnitDto, LeadListItemDto } from "@brokeros/types";
 
 interface BookingModalProps {
-  unit: any;
+  unit: UnitDto | null;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -22,7 +23,7 @@ export function BookingModal({
   const [error, setError] = useState<string | null>(null);
 
   const [selectedLeadId, setSelectedLeadId] = useState<string>("");
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<LeadListItemDto[]>([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -173,9 +174,9 @@ export function BookingModal({
                   })
                 }
               />
-              {formData.agreedPrice < unit.basePrice && (
+              {Number(unit.basePrice) > 0 && Number(formData.agreedPrice) < Number(unit.basePrice) && (
                 <p className="text-[10px] text-amber-600 font-bold mt-1 m-0 tabular-nums">
-                  Discount applied: Below base price (₹{unit.basePrice.toLocaleString("en-IN")})
+                  Discount applied: Below base price (₹{Number(unit.basePrice).toLocaleString("en-IN")})
                 </p>
               )}
             </div>

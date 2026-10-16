@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from 'sonner';
+import type { UserSummaryDto } from "@brokeros/types";
 
 export interface Subordinate {
   id: string;
