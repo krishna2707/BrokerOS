@@ -1,5 +1,5 @@
 "use client";
-import { SharedInventoryDashboard } from "@/features/inventory/components/project/SharedInventoryDashboard";
+import { SharedInventoryDashboard } from "@/features/inventory";
 
 export default function SourcingManagerInventoryDashboard() {
   return (

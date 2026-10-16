@@ -1,4 +1,4 @@
-import { BrokerTableClient } from '@/features/brokers/components/tables/BrokerTableClient';
+import { BrokerTableClient } from '@/features/brokers';
 
 export default function BrokerManagementPage() {
   return (
