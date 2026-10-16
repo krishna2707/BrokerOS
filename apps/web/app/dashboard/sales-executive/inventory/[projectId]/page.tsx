@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import { SharedProjectInventoryPage } from "@/features/inventory/components/project/SharedProjectInventoryPage";
+import { SharedProjectInventoryPage } from "@/features/inventory";
 
 export default function SalesExecProjectInventoryPage() {
   const params = useParams();
