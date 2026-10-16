@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Save, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Switch } from '@/components/ui/switch';
+import { Switch } from '@/components/ui/Switch';
 import type { WhatsAppStepType, WhatsAppTriggerType } from '@brokeros/types';
 import {
   insertAt,
