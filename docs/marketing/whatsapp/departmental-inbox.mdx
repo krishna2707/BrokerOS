@@ -47,7 +47,7 @@ sequenceDiagram
     
     Note over SalesExec,PostSales: Unit Booked -> Booking Confirmed
     SalesExec->>CRM: Creates Booking -> Customer Profile Generated
-    CRM->>PostSales: Routes to Post-Sales Inbox (/dashboard/post-sales/whatsapp)
+    CRM->>PostSales: Routes to Post-Sales Inbox (/dashboard/inbox/whatsapp)
     PostSales->>Buyer: Automated Welcome Letter & Payment Demand Notice
 ```
 
@@ -55,21 +55,24 @@ sequenceDiagram
 
 ## Role Scoping Matrix
 
-The backend enforces data isolation through [`apps/api/src/marketing/whatsapp/conversations/whatsapp-conversations.service.ts`](https://github.com/trybrokeros/BrokerOS/blob/main/apps/api/src/marketing/whatsapp/conversations/whatsapp-conversations.service.ts):
+The backend enforces data isolation through [whatsapp-conversations.service.ts](file:///c:/Users/Sumama/Desktop/enterprise-crm-realtors/apps/api/src/marketing/whatsapp/conversations/whatsapp-conversations.service.ts):
 
 | Department Role | Scope Filter | Visible Entities | In-App UI Route |
 | :--- | :--- | :--- | :--- |
-| **Pre-Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`NEW`, `CONTACTED`, `INTERESTED`) | `/dashboard/pre-sales/whatsapp` |
-| **Pre-Sales Manager** | `team` | All leads assigned to direct subordinates, with executive dropdown filter | `/dashboard/pre-sales-manager/whatsapp` |
-| **Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`SITE_VISIT_SCHEDULED`, `NEGOTIATION`, `BOOKING`) | `/dashboard/sales-executive/whatsapp` |
-| **Sales Manager** | `team` | All leads assigned to subordinate sales executives, with deal velocity tracking | `/dashboard/sales-manager/whatsapp` |
-| **Post-Sales Executive** | `my` | Customers where `booking.assignedPostSalesId = currentUser.id` | `/dashboard/post-sales/whatsapp` |
-| **Post-Sales Manager** | `team` | All post-booking customer threads across all team post-sales executives | `/dashboard/post-sales-manager/whatsapp` |
-| **Sourcing Manager** | `my` | External CP Brokers where `broker.sourcingManagerId = currentUser.id` | `/dashboard/sourcing-manager/whatsapp` |
-| **Closing Manager** | `my` | Walk-in leads created on-site or leads assigned at their project sales gallery | `/dashboard/closing-manager/whatsapp` |
-| **Finance Department** | `all` | Customers with payment transactions and Brokers with commission claims | `/dashboard/finance/whatsapp` |
-| **Business Manager** | `all` | Enterprise-wide operational visibility across both Brokerage and CP network | `/dashboard/business-manager/whatsapp` |
-| **Director & Admin** | `all` | Full organizational oversight with real-time audit capabilities | `/dashboard/director/whatsapp` |
+| **Pre-Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`NEW`, `CONTACTED`, `INTERESTED`) | `/dashboard/inbox/whatsapp` |
+| **Pre-Sales Manager** | `team` | All leads assigned to direct subordinates, with executive dropdown filter | `/dashboard/inbox/whatsapp` |
+| **Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`SITE_VISIT_SCHEDULED`, `NEGOTIATION`, `BOOKING`) | `/dashboard/inbox/whatsapp` |
+| **Sales Manager** | `team` | All leads assigned to subordinate sales executives, with deal velocity tracking | `/dashboard/inbox/whatsapp` |
+| **Post-Sales Executive** | `my` | Customers where `booking.assignedPostSalesId = currentUser.id` | `/dashboard/inbox/whatsapp` |
+| **Post-Sales Manager** | `team` | All post-booking customer threads across all team post-sales executives | `/dashboard/inbox/whatsapp` |
+| **Sourcing Manager** | `my` | External CP Brokers where `broker.sourcingManagerId = currentUser.id` | `/dashboard/inbox/whatsapp` |
+| **Closing Manager** | `my` | Walk-in leads created on-site or leads assigned at their project sales gallery | `/dashboard/inbox/whatsapp` |
+| **Finance Department** | `all` | Customers with payment transactions and Brokers with commission claims | `/dashboard/inbox/whatsapp` |
+| **Business Manager** | `all` | Enterprise-wide operational visibility across both Brokerage and CP network | `/dashboard/inbox/whatsapp` |
+| **Director and Admin** | `all` | Full organizational oversight with real-time audit capabilities | `/dashboard/inbox/whatsapp` |
+
+> [!NOTE]
+> All roles access the unified route `/dashboard/inbox/whatsapp`. The page dynamically resolves department scope from the user authenticated session. Legacy role-specific URLs (such as `/dashboard/sales-manager/whatsapp`) automatically redirect to `/dashboard/inbox/whatsapp`.
 
 ---
 

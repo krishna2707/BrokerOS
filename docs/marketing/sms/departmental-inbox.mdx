@@ -47,7 +47,7 @@ sequenceDiagram
     
     Note over SalesExec,PostSales: Unit Booked -> Booking Confirmed
     SalesExec->>CRM: Creates Booking -> Customer Profile Generated
-    CRM->>PostSales: Routes to Post-Sales Inbox (/dashboard/post-sales/sms)
+    CRM->>PostSales: Routes to Post-Sales Inbox (/dashboard/inbox/sms)
     PostSales->>Buyer: Automated Payment Demand Notice via Default SMS Gateway
 ```
 
@@ -59,17 +59,20 @@ The backend enforces data isolation through [sms-inbox.service.ts](file:///c:/Us
 
 | Department Role | Scope Filter | Visible Entities | In-App UI Route |
 | :--- | :--- | :--- | :--- |
-| **Pre-Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`NEW`, `CONTACTED`, `INTERESTED`) with valid phone | `/dashboard/pre-sales/sms` |
-| **Pre-Sales Manager** | `team` | All leads assigned to direct subordinates, with executive dropdown filter | `/dashboard/pre-sales-manager/sms` |
-| **Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`SITE_VISIT_SCHEDULED`, `NEGOTIATION`, `BOOKING`) with valid phone | `/dashboard/sales-executive/sms` |
-| **Sales Manager** | `team` | All leads assigned to subordinate sales executives, with deal velocity tracking | `/dashboard/sales-manager/sms` |
-| **Post-Sales Executive** | `my` | Customers where `booking.assignedPostSalesId = currentUser.id` with valid phone | `/dashboard/post-sales/sms` |
-| **Post-Sales Manager** | `team` | All post-booking customer threads across all team post-sales executives | `/dashboard/post-sales-manager/sms` |
-| **Sourcing Manager** | `my` | External CP Brokers where `broker.sourcingManagerId = currentUser.id` with valid phone | `/dashboard/sourcing-manager/sms` |
-| **Closing Manager** | `my` | Walk-in leads created on-site or leads assigned at their project sales gallery | `/dashboard/closing-manager/sms` |
-| **Finance Department** | `all` | Customers with payment transactions and Brokers with commission claims | `/dashboard/finance/sms` |
-| **Business Manager** | `all` | Enterprise-wide operational visibility across both Brokerage and CP network | `/dashboard/business-manager/sms` |
-| **Director and Admin** | `all` | Full organizational oversight with real-time audit capabilities | `/dashboard/director/sms` |
+| **Pre-Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`NEW`, `CONTACTED`, `INTERESTED`) with valid phone | `/dashboard/inbox/sms` |
+| **Pre-Sales Manager** | `team` | All leads assigned to direct subordinates, with executive dropdown filter | `/dashboard/inbox/sms` |
+| **Sales Executive** | `my` | Leads where `assignedUserId = currentUser.id` and status in (`SITE_VISIT_SCHEDULED`, `NEGOTIATION`, `BOOKING`) with valid phone | `/dashboard/inbox/sms` |
+| **Sales Manager** | `team` | All leads assigned to subordinate sales executives, with deal velocity tracking | `/dashboard/inbox/sms` |
+| **Post-Sales Executive** | `my` | Customers where `booking.assignedPostSalesId = currentUser.id` with valid phone | `/dashboard/inbox/sms` |
+| **Post-Sales Manager** | `team` | All post-booking customer threads across all team post-sales executives | `/dashboard/inbox/sms` |
+| **Sourcing Manager** | `my` | External CP Brokers where `broker.sourcingManagerId = currentUser.id` with valid phone | `/dashboard/inbox/sms` |
+| **Closing Manager** | `my` | Walk-in leads created on-site or leads assigned at their project sales gallery | `/dashboard/inbox/sms` |
+| **Finance Department** | `all` | Customers with payment transactions and Brokers with commission claims | `/dashboard/inbox/sms` |
+| **Business Manager** | `all` | Enterprise-wide operational visibility across both Brokerage and CP network | `/dashboard/inbox/sms` |
+| **Director and Admin** | `all` | Full organizational oversight with real-time audit capabilities | `/dashboard/inbox/sms` |
+
+> [!NOTE]
+> All roles access the unified route `/dashboard/inbox/sms`. The page dynamically resolves department scope from the user authenticated session. Legacy role-specific URLs (such as `/dashboard/sales-manager/sms`) automatically redirect to `/dashboard/inbox/sms`.
 
 ---
 

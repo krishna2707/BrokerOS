@@ -43,6 +43,14 @@ sequenceDiagram
 ### 1. `@brokeros/constants`
 Contains pure TypeScript constants, enums, UI colors, and pure normalizer functions. It is decomposed into domain sub-modules rather than a monolithic flat file:
 
+- **`roles.ts`**: The 14 official system roles (`ROLES`, `ROLE_CODES`), human-readable role labels (`ROLE_LABELS`), and department boundary helpers (`isCpRole`, `isBrokerageRole`, `isManagementRole`).
+- **`utils/phone.ts`**: Canonical phone normalization and sanitization utilities (`normalizePhoneNumber`, `sanitizePhoneForMeta`, `normalizePhone`, `phonesMatch`, `isValidE164`, `phoneVariants`).
+- **`crm/`**: Core CRM status badges and color maps:
+  - `lead.ts`: Lead status configs (`LEAD_STATUS_CONFIG`), temperatures (`LEAD_TEMPERATURE_CONFIG`), and source labels.
+  - `inventory.ts`: Unit statuses (`UNIT_STATUS_CONFIG`) and project status configurations.
+  - `booking.ts`: Booking lifecycle statuses (`BOOKING_STATUS_CONFIG`), payment statuses, and loan stages.
+  - `broker.ts`: Broker network statuses (`BROKER_STATUS_CONFIG`) and brokerage commission stages.
+  - `approvals.ts`: Approval request statuses (`APPROVAL_STATUS_CONFIG`), site visit states, and negotiation stages.
 - **`voice/`**: Telephony carrier identifiers, AI agent platforms, voice catalog mappings, prompt templates, per-minute pricing tables, and the `normalizeVoiceLeadVariables` function.
 - **`whatsapp/`**: Meta template categories, message status codes, and 24-hour customer service window thresholds.
 - **`sms/`**: DLT operator entity mappings, encoding segment calculations (GSM-7 vs. UCS-2 Unicode).
@@ -51,7 +59,14 @@ Contains pure TypeScript constants, enums, UI colors, and pure normalizer functi
 - **`export.ts`**: RFC-4180 CSV lead formatter (`formatLeadsToCsv`) and standalone responsive HTML report generator (`generateAnalyticsHtmlReport`).
 
 ```typescript
-import { LEAD_STATUS, VOICE_AGENT_PLATFORMS, normalizeVoiceLeadVariables, formatLeadsToCsv, generateAnalyticsHtmlReport } from '@brokeros/constants';
+import {
+  ROLES,
+  LEAD_STATUS_CONFIG,
+  UNIT_STATUS_CONFIG,
+  normalizePhoneNumber,
+  isCpRole,
+  isBrokerageRole,
+} from '@brokeros/constants';
 ```
 
 ---
@@ -59,6 +74,13 @@ import { LEAD_STATUS, VOICE_AGENT_PLATFORMS, normalizeVoiceLeadVariables, format
 ### 2. `@brokeros/types`
 Central repository for shared TypeScript interfaces, DTO definitions, and event payloads:
 
+- **`crm/`**: Core CRM domain types and transfer objects:
+  - `lead.ts`: `LeadDto`, `LeadListItemDto`, `LeadDetailsDto`, `LeadStatus`, `LeadTemperature`, `LeadSourceType`.
+  - `booking.ts`: `BookingDto`, `BookingStatus`, `CustomerDto`, `CustomerDocumentDto`, `PaymentScheduleItemDto`, `LoanCaseDto`.
+  - `inventory.ts`: `ProjectDto`, `TowerDto`, `FloorDto`, `UnitDto`, `UnitStatus`, `UnitType`.
+  - `broker.ts`: `BrokerDto`, `BrokerStatus`, `BrokerMeetingDto`, `BrokerageRecordDto`, `BrokerageSettlementDto`.
+  - `approvals.ts`: `ApprovalRequestDto`, `ApprovalStatus`, `ApprovalType`, `SiteVisitDto`, `NegotiationDto`.
+  - `roles.ts`: `RoleCode`, `RoleDto`, `DepartmentDto`, `UserSummaryDto`.
 - **`common.ts`**: Pagination queries, API response envelopes (`ApiResponse<T>`), and user session shapes.
 - **`voice/`**: Telephony payloads, agent webhook bodies, carrier streaming audio buffers.
 - **`whatsapp/`**: Meta Cloud API response types, interactive button tap payloads, and contact objects.
@@ -66,7 +88,15 @@ Central repository for shared TypeScript interfaces, DTO definitions, and event 
 - **`export.ts`**: `ExportLeadRecord`, `AnalyticsReportPayload`, `AnalyticsSummaryCard`, `AnalyticsFunnelStage`, `AnalyticsReportSection`.
 
 ```typescript
-import type { LeadDto, VoiceCampaignRecipient, ApiResponse, AnalyticsReportPayload, ExportLeadRecord } from '@brokeros/types';
+import type {
+  LeadDto,
+  LeadListItemDto,
+  LeadDetailsDto,
+  BookingDto,
+  UnitDto,
+  BrokerDto,
+  RoleCode,
+} from '@brokeros/types';
 ```
 
 ---
